@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { LoggerMiddleware } from './logger.middleware';
+import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
   imports: [AuthModule, UsersModule],
