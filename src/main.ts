@@ -4,7 +4,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
 import { RedisIoAdapter } from './adapters/redis-io.adapter';
 
 async function bootstrap() {
@@ -23,6 +23,12 @@ async function bootstrap() {
     credentials: true,
     origin: '*',
   })
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: ['1']
+  });
+  
   app.useWebSocketAdapter(redisIoAdapter);
 
 
@@ -31,6 +37,7 @@ async function bootstrap() {
       console.log(err)
       return
     }
+    Logger.log(`Server running at ${appUri}`)
   })
 }
 bootstrap();
