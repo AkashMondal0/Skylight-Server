@@ -1,8 +1,8 @@
 {
   "name": "chat-api",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "this is a chat api",
+  "author": "akashmondal0",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
