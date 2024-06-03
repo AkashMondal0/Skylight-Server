@@ -6,7 +6,7 @@ import {
     WebSocketServer,
     WsResponse
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 
 @WebSocketGateway({
     namespace: '/chat',
@@ -21,8 +21,7 @@ export class SocketIoEventsGateway {
     @SubscribeMessage('handleMessageEvent')
     handleMessageEvent(
         @MessageBody() data: any,
-        @ConnectedSocket() client: Socket,
     ): void {
-        client.emit('MessageEvent', data);
+        this.server.emit('MessageEvent', data);
     }
 }

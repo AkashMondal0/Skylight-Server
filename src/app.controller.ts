@@ -1,21 +1,12 @@
-import { Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
-import { LocalAuthGuard } from './auth/jwt/local-auth.guard';
-import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard';
+import { Controller,Get } from '@nestjs/common';
 import { AuthService } from './auth/auth.service';
 @Controller()
 export class AppController {
   constructor(private authService: AuthService) { }
 
-  @UseGuards(LocalAuthGuard)
-  @Post('auth/login')
-  async login(@Request() req:any) {
-    return this.authService.login(req.user);
+  @Get()
+  LandingPage(): string {
+    return 'Welcome to the Chat API';
   }
 
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req: any) {
-    return req.user;
-  }
 }
