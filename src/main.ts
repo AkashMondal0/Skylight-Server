@@ -5,6 +5,8 @@ import {
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
+import { RedisIoAdapter } from './adapters/redis-io.adapter';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -13,11 +15,16 @@ async function bootstrap() {
     })
   )
 
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+
   // Don't forget to enable CORS
   app.enableCors({
     credentials: true,
     origin: '*',
   })
+  app.useWebSocketAdapter(redisIoAdapter);
+
 
   await app.listen(process.env.PORT || 3001, (err: Error, appUri: string) => {
     if (err) {
