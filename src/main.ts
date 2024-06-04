@@ -4,7 +4,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
-import { Logger, VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
+import { Logger, VersioningType } from '@nestjs/common';
 import { RedisIoAdapter } from './adapters/redis-io.adapter';
 
 async function bootstrap() {
@@ -33,6 +33,7 @@ async function bootstrap() {
 
 
   await app.listen(process.env.PORT || 3000, (err: Error, appUri: string) => {
+    if(!process.env.PORT) console.log(`Server Env Port is not set, using default port 3000`) 
     if (err) {
       console.log(err)
       return
