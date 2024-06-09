@@ -1,24 +1,21 @@
-import { Injectable } from '@nestjs/common';
-
-// This should be a real class/interface representing a user entity
-export type User = any;
+import { HttpException, Injectable } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { DrizzleProvider } from 'src/drizzle/drizzle.provider';
+import { users } from 'src/drizzle/drizzle.schema';
+import { User } from 'src/types';
 
 @Injectable()
 export class UsersService {
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  constructor(private readonly drizzleProvider: DrizzleProvider) {}
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find(user => user.username === username);
+  
+  async findUserById(id: string): Promise<User[] | HttpException> {
+    const user = await this.drizzleProvider.db.select().from(users)
+
+    if (!user[0]) {
+      return new HttpException('User not found', 404);
+    }
+
+    return user;
   }
 }

@@ -25,22 +25,24 @@ interface User {
     id: string;
     username: string;
     email: string;
-    password: string;
+    name: string
     profilePicture: string | null;
+    password: string;
     bio: string | null;
     createdAt: Date;
     updatedAt: Date;
+}
+
+interface UserWithMoreData extends User {
     followers: User[]
     following: User[]
-    isVerified: false,
-    isPrivate: false,
+    isVerified: boolean,
+    isPrivate: boolean,
     postCount: number,
     followersCount: number,
     followingCount: number,
     posts: FeedPost[]
     isFollowing: boolean,
-    removeFollower: boolean,
-    name: string
 }
 
 interface Message {
@@ -189,6 +191,7 @@ type Assets = {
 }
 export type {
     User,
+    UserWithMoreData,
     Message,
     Conversation,
     Post,
