@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { Roles } from './Role/roles.decorator';
 import { Role } from './Role/role.enum';
+import { LocalAuthGuard } from './local/local-auth.guard';
+import { Public } from './constants';
 
 export interface LoginUserPayload {
   username: string;
@@ -16,12 +18,13 @@ export interface LoginUserPayload {
 export class AuthController {
   constructor(private authService: AuthService) { }
 
+  @Public() // Ensure this route is not guarded
   @Version('1')
   @Post('login')
+  @UseGuards(LocalAuthGuard)
   async loginUser(@Body() body: LoginUserPayload) {
     return this.authService.login(body);
   }
-
 
   @Version('1')
   @UseGuards(JwtAuthGuard)

@@ -1,12 +1,14 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DrizzleProvider } from 'src/drizzle/drizzle.provider';
-import { users } from 'src/drizzle/drizzle.schema';
+import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
+import { users } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly drizzleProvider: DrizzleProvider) {}
+  constructor(
+    private readonly drizzleProvider: DrizzleProvider
+  ) {}
 
   
   async findUserById(id: string): Promise<User[] | HttpException> {
