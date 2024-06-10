@@ -5,6 +5,7 @@ import {
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { Logger, VersioningType } from '@nestjs/common';
+import configuration from './configs/configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -25,8 +26,8 @@ async function bootstrap() {
   });
 
 
-  await app.listen(process.env.PORT || 3000, (err: Error, appUri: string) => {
-    if(!process.env.PORT) console.log(`Server Env Port is not set, using default port 3000`) 
+  await app.listen(configuration().POST ?? 3001, (err: Error, appUri: string) => {
+    if (!configuration().POST) console.log(`Server Env Port is not set, using default port 3000`)
     if (err) {
       console.log(err)
       return

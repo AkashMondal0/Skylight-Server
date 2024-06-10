@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { NodePgDatabase, drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './drizzle.schema';
 import { Pool } from 'pg';
+import configuration from 'src/configs/configuration';
 
 @Injectable()
 export class DrizzleProvider implements OnModuleInit {
@@ -9,7 +10,7 @@ export class DrizzleProvider implements OnModuleInit {
 
     async onModuleInit() {
         const client = new Pool({
-            connectionString: process.env.PG_URL,
+            connectionString: configuration().PG_URL,
         });
         await client.connect();
         this.db = drizzle(client, { schema });

@@ -6,16 +6,17 @@ import { UsersModule } from './users/users.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { ConfigModule } from '@nestjs/config';
 import { DrizzleModule } from './drizzle/drizzle.module';
+import configuration from './configs/configuration';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    DrizzleModule,
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      load: [configuration],
       isGlobal: true,
     }),
-    DrizzleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
