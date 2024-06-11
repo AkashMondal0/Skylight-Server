@@ -3,10 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import configuration from 'src/configs/configuration';
 import Redis from 'ioredis';
+import { UsersService } from 'src/users/users.service';
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private redisClient: Redis;
-  constructor() {
+  constructor(
+    private usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -16,10 +20,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const tokenExists = await this.redisClient.exists(payload.jti);
+    const tokenExists = await this.redisClient.get(payload.sub);
     if (!tokenExists) throw new UnauthorizedException();
 
-    const user = await this.userService.findOne(payload.sub);
+    const user = JSON.parse(tokenExists);
     if (!user) throw new UnauthorizedException();
     return user;
   }

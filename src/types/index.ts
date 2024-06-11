@@ -27,10 +27,10 @@ interface User {
     email: string;
     name: string
     profilePicture: string | null;
-    password: string;
-    bio: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    password?: string;
+    bio?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface UserWithMoreData extends User {

@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './jwt/jwt.strategy';
+import { JwtStrategy } from './strategy/jwt.strategy';
 import { AuthController } from './auth.controller';
-import { LocalStrategy } from './local/local.strategy';
+import { LocalStrategy } from './strategy/local.strategy';
 import configuration from 'src/configs/configuration';
 import { RedisModule } from 'src/db/redisio/redis.module';
 
@@ -15,6 +15,7 @@ import { RedisModule } from 'src/db/redisio/redis.module';
     PassportModule,
     RedisModule,
     JwtModule.register({
+      global: true,
       secret: configuration().JWT_SECRET,
       signOptions: { expiresIn: "30d" },
     }),

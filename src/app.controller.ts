@@ -11,5 +11,4 @@ export class AppController {
   LandingPage(): string {
     return this.appService.render()
   }
-
 }

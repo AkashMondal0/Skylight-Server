@@ -1,35 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserPayload } from './auth.controller';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
+import { comparePassword } from './bcrypt/bcrypt.function';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private readonly redisProvider: RedisProvider
+    private redisProvider: RedisProvider
   ) {
 
   }
 
   async validateUser(username: string, pass: string): Promise<any> {
-    // const user = await this.usersService.findOneByUsername(username);
-    // if (user && await user.comparePassword(pass)) {
-    //   return user;
-    // }
-    return null;
+    const user = await this.usersService.findOneByUsername(username);
+
+    if (!user) {
+      // throw error user not found
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    const isPasswordMatching = await comparePassword(pass, user.password);
+
+    if (!isPasswordMatching) {
+      // throw error wrong credentials
+      throw new HttpException('Wrong Credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    return user;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.id };
-    const jti = uuidv4(); // Unique token identifier
-    await this.redisProvider.redisClient.set(jti, '1', 'EX', 60 * 60 * 24); // Store in Redis, expire in 1 day
+  async signIn(username: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.usersService.findOneByUsername(username);
+
+    if (!user) {
+      // throw error user not found
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    const isPasswordMatching = await comparePassword(pass, user.password);
+
+    if (!isPasswordMatching) {
+      // throw error wrong credentials
+      throw new HttpException('Wrong Credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.redisProvider.redisClient.set(user.id, JSON.stringify(user), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
-      access_token: this.jwtService.sign(payload, { jwtid: jti }),
+      access_token: await this.jwtService.signAsync({
+        username: user.username,
+        sub: user.id,
+        email: user.email,
+        name: user.name,
+        profilePicture: user.profilePicture,
+        createdAt: user.createdAt,
+      },{expiresIn: '30d'}),
     };
   }
 }
