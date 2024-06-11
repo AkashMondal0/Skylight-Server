@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { RedisProvider } from 'src/db/redisio/redis.provider';
+// import { RedisProvider } from 'src/db/redisio/redis.provider';
 import { comparePassword } from './bcrypt/bcrypt.function';
 import { RegisterUserPayload } from './constants';
 
@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private redisProvider: RedisProvider
+    // private redisProvider: RedisProvider
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -46,7 +46,7 @@ export class AuthService {
       throw new HttpException('Wrong Credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    await this.redisProvider.redisClient.set(user.id, JSON.stringify(user), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
+    // await this.redisProvider.redisClient.set(user.id, JSON.stringify(user), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
       access_token: await this.jwtService.signAsync({
@@ -76,7 +76,7 @@ export class AuthService {
 
     const newUser = await this.usersService.createUser(body);
 
-    await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
+    // await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
       access_token: await this.jwtService.signAsync({
