@@ -4,32 +4,44 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, VersioningType } from '@nestjs/common';
+import configuration from './configs/configuration';
+const envs = configuration()
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      logger: true,
+      // logger: true,
     })
   )
-
   // Don't forget to enable CORS
   app.enableCors({
     credentials: true,
     origin: '*',
   })
 
-  await app.listen(process.env.PORT || 3001, (err: Error, appUri: string) => {
-    if (err) {
-      console.log(err)
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: ['1']
+  });
 
-      return
+
+  await app.listen(envs.POST ?? 3001, (err: Error, appUri: string) => {
+    for (const key in envs) {
+      const element = envs[key];
+      if (!element) {
+        Logger.error(`[ENV] ${key}: ❌`)
+      } else {
+        Logger.log(`[ENV] ${key}: ✅`)
+      }
     }
 
-    const logger = new Logger()
-
-    logger.log(`Server started at ${appUri}`)
-    logger.log(`GraphQL URL ${appUri + '/graphql'}`)
+    if (err) {
+      Logger.log(err)
+      return
+    }
+    Logger.log(`Server running at ${appUri}`)
   })
 }
 bootstrap();

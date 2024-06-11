@@ -1,12 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Version } from '@nestjs/common';
 import { AppService } from './app.service';
-
-@Controller()
+@Controller({
+  version: ['1'],
+})
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private appService: AppService) { }
 
-  @Get('users')
-  getHello(): string {
-    return this.appService.getHello();
+  @Version('1')
+  @Get()
+  LandingPage(): string {
+    return this.appService.render()
   }
 }
