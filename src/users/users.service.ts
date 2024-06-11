@@ -1,5 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
+import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { users } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
@@ -11,60 +12,82 @@ type UserCredential = {
   email: string;
 }
 
-type SkyApiResponse<Data> = {
-  message: string;
-  data: Data
-}
 @Injectable()
 export class UsersService {
   constructor(
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  // async CreateUser(userCredential: UserCredential): Promise<SkyApiResponse<User | string>> {
-  //   const user = await this.drizzleProvider.db.select().from(users)
+  async createUser(userCredential: UserCredential): Promise<User | null> {
 
+    const hashPassword = await createHash(userCredential.password)
 
-  // }
+    try {
+      const user = await this.drizzleProvider.db.insert(users).values({
+        username: userCredential.username,
+        password: hashPassword,
+        name: userCredential.name,
+        email: userCredential.email,
+      }).returning()
 
-
-  async findUserById(id: string): Promise<User[] | HttpException> {
-    const user = await this.drizzleProvider.db.select({
-      id: users.id,
-      username: users.username,
-      name: users.name,
-      email: users.email,
-      profilePicture: users.profilePicture,
-      password: users.password,
-      bio: users.bio,
-      createdAt: users.createdAt,
-      accessToken: users.accessToken,
-    }).from(users)
-
-    if (!user[0]) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND)
+      if (!user[0]) {
+        throw new HttpException('User Not Found, User Create Failed', HttpStatus.NOT_FOUND)
+      }
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      throw new HttpException("User Create Failed", HttpStatus.INTERNAL_SERVER_ERROR)
     }
+  }
 
-    return user;
+
+  async findOneUserById(id: string): Promise<User[] | HttpException> {
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        email: users.email,
+        profilePicture: users.profilePicture,
+        password: users.password,
+        bio: users.bio,
+        createdAt: users.createdAt,
+        accessToken: users.accessToken,
+      }).from(users)
+
+      if (!user[0]) {
+        return null
+      }
+
+      return user;
+    } catch (error) {
+      Logger.error(error)
+      return null
+    }
   }
 
   async findOneByUsername(username: string): Promise<User | null> {
-    const user = await this.drizzleProvider.db.select({
-      id: users.id,
-      username: users.username,
-      name: users.name,
-      email: users.email,
-      profilePicture: users.profilePicture,
-      password: users.password,
-      bio: users.bio,
-      createdAt: users.createdAt,
-      accessToken: users.accessToken,
-    }).from(users).where(eq(users.username, username))
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        email: users.email,
+        profilePicture: users.profilePicture,
+        password: users.password,
+        bio: users.bio,
+        createdAt: users.createdAt,
+        accessToken: users.accessToken,
+      }).from(users).where(eq(users.username, username))
 
-    if (!user[0]) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND)
+      if (!user[0]) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      return null;
     }
-
-    return user[0];
   }
+
 }

@@ -17,7 +17,6 @@ export const users = pgTable('users', {
     accessToken: varchar('access_token'),
     refreshToken: varchar('refresh_token'),
     loggedDevice: jsonb('logged_device').default([]),
-    salt: varchar('salt').notNull(),
 });
 
 export const messages = pgTable('messages', {

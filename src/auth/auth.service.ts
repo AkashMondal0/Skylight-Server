@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { v4 as uuidv4 } from 'uuid';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
 import { comparePassword } from './bcrypt/bcrypt.function';
+import { RegisterUserPayload } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -11,9 +11,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private redisProvider: RedisProvider
-  ) {
-
-  }
+  ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByUsername(username);
@@ -58,7 +56,37 @@ export class AuthService {
         name: user.name,
         profilePicture: user.profilePicture,
         createdAt: user.createdAt,
-      },{expiresIn: '30d'}),
+      }, { expiresIn: '30d' }),
+    };
+  }
+
+  async signUp(body: RegisterUserPayload): Promise<{ access_token: string }> {
+
+    if (!body.username || !body.password || !body.email || !body.name) {
+      // throw error user not found
+      throw new HttpException('Missing Credential', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this.usersService.findOneByUsername(body.username);
+
+    if (user) {
+      // throw error user not found
+      throw new HttpException('User Already', HttpStatus.BAD_REQUEST);
+    }
+
+    const newUser = await this.usersService.createUser(body);
+
+    await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
+
+    return {
+      access_token: await this.jwtService.signAsync({
+        username: newUser.username,
+        sub: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        profilePicture: newUser.profilePicture ?? '',
+        createdAt: newUser.createdAt,
+      }, { expiresIn: '30d' }),
     };
   }
 }

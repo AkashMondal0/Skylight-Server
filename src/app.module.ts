@@ -18,6 +18,7 @@ import { RedisModule } from './db/redisio/redis.module';
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
+      envFilePath: ['.env', '.env.development'],
     }),
   ],
   controllers: [AppController],

@@ -19,10 +19,10 @@ export class UsersController {
     //     res.status(HttpStatus.OK).send('This action returns all cats');
     // }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.usersService.findUserById(id);
-    }
+    // @Get(':id')
+    // findOne(@Param('id') id: string) {
+    //     return this.usersService.findOneUserById(id);
+    // }
 
     // @Put(':id')
     // update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {

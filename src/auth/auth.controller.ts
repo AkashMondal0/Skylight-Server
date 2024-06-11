@@ -1,19 +1,14 @@
 import { Body, Controller, Post, Request, UseGuards, Get, Version, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Public } from './constants';
+import { LoginUserPayload, Public, RegisterUserPayload } from './constants';
 import { UsersService } from 'src/users/users.service';
 import { AuthGuard } from './guard/auth.guard';
 
-export interface LoginUserPayload {
-  username: string;
-  password: string;
-  id: string;
-  email: string;
-}
 @Controller({
   path: 'auth',
   version: ['1']
 })
+
 export class AuthController {
   constructor(private authService: AuthService,
     private usersService: UsersService
@@ -25,6 +20,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async signIn(@Body() body: LoginUserPayload) {
     return this.authService.signIn(body.username, body.password);
+  }
+
+  @Public()
+  @Version('1')
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  async signUp(@Body() body: RegisterUserPayload) {
+    return this.authService.signUp(body);
   }
 
   @Version('1')

@@ -10,3 +10,10 @@ export type RegisterUserPayload = {
     email: string;
     name: string;
 }
+
+export interface LoginUserPayload {
+    username: string;
+    password: string;
+    id: string;
+    email: string;
+  }
