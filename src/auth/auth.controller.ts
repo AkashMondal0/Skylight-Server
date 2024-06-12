@@ -2,7 +2,8 @@ import { Body, Controller, Post, Request, UseGuards, Get, Version, HttpCode, Htt
 import { AuthService } from './auth.service';
 import { LoginUserPayload, Public, RegisterUserPayload } from './constants';
 import { UsersService } from 'src/users/users.service';
-import { AuthGuard } from './guard/auth.guard';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { MyAuthGuard } from './guard/My-jwt-auth.guard';
 
 @Controller({
   path: 'auth',
@@ -14,27 +15,27 @@ export class AuthController {
     private usersService: UsersService
   ) { }
 
-  @Public()
+  // @Public()
   @Version('1')
   @Post('login')
-  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
   async signIn(@Body() body: LoginUserPayload) {
     return this.authService.signIn(body.username, body.password);
   }
 
-  @Public()
+  // @Public()
   @Version('1')
   @Post('register')
-  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
   async signUp(@Body() body: RegisterUserPayload) {
     return this.authService.signUp(body);
   }
 
   @Version('1')
-  @UseGuards(AuthGuard)
+  @UseGuards(MyAuthGuard)
   @Get('profile')
-  getProfile(@Request() req:any) {
-    return req.user;
+  getProfile(@Request() req: any) {
+    return req.session_user;
   }
 
   // @Version('1')

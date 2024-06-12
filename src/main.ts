@@ -38,7 +38,7 @@ async function bootstrap() {
     }
 
     if (err) {
-      Logger.log(err)
+      Logger.log("start",err)
       return
     }
     Logger.log(`Server running at ${appUri}`)
