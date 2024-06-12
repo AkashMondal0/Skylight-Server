@@ -4,7 +4,8 @@ import { UsersService } from 'src/users/users.service';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { MyAuthGuard } from './guard/My-jwt-auth.guard';
 import { LoginUserPayload, RegisterUserPayload, Role, User } from 'src/types';
-import { Roles } from './decorator';
+import { Roles } from './SetMetadata';
+import { RolesGuard } from './guard/roles.guard';
 
 @Controller({
   path: 'auth',
@@ -31,7 +32,8 @@ export class AuthController {
 
   @Version('1')
   @Get('profile')
-  @Roles(Role.Admin)
+  @Roles(Role.User)
+  @UseGuards(RolesGuard)
   getProfile(@Request() req: any) {
     return req.user;
   }

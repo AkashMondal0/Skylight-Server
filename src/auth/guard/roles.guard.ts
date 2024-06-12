@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'src/types';
-import { IS_PUBLIC_KEY, ROLES_KEY } from '../decorator';
+import { IS_PUBLIC_KEY, ROLES_KEY } from '../SetMetadata';
 import { JwtService } from '@nestjs/jwt';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import configuration from 'src/configs/configuration';
