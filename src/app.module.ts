@@ -9,6 +9,8 @@ import { DrizzleModule } from './db/drizzle/drizzle.module';
 import configuration from './configs/configuration';
 import { RedisModule } from './db/redisio/redis.module';
 import { _GraphQLModule } from './graphql/graphql.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/guard/roles.guard';
 
 @Module({
   imports: [
@@ -24,7 +26,10 @@ import { _GraphQLModule } from './graphql/graphql.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {
+    provide: APP_GUARD,
+    useClass: RolesGuard,
+  },],
 })
 
 export class AppModule {}

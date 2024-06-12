@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { pgTable, varchar, uuid, timestamp, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
-export const roleEnum = pgEnum('Role', ['ADMIN', 'MEMBER']);
+export const roleEnum = pgEnum('role', ['admin', 'user']);
 
 export const users = pgTable('users', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -17,6 +17,7 @@ export const users = pgTable('users', {
     accessToken: varchar('access_token'),
     refreshToken: varchar('refresh_token'),
     loggedDevice: jsonb('logged_device').default([]),
+    roles: roleEnum('roles').array().notNull().default(sql`ARRAY['user']::role[]`)
 });
 
 export const messages = pgTable('messages', {
@@ -46,6 +47,16 @@ export const conversations = pgTable('conversations', {
         .$onUpdate(() => new Date()),
 });
 
+export const followers = pgTable('followers', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    followerUserId: uuid('follower_id').notNull().references(() => users.id, { onDelete: 'no action', onUpdate: "no action" }),
+    followingUserId: uuid('following_id').notNull().references(() => users.id, { onDelete: 'no action', onUpdate: 'no action' }),
+    followerUsername: varchar('follower_username').notNull().references(() => users.username, { onDelete: 'no action', onUpdate: 'no action' }),
+    followingUsername: varchar('following_username').notNull().references(() => users.username, { onDelete: 'no action', onUpdate: 'no action' }),
+    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+})
+
 export const posts = pgTable('posts', {
     id: uuid('id').primaryKey().defaultRandom(),
     caption: varchar('caption').notNull(),
@@ -68,16 +79,6 @@ export const likes = pgTable('likes', {
     id: uuid('id').primaryKey().defaultRandom(),
     authorId: uuid('author_id').notNull().references(() => users.id, { onDelete: 'no action', onUpdate: "no action" }),
     postId: uuid('post_id').notNull().references(() => posts.id),
-    createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
-})
-
-export const followers = pgTable('followers', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    followerUserId: uuid('follower_id').notNull().references(() => users.id, { onDelete: 'no action', onUpdate: "no action" }),
-    followingUserId: uuid('following_id').notNull().references(() => users.id, { onDelete: 'no action', onUpdate: 'no action' }),
-    followerUsername: varchar('follower_username').notNull().references(() => users.username, { onDelete: 'no action', onUpdate: 'no action' }),
-    followingUsername: varchar('following_username').notNull().references(() => users.username, { onDelete: 'no action', onUpdate: 'no action' }),
     createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 })

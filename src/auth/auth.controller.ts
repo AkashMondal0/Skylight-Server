@@ -1,9 +1,10 @@
-import { Body, Controller, Post, Request, UseGuards, Get, Version, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards, Get, Version, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginUserPayload, Public, RegisterUserPayload } from './constants';
 import { UsersService } from 'src/users/users.service';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { MyAuthGuard } from './guard/My-jwt-auth.guard';
+import { LoginUserPayload, RegisterUserPayload, Role, User } from 'src/types';
+import { Roles } from './decorator';
 
 @Controller({
   path: 'auth',
@@ -15,34 +16,23 @@ export class AuthController {
     private usersService: UsersService
   ) { }
 
-  // @Public()
   @Version('1')
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async signIn(@Body() body: LoginUserPayload) {
+  async signIn(@Body() body: User) {
     return this.authService.signIn(body.username, body.password);
   }
 
-  // @Public()
   @Version('1')
   @Post('register')
-  @UseGuards(LocalAuthGuard)
-  async signUp(@Body() body: RegisterUserPayload) {
+  async signUp(@Body() body: User) {
     return this.authService.signUp(body);
   }
 
   @Version('1')
-  @UseGuards(MyAuthGuard)
   @Get('profile')
+  @Roles(Role.Admin)
   getProfile(@Request() req: any) {
-    return req.session_user;
+    return req.user;
   }
-
-  // @Version('1')
-  // @Get('xyz')
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(Role.User)
-  // getXyz(@Request() req: any) {
-  //   return req.user;
-  // }
 }

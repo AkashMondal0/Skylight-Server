@@ -1,9 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-// import { RedisProvider } from 'src/db/redisio/redis.provider';
 import { comparePassword } from './bcrypt/bcrypt.function';
-import { RegisterUserPayload } from './constants';
+import { RegisterUserPayload, User } from 'src/types';
 
 @Injectable()
 export class AuthService {
@@ -56,11 +55,12 @@ export class AuthService {
         name: user.name,
         profilePicture: user.profilePicture,
         createdAt: user.createdAt,
+        roles: user.roles,
       }, { expiresIn: '30d' }),
     };
   }
 
-  async signUp(body: RegisterUserPayload): Promise<{ access_token: string }> {
+  async signUp(body: User): Promise<{ access_token: string }> {
 
     if (!body.username || !body.password || !body.email || !body.name) {
       // throw error user not found
@@ -86,6 +86,7 @@ export class AuthService {
         name: newUser.name,
         profilePicture: newUser.profilePicture ?? '',
         createdAt: newUser.createdAt,
+        roles: newUser.roles,
       }, { expiresIn: '30d' }),
     };
   }
