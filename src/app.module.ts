@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DrizzleModule } from './db/drizzle/drizzle.module';
 import configuration from './configs/configuration';
 import { RedisModule } from './db/redisio/redis.module';
+import { _GraphQLModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RedisModule } from './db/redisio/redis.module';
     UsersModule,
     DrizzleModule,
     RedisModule,
+    _GraphQLModule,
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
