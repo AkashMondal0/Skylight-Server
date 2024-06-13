@@ -7,14 +7,59 @@ type Post {
   exampleField: Int!
 }
 
+type Comment {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Like {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Explore {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Follow {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Conversation {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 type Query {
   post(id: Int!): Post!
+  comment(id: Int!): Comment!
+  like(id: Int!): Like!
+  explore(id: Int!): Explore!
+  follow(id: Int!): Follow!
+  conversation(id: Int!): Conversation!
 }
 
 type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   updatePost(updatePostInput: UpdatePostInput!): Post!
   removePost(id: Int!): Post!
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  removeComment(id: Int!): Comment!
+  createLike(createLikeInput: CreateLikeInput!): Like!
+  updateLike(updateLikeInput: UpdateLikeInput!): Like!
+  removeLike(id: Int!): Like!
+  createExplore(createExploreInput: CreateExploreInput!): Explore!
+  updateExplore(updateExploreInput: UpdateExploreInput!): Explore!
+  removeExplore(id: Int!): Explore!
+  createFollow(createFollowInput: CreateFollowInput!): Follow!
+  updateFollow(updateFollowInput: UpdateFollowInput!): Follow!
+  removeFollow(id: Int!): Follow!
+  createConversation(createConversationInput: CreateConversationInput!): Conversation!
+  updateConversation(updateConversationInput: UpdateConversationInput!): Conversation!
+  removeConversation(id: Int!): Conversation!
 }
 
 input CreatePostInput {
@@ -23,6 +68,61 @@ input CreatePostInput {
 }
 
 input UpdatePostInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateCommentInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCommentInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateLikeInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateLikeInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateExploreInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateExploreInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateFollowInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateFollowInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateConversationInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateConversationInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

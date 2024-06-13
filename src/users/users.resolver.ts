@@ -6,7 +6,8 @@ import { UpdateUsersInput } from './dto/update-users.input';
 
 @Resolver(() => Users)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  private readonly usersService: UsersService
+  constructor() {}
 
   // @Mutation(() => Users)
   // createUsers(@Args('createUsersInput') createUsersInput: CreateUsersInput) {
@@ -18,9 +19,9 @@ export class UsersResolver {
   //   return this.usersService.findAll();
   // }
 
-  // @Query(() => Users, { name: 'users' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.usersService.findOne(id);
+  // @Query(() => Users, { name: 'user' })
+  // findOne(@Args('id', { type: () => Int }) id: string) {
+  //   return this.usersService.findOneUserById(id);
   // }
 
   // @Mutation(() => Users)
