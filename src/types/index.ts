@@ -1,3 +1,7 @@
+enum Role {
+    User = 'user',
+    Admin = 'admin',
+}
 interface FeedPost {
     id: string
     caption: string
@@ -31,18 +35,20 @@ interface User {
     bio?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
+    roles?: Role[] | any
+    followers?: User[]
+    following?: User[]
+    isVerified?: boolean,
+    isPrivate?: boolean,
+    postCount?: number,
+    followersCount?: number,
+    followingCount?: number,
+    posts?: FeedPost[]
+    isFollowing?: boolean,
 }
 
 interface UserWithMoreData extends User {
-    followers: User[]
-    following: User[]
-    isVerified: boolean,
-    isPrivate: boolean,
-    postCount: number,
-    followersCount: number,
-    followingCount: number,
-    posts: FeedPost[]
-    isFollowing: boolean,
+    
 }
 
 interface Message {
@@ -189,8 +195,23 @@ type Assets = {
     type?: 'image' | 'video' | 'audio' | "text"
     caption?: string;
 }
-export type {
+
+type RegisterUserPayload = {
+    username: string;
+    password: string;
+    email: string;
+    name: string;
+}
+
+interface LoginUserPayload {
+    username: string;
+    password: string;
+    id: string;
+    email: string;
+}
+export {
     User,
+    Role,
     UserWithMoreData,
     Message,
     Conversation,
@@ -209,5 +230,7 @@ export type {
     AuthorData,
     networkImage_status,
     Assets,
-    RestApiPayload
+    RestApiPayload,
+    RegisterUserPayload,
+    LoginUserPayload
 }

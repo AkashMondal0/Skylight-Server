@@ -1,30 +1,28 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import configuration from 'src/configs/configuration';
-// import Redis from 'ioredis';
-import { UsersService } from 'src/users/users.service';
+import { User } from 'src/types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  // private redisClient: Redis;
-  constructor(
-    private usersService: UsersService,
-  ) {
+  constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configuration().JWT_SECRET,
     });
-    // this.redisClient = new Redis(process.env.REDIS_URL)
   }
 
-  // async validate(payload: any) {
-  //   const tokenExists = await this.redisClient.get(payload.sub);
-  //   if (!tokenExists) throw new UnauthorizedException();
-
-  //   const user = JSON.parse(tokenExists);
-  //   if (!user) throw new UnauthorizedException();
-  //   return user;
-  // }
+  async validate(payload: User) {
+    return { 
+      id: payload.id, 
+      username: payload.username,
+      email: payload.email,
+      name: payload.name,
+      profilePicture: payload.profilePicture,
+      createdAt: payload.createdAt,
+      roles: payload.roles,
+     };
+  }
 }

@@ -8,10 +8,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import configuration from 'src/configs/configuration';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../SetMetadata';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) { }
+export class MyAuthGuard implements CanActivate {
+  constructor(private jwtService: JwtService,
+    private reflector: Reflector
+  ) { }
 
   private extractTokenFromHeader(request: FastifyRequest): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
@@ -19,6 +23,18 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+
+    // if request is public, return true
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
+    // if request is not public, check for token
+
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 

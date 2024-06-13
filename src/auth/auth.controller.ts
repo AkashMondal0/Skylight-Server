@@ -1,8 +1,11 @@
-import { Body, Controller, Post, Request, UseGuards, Get, Version, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards, Get, Version, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginUserPayload, Public, RegisterUserPayload } from './constants';
 import { UsersService } from 'src/users/users.service';
-import { AuthGuard } from './guard/auth.guard';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { MyAuthGuard } from './guard/My-jwt-auth.guard';
+import { LoginUserPayload, RegisterUserPayload, Role, User } from 'src/types';
+import { Roles } from './SetMetadata';
+import { RolesGuard } from './guard/roles.guard';
 
 @Controller({
   path: 'auth',
@@ -14,34 +17,24 @@ export class AuthController {
     private usersService: UsersService
   ) { }
 
-  @Public()
   @Version('1')
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async signIn(@Body() body: LoginUserPayload) {
+  @UseGuards(LocalAuthGuard)
+  async signIn(@Body() body: User) {
     return this.authService.signIn(body.username, body.password);
   }
 
-  @Public()
   @Version('1')
   @Post('register')
-  @HttpCode(HttpStatus.OK)
-  async signUp(@Body() body: RegisterUserPayload) {
+  async signUp(@Body() body: User) {
     return this.authService.signUp(body);
   }
 
   @Version('1')
-  @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req:any) {
+  @Roles(Role.User)
+  @UseGuards(RolesGuard)
+  getProfile(@Request() req: any) {
     return req.user;
   }
-
-  // @Version('1')
-  // @Get('xyz')
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(Role.User)
-  // getXyz(@Request() req: any) {
-  //   return req.user;
-  // }
 }

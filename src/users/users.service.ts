@@ -5,17 +5,6 @@ import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { users } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
 
-type UserCredential = {
-  username: string;
-  password: string;
-  name: string;
-  email: string;
-}
-
-interface UpdateCredential extends UserCredential {
-  bio: string;
-  profilePicture: string;
-}
 
 @Injectable()
 export class UsersService {
@@ -23,7 +12,7 @@ export class UsersService {
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  async createUser(userCredential: UserCredential): Promise<User | null> {
+  async createUser(userCredential: User): Promise<User | null> {
 
     const hashPassword = await createHash(userCredential.password)
 
@@ -33,6 +22,7 @@ export class UsersService {
         password: hashPassword,
         name: userCredential.name,
         email: userCredential.email,
+        roles: userCredential.roles
       }).returning()
 
       if (!user[0]) {
@@ -57,6 +47,7 @@ export class UsersService {
         bio: users.bio,
         createdAt: users.createdAt,
         accessToken: users.accessToken,
+        roles: users.roles
       }).from(users)
         .where(eq(users.id, id))
         .limit(1)
@@ -84,6 +75,7 @@ export class UsersService {
         bio: users.bio,
         createdAt: users.createdAt,
         accessToken: users.accessToken,
+        roles: users.roles
       })
         .from(users)
         .where(eq(users.username, username))
@@ -99,7 +91,7 @@ export class UsersService {
     }
   }
 
-  async updateUser(userCredential: UpdateCredential): Promise<User | null> {
+  async updateUser(userCredential: User): Promise<User | null> {
 
     const hashPassword = await createHash(userCredential.password)
 
@@ -111,6 +103,7 @@ export class UsersService {
         email: userCredential.email,
         bio: userCredential.bio,
         profilePicture: userCredential.profilePicture,
+        roles: userCredential.roles
       })
         .where(eq(users.username, userCredential.username))
         .returning()
