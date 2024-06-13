@@ -11,11 +11,14 @@ import { DrizzleModule } from './db/drizzle/drizzle.module';
 import configuration from './configs/configuration';
 import { RedisModule } from './db/redisio/redis.module';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
+import { LikeModule } from './like/like.module';
+import { ExploreModule } from './explore/explore.module';
+import { FollowModule } from './follow/follow.module';
+import { ConversationModule } from './conversation/conversation.module';
 
 @Module({
   imports: [
-    AuthModule,
-    UsersModule,
     DrizzleModule,
     RedisModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -29,7 +32,14 @@ import { PostModule } from './post/post.module';
       isGlobal: true,
       envFilePath: ['.env', '.env.development'],
     }),
+    AuthModule,
+    UsersModule,
     PostModule,
+    CommentModule,
+    LikeModule,
+    ExploreModule,
+    FollowModule,
+    ConversationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
