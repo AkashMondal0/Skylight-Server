@@ -4,6 +4,7 @@ import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { users } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
+import { RegisterUserPayload } from 'src/validation/ZodSchema';
 
 
 @Injectable()
@@ -12,7 +13,7 @@ export class UsersService {
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  async createUser(userCredential: User): Promise<User | null> {
+  async createUser(userCredential: RegisterUserPayload): Promise<User | null> {
 
     const hashPassword = await createHash(userCredential.password)
 
@@ -21,8 +22,7 @@ export class UsersService {
         username: userCredential.username,
         password: hashPassword,
         name: userCredential.name,
-        email: userCredential.email,
-        roles: userCredential.roles
+        email: userCredential.email
       }).returning()
 
       if (!user[0]) {
@@ -63,7 +63,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsername(username: string): Promise<User | null> {
+  async findOneByUsername(email: string): Promise<User | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: users.id,
@@ -78,7 +78,7 @@ export class UsersService {
         roles: users.roles
       })
         .from(users)
-        .where(eq(users.username, username))
+        .where(eq(users.email, email))
         .limit(1)
 
       if (!user[0]) {
