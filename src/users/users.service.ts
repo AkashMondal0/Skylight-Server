@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, like, or } from 'drizzle-orm';
 import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { users } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
 import { RegisterUserPayload } from 'src/validation/ZodSchema';
-
 
 @Injectable()
 export class UsersService {
@@ -18,17 +17,18 @@ export class UsersService {
     const hashPassword = await createHash(userCredential.password)
 
     try {
-      const user = await this.drizzleProvider.db.insert(users).values({
+      const newUser = await this.drizzleProvider.db.insert(users).values({
         username: userCredential.username,
         password: hashPassword,
         name: userCredential.name,
-        email: userCredential.email
+        email: userCredential.email,
       }).returning()
 
-      if (!user[0]) {
+      if (!newUser[0]) {
         return null;
       }
-      return user[0];
+
+      return newUser[0];
     } catch (error) {
       Logger.error(error)
       return null
@@ -91,43 +91,72 @@ export class UsersService {
     }
   }
 
-  async updateUser(userCredential: User): Promise<User | null> {
+  // async updateUser(userCredential: User): Promise<User | null> {
 
-    const hashPassword = await createHash(userCredential.password)
+  //   const hashPassword = await createHash(userCredential.password)
 
+  //   try {
+  //     const user = await this.drizzleProvider.db.update(users).set({
+  //       username: userCredential.username,
+  //       password: hashPassword,
+  //       name: userCredential.name,
+  //       email: userCredential.email,
+  //       bio: userCredential.bio,
+  //       profilePicture: userCredential.profilePicture,
+  //       roles: userCredential.roles
+  //     })
+  //       .where(eq(users.username, userCredential.username))
+  //       .returning()
+
+  //     if (!user[0]) {
+  //       return null;
+  //     }
+  //     return user[0];
+  //   } catch (error) {
+  //     Logger.error(error)
+  //     return null
+  //   }
+  // }
+
+  // async deleteUser(id: string): Promise<boolean> {
+  //   try {
+  //     await this.drizzleProvider.db.delete(users)
+  //       .where(eq(users.id, id))
+  //     return true
+  //   } catch (error) {
+  //     Logger.error(error)
+  //     return false
+  //   }
+  // }
+
+  
+  async findManyByUsernameAndEmail(keywords: string): Promise<User[] | []> {
     try {
-      const user = await this.drizzleProvider.db.update(users).set({
-        username: userCredential.username,
-        password: hashPassword,
-        name: userCredential.name,
-        email: userCredential.email,
-        bio: userCredential.bio,
-        profilePicture: userCredential.profilePicture,
-        roles: userCredential.roles
-      })
-        .where(eq(users.username, userCredential.username))
-        .returning()
+      const data = await this.drizzleProvider.db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        profilePicture: users.profilePicture,
+        bio: users.bio,
+        isVerified: users.isVerified,
+        isPrivate: users.isPrivate,
+      }).from(users).where(
+        or(
+          like(users.username, `%${keywords}%`),
+          like(users.name, `%${keywords}%`)
+        )
+      ).limit(20)
 
-      if (!user[0]) {
-        return null;
+      if (data.length <= 0 || !data[0].id) {
+        return [];
       }
-      return user[0];
+
+      return data;
     } catch (error) {
       Logger.error(error)
-      return null
+      return [];
     }
   }
-
-  async deleteUser(id: string): Promise<boolean> {
-    try {
-      await this.drizzleProvider.db.delete(users)
-        .where(eq(users.id, id))
-      return true
-    } catch (error) {
-      Logger.error(error)
-      return false
-    }
-  }
-
 
 }

@@ -5,20 +5,21 @@ enum Role {
 interface User {
     id: string;
     username: string;
+    name: string;
     email: string;
-    name: string
+    password?: string; // Password might not be returned
     profilePicture: string | null;
-    password?: string;
-    bio?: string | null;
-    createdAt?: Date;
-    updatedAt?: Date;
-    roles?: Role[] | any
-    isVerified?: boolean,
-    isPrivate?: boolean,
-    // accessToken?: string,
-    // refreshToken?: string,
-    // loggedDevice?: string[],
+    bio: string | null;
+    createdAt?: Date | string | null | unknown;
+    updatedAt?: Date | string | null | unknown;
+    isVerified?: boolean | false | null;
+    isPrivate?: boolean | false | null;
+    accessToken?: string | null | unknown;
+    refreshToken?: string | null | unknown;
+    loggedDevice?: any[] | unknown;
+    roles?: Role[] | string[];
 }
+
 interface Follow {
     id: string;
     followerUserId: string;
@@ -57,10 +58,10 @@ interface Post {
     id: string
     caption: string
     fileUrl: string[]
-    createdAt: Date | string
-    updatedAt: Date | string
-    authorId: string
-    postId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    authorId?: string
+    postId?: string
 }
 
 

@@ -1,12 +1,11 @@
 import { Body, Controller, Post, Request, UseGuards, Get, Version, UsePipes, } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/users/users.service';
-import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Role, User } from 'src/types';
 import { Roles } from './SetMetadata';
 import { RolesGuard } from './guard/roles.guard';
 import { ZodValidationPipe } from 'src/validation/Validation';
-import { LoginUserSchema, RegisterUserSchema } from 'src/validation/ZodSchema';
+import {  LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
 
 @Controller({
   path: 'auth',
@@ -21,14 +20,14 @@ export class AuthController {
   @Version('1')
   @Post('login')
   @UsePipes(new ZodValidationPipe(LoginUserSchema))
-  async signIn(@Body() body: User) {
+  async signIn(@Body() body: LoginUserPayload) {
     return this.authService.signIn(body.email, body.password);
   }
 
   @Version('1')
   @Post('register')
   @UsePipes(new ZodValidationPipe(RegisterUserSchema))
-  async signUp(@Body() body: User) {
+  async signUp(@Body() body: RegisterUserPayload) {
     return this.authService.signUp(body);
   }
 
