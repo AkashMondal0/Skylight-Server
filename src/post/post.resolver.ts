@@ -8,10 +8,10 @@ import { UpdatePostInput } from './dto/update-post.input';
 export class PostResolver {
   constructor(private readonly postService: PostService) {}
 
-  @Mutation(() => Post)
-  createPost(@Args('createPostInput') createPostInput: CreatePostInput) {
-    return this.postService.create(createPostInput);
-  }
+  // @Mutation(() => Post)
+  // createPost(@Args('createPostInput') createPostInput: CreatePostInput) {
+  //   return this.postService.create(createPostInput);
+  // }
 
   @Query(() => [Post], { name: 'post' })
   findAll() {
@@ -23,13 +23,13 @@ export class PostResolver {
     return this.postService.findOne(id);
   }
 
-  @Mutation(() => Post)
-  updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
-    return this.postService.update(updatePostInput.id, updatePostInput);
-  }
+  // @Mutation(() => Post)
+  // updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
+  //   return this.postService.update(updatePostInput.id, updatePostInput);
+  // }
 
-  @Mutation(() => Post)
-  removePost(@Args('id', { type: () => Int }) id: number) {
-    return this.postService.remove(id);
-  }
+  // @Mutation(() => Post)
+  // removePost(@Args('id', { type: () => Int }) id: number) {
+  //   return this.postService.remove(id);
+  // }
 }

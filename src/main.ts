@@ -33,7 +33,7 @@ async function bootstrap() {
       if (!element) {
         Logger.error(`[ENV] ${key}: ❌`)
       } else {
-        Logger.log(`[ENV] ${key}: ✅`)
+        Logger.log(`[ENV] ${key}: ${element} ✅`)
       }
     }
 
