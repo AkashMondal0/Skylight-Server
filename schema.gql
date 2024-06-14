@@ -3,18 +3,35 @@
 # ------------------------------------------------------
 
 type Post {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  caption: String!
+  fileUrl: [String!]!
+  createdAt: DateTime
+  updatedAt: DateTime
+  authorId: ID!
+  postId: ID!
 }
 
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Comment {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  comment: String!
+  authorId: ID!
+  postId: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Like {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  authorId: ID!
+  postId: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Explore {
@@ -23,13 +40,38 @@ type Explore {
 }
 
 type Follow {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  followerUserId: ID!
+  followingUserId: ID!
+  followerUsername: String!
+  followingUsername: String!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Conversation {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  members: [String!]!
+  isGroup: Boolean!
+  groupName: String
+  groupImage: String
+  groupDescription: String
+  authorId: ID!
+  lastMessageContent: String!
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type Message {
+  id: ID!
+  content: String!
+  fileUrl: [String!]!
+  authorId: ID!
+  deleted: Boolean!
+  seenBy: [String!]!
+  conversationId: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Query {
@@ -39,6 +81,7 @@ type Query {
   explore(id: Int!): Explore!
   follow(id: Int!): Follow!
   conversation(id: Int!): Conversation!
+  message(id: Int!): Message!
 }
 
 type Mutation {
@@ -60,6 +103,9 @@ type Mutation {
   createConversation(createConversationInput: CreateConversationInput!): Conversation!
   updateConversation(updateConversationInput: UpdateConversationInput!): Conversation!
   removeConversation(id: Int!): Conversation!
+  createMessage(createMessageInput: CreateMessageInput!): Message!
+  updateMessage(updateMessageInput: UpdateMessageInput!): Message!
+  removeMessage(id: Int!): Message!
 }
 
 input CreatePostInput {
@@ -123,6 +169,17 @@ input CreateConversationInput {
 }
 
 input UpdateConversationInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateMessageInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateMessageInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

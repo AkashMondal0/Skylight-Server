@@ -19,27 +19,27 @@ interface User {
     // refreshToken?: string,
     // loggedDevice?: string[],
 }
-interface Follower {
+interface Follow {
     id: string;
     followerUserId: string;
     followingUserId: string;
     followerUsername: string;
     followingUsername: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface Conversation {
     id: string;
     members: string[];
     isGroup: boolean;
-    groupName: string | null;
-    groupImage: string | null;
-    groupDescription: string | null;
+    groupName?: string | null;
+    groupImage?: string | null;
+    groupDescription?: string | null;
     authorId: string;
     lastMessageContent: string
-    createdAt: Date;
-    updatedAt: Date | string;
+    createdAt?: Date;
+    updatedAt?: Date | string;
 }
 interface Message {
     id: string;
@@ -69,16 +69,16 @@ interface Comment {
     comment: string;
     authorId: string;
     postId: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface Like {
     id: string;
     authorId: string;
     postId: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export {
@@ -89,5 +89,5 @@ export {
     Post,
     Comment,
     Like,
-    Follower,
+    Follow,
 }
