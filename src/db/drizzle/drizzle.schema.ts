@@ -59,7 +59,7 @@ export const followers = pgTable('followers', {
 
 export const posts = pgTable('posts', {
     id: uuid('id').primaryKey().defaultRandom(),
-    caption: varchar('caption').notNull(),
+    caption: varchar('caption').notNull().default(''),
     fileUrl: varchar('file_url').array(),
     authorId: uuid('author_id').notNull().references(() => users.id),
     createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),

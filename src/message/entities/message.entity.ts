@@ -1,22 +1,31 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 @ObjectType()
-export class Comment {
+export class Message {
   @Field(() => ID)
   id: string;
 
   @Field()
-  comment: string;
+  content: string;
+
+  @Field(() => [String])
+  fileUrl: string[];
 
   @Field(() => ID)
   authorId: string;
 
+  @Field()
+  deleted: boolean;
+
+  @Field(() => [String])
+  seenBy: string[];
+
   @Field(() => ID)
-  postId: string;
+  conversationId: string;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  createdAt?: Date | string;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date;
+  updatedAt?: Date | string;
 }

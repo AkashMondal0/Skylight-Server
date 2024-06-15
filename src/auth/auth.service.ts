@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from './bcrypt/bcrypt.function';
-import { RegisterUserPayload, User } from 'src/types';
+import { RegisterUserPayload } from 'src/validation/ZodSchema';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +15,7 @@ export class AuthService {
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByUsername(username);
 
-    if (!user) {
+    if (!user || !user.password) {
       // throw error user not found
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
@@ -30,10 +30,10 @@ export class AuthService {
     return user;
   }
 
-  async signIn(username: string, pass: string): Promise<{ access_token: string }> {
-    const user = await this.usersService.findOneByUsername(username);
+  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.usersService.findOneByUsername(email);
 
-    if (!user) {
+    if (!user || !user.password) {
       // throw error user not found
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
@@ -60,7 +60,7 @@ export class AuthService {
     };
   }
 
-  async signUp(body: User): Promise<{ access_token: string }> {
+  async signUp(body: RegisterUserPayload): Promise<{ access_token: string }> {
 
     if (!body.username || !body.password || !body.email || !body.name) {
       // throw error user not found
@@ -76,12 +76,18 @@ export class AuthService {
 
     const newUser = await this.usersService.createUser(body);
 
+
+    if (!newUser) {
+      // throw error user not found
+      throw new HttpException('Failed to create user', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     // await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
       access_token: await this.jwtService.signAsync({
         username: newUser.username,
-        sub: newUser.id,
+        id: newUser.id,
         email: newUser.email,
         name: newUser.name,
         profilePicture: newUser.profilePicture ?? '',

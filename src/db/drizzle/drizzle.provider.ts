@@ -11,9 +11,10 @@ export class DrizzleProvider implements OnModuleInit {
     async onModuleInit() {
         const client = new Pool({
             connectionString: configuration().PG_URL,
+            connectionTimeoutMillis: 5000, // Adjust the connection timeout (in milliseconds)
+            idleTimeoutMillis: 30000, // Adjust the idle timeout (in milliseconds)
         });
         await client.connect();
         this.db = drizzle(client, { schema });
-        // migrate(this.db, { migrationsFolder: './src/db/migrations' }); // Uncomment if you need to run migrations
     }
 }

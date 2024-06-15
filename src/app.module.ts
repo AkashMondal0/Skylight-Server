@@ -16,6 +16,7 @@ import { LikeModule } from './like/like.module';
 import { ExploreModule } from './explore/explore.module';
 import { FollowModule } from './follow/follow.module';
 import { ConversationModule } from './conversation/conversation.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ConversationModule } from './conversation/conversation.module';
     ExploreModule,
     FollowModule,
     ConversationModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
