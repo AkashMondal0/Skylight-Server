@@ -56,12 +56,11 @@ interface Message {
 
 interface Post {
     id: string
-    caption: string
-    fileUrl: string[]
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    authorId?: string
-    postId?: string
+    caption: string | null
+    fileUrl: string[] | null
+    createdAt: Date | unknown | string | null
+    updatedAt?: Date | unknown | string | null
+    authorId: string
 }
 
 

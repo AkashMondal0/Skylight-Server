@@ -9,7 +9,6 @@ type Post {
   createdAt: DateTime
   updatedAt: DateTime
   authorId: ID!
-  postId: ID!
 }
 
 """
@@ -75,7 +74,8 @@ type Message {
 }
 
 type Query {
-  post(id: Int!): Post!
+  posts: [Post!]!
+  post(id: ID!): Post!
   comment(id: Int!): Comment!
   like(id: Int!): Like!
   explore(id: Int!): Explore!

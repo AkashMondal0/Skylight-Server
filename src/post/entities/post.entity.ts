@@ -18,7 +18,4 @@ export class Post {
 
   @Field(() => ID)
   authorId: string;
-
-  @Field(() => ID)
-  postId: string;
 }
