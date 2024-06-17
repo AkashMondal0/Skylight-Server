@@ -78,7 +78,43 @@ export class UsersService {
         roles: users.roles
       })
         .from(users)
-        .where(eq(users.email, email))
+        .where(
+          or(
+            eq(users.email, email),
+            eq(users.username, email)
+          )
+        )
+        .limit(1)
+
+      if (!user[0]) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      return null;
+    }
+  }
+
+  async findOneByUsernameAndEmail(email: string, username: string): Promise<User | null> {
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        email: users.email,
+        profilePicture: users.profilePicture,
+        password: users.password,
+        bio: users.bio,
+        createdAt: users.createdAt,
+        accessToken: users.accessToken,
+        roles: users.roles
+      })
+        .from(users)
+        .where(or(
+          eq(users.email, email),
+          eq(users.username, username)
+        ))
         .limit(1)
 
       if (!user[0]) {
@@ -128,6 +164,7 @@ export class UsersService {
   //     return false
   //   }
   // }
+
 
   
   async findManyByUsernameAndEmail(keywords: string): Promise<User[] | []> {

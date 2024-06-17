@@ -1,21 +1,23 @@
-import { Post,Comment, Like } from ".";
+import { CommentType, LikeType, PostType } from "."
+
 interface AuthorData {
     id: string
     username: string
     email: string
     name: string
-    profilePicture?: string
+    profilePicture?: string | null
     isFollowing?: boolean,
 }
-interface PostResponse extends Post {
+interface PostResponse extends PostType {
     commentCount: number,
     likeCount: number,
-    comments: Comment[]
-    likes?: AuthorData[]
+    comments?: CommentType[] | [],
+    likes?: LikeType[] | []
     alreadyLiked: boolean | unknown,
-    user: AuthorData
+    user: AuthorData | null
 }
 
 export {
-    PostResponse
+    PostResponse,
+    AuthorData
 }

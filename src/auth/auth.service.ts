@@ -3,6 +3,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from './bcrypt/bcrypt.function';
 import { RegisterUserPayload } from 'src/validation/ZodSchema';
+import { User } from 'src/types';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,7 @@ export class AuthService {
     return user;
   }
 
-  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+  async signIn(email: string, pass: string): Promise<User | HttpException> {
     const user = await this.usersService.findOneByUsername(email);
 
     if (!user || !user.password) {
@@ -48,7 +49,8 @@ export class AuthService {
     // await this.redisProvider.redisClient.set(user.id, JSON.stringify(user), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
-      access_token: await this.jwtService.signAsync({
+      ...user,
+      accessToken: await this.jwtService.signAsync({
         username: user.username,
         id: user.id,
         email: user.email,
@@ -60,18 +62,13 @@ export class AuthService {
     };
   }
 
-  async signUp(body: RegisterUserPayload): Promise<{ access_token: string }> {
+  async signUp(body: RegisterUserPayload): Promise<User | HttpException> {
 
-    if (!body.username || !body.password || !body.email || !body.name) {
-      // throw error user not found
-      throw new HttpException('Missing Credential', HttpStatus.BAD_REQUEST);
-    }
-
-    const user = await this.usersService.findOneByUsername(body.username);
+    const user = await this.usersService.findOneByUsernameAndEmail(body.email, body.username);
 
     if (user) {
       // throw error user not found
-      throw new HttpException('User Already', HttpStatus.BAD_REQUEST);
+      throw new HttpException('User Already Registered', HttpStatus.BAD_REQUEST);
     }
 
     const newUser = await this.usersService.createUser(body);
@@ -85,7 +82,8 @@ export class AuthService {
     // await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
 
     return {
-      access_token: await this.jwtService.signAsync({
+      ...newUser,
+      accessToken: await this.jwtService.signAsync({
         username: newUser.username,
         id: newUser.id,
         email: newUser.email,
@@ -94,6 +92,11 @@ export class AuthService {
         createdAt: newUser.createdAt,
         roles: newUser.roles,
       }, { expiresIn: '30d' }),
-    };
+    }
+  }
+
+  async signOut(body: RegisterUserPayload): Promise<string | HttpException> {
+    // await this.redisProvider.redisClient.del(body.id);
+    return 'Sign Out';
   }
 }

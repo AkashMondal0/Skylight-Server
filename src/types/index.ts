@@ -2,7 +2,7 @@ enum Role {
     User = 'user',
     Admin = 'admin',
 }
-interface User {
+type User = {
     id: string;
     username: string;
     name: string;
@@ -20,7 +20,7 @@ interface User {
     roles?: Role[] | string[];
 }
 
-interface Follow {
+type Follow = {
     id: string;
     followerUserId: string;
     followingUserId: string;
@@ -30,7 +30,7 @@ interface Follow {
     updatedAt?: Date;
 }
 
-interface Conversation {
+type Conversation = {
     id: string;
     members: string[];
     isGroup: boolean;
@@ -42,7 +42,7 @@ interface Conversation {
     createdAt?: Date;
     updatedAt?: Date | string;
 }
-interface Message {
+type Message = {
     id: string;
     content: string;
     fileUrl: string[];
@@ -54,17 +54,17 @@ interface Message {
     updatedAt: Date;
 }
 
-interface Post {
-    id: string
+type PostType = {
+    id: string | null
     caption: string | null
     fileUrl: string[] | null
     createdAt: Date | unknown | string | null
     updatedAt?: Date | unknown | string | null
-    authorId: string
+    authorId?: string
 }
 
 
-interface Comment {
+type CommentType = {
     id: string;
     comment: string;
     authorId: string;
@@ -73,12 +73,13 @@ interface Comment {
     updatedAt?: Date;
 }
 
-interface Like {
+type LikeType = {
     id: string;
     authorId: string;
     postId: string;
     createdAt?: Date;
     updatedAt?: Date;
+    user: User[]
 }
 
 export {
@@ -86,8 +87,8 @@ export {
     Role,
     Message,
     Conversation,
-    Post,
-    Comment,
-    Like,
-    Follow,
+    PostType,
+    CommentType,
+    LikeType,
+    Follow  
 }
