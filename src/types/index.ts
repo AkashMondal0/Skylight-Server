@@ -20,14 +20,14 @@ type User = {
     roles?: Role[] | string[];
 }
 
-type Follow = {
+type Friendship = {
     id: string;
     followerUserId: string;
     followingUserId: string;
     followerUsername: string;
     followingUsername: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt: Date | string | unknown;
+    updatedAt: Date | string | unknown;
 }
 
 type Conversation = {
@@ -90,5 +90,5 @@ export {
     PostType,
     CommentType,
     LikeType,
-    Follow  
+    Friendship  
 }

@@ -4,9 +4,9 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisProvider implements OnModuleInit {
-    redisClient: Redis;
+    // redisClient: Redis;
 
     async onModuleInit() {
-        this.redisClient = new Redis(configuration().REDIS_URL);
+        // this.redisClient = new Redis(configuration().REDIS_URL);
     }
 }

@@ -46,22 +46,7 @@ type Post {
   user: Users
 }
 
-type Like {
-  id: ID!
-  authorId: ID!
-  postId: ID!
-  createdAt: DateTime
-  updatedAt: DateTime
-  alreadyLiked: Boolean
-  user: Users
-}
-
-type Explore {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-type Follow {
+type Friendship {
   id: ID!
   followerUserId: ID!
   followingUserId: ID!
@@ -71,126 +56,25 @@ type Follow {
   updatedAt: DateTime
 }
 
-type Conversation {
-  id: ID!
-  members: [String!]!
-  isGroup: Boolean!
-  groupName: String
-  groupImage: String
-  groupDescription: String
-  authorId: ID!
-  lastMessageContent: String!
-  createdAt: DateTime
-  updatedAt: DateTime
-}
-
-type Message {
-  id: ID!
-  content: String!
-  fileUrl: [String!]!
-  authorId: ID!
-  deleted: Boolean!
-  seenBy: [String!]!
-  conversationId: ID!
-  createdAt: DateTime
-  updatedAt: DateTime
-}
-
 type Query {
   posts: [Post!]!
   post(id: ID!): Post!
   profileFeed(limit: Int!, offset: Int!): [Post!]!
-  comment(id: Int!): Comment!
-  like(id: Int!): Like!
-  explore(id: Int!): Explore!
-  follow(id: Int!): Follow!
-  conversation(id: Int!): Conversation!
-  message(id: Int!): Message!
 }
 
 type Mutation {
-  createComment(createCommentInput: CreateCommentInput!): Comment!
-  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
-  removeComment(id: Int!): Comment!
-  createLike(createLikeInput: CreateLikeInput!): Like!
-  updateLike(updateLikeInput: UpdateLikeInput!): Like!
-  removeLike(id: Int!): Like!
-  createExplore(createExploreInput: CreateExploreInput!): Explore!
-  updateExplore(updateExploreInput: UpdateExploreInput!): Explore!
-  removeExplore(id: Int!): Explore!
-  createFollow(createFollowInput: CreateFollowInput!): Follow!
-  updateFollow(updateFollowInput: UpdateFollowInput!): Follow!
-  removeFollow(id: Int!): Follow!
-  createConversation(createConversationInput: CreateConversationInput!): Conversation!
-  updateConversation(updateConversationInput: UpdateConversationInput!): Conversation!
-  removeConversation(id: Int!): Conversation!
-  createMessage(createMessageInput: CreateMessageInput!): Message!
-  updateMessage(updateMessageInput: UpdateMessageInput!): Message!
-  removeMessage(id: Int!): Message!
+  createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
+  destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }
 
-input CreateCommentInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+input CreateFriendshipInput {
+  followerUserId: String!
+  followingUserId: String!
+  followerUsername: String!
+  followingUsername: String!
 }
 
-input UpdateCommentInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateLikeInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateLikeInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateExploreInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateExploreInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateFollowInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateFollowInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateConversationInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateConversationInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateMessageInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateMessageInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+input DestroyFriendship {
+  followerUserId: String!
+  followingUserId: String!
 }

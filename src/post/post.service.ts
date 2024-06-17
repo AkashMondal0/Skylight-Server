@@ -1,7 +1,7 @@
 import { FastifyReply } from 'fastify';
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { comments, followers, likes, posts, users } from 'src/db/drizzle/drizzle.schema';
+import { comments, friendship, likes, posts, users } from 'src/db/drizzle/drizzle.schema';
 import { count, eq, desc, exists, and, countDistinct } from "drizzle-orm";
 import { PostResponse } from 'src/types/response.type';
 import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
@@ -10,9 +10,7 @@ import { GraphQLError } from 'graphql';
 
 @Injectable()
 export class PostService {
-  constructor(
-    private readonly drizzleProvider: DrizzleProvider
-  ) { }
+  constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
   async create(body: CreatePostPayload): Promise<PostType | HttpException> {
     try {
@@ -36,10 +34,18 @@ export class PostService {
   async findAll(): Promise<PostType[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select().from(posts)
-      return data
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError('Internal Server Error')
+      if (error instanceof GraphQLError) {
+        throw error;
+      } else {
+        throw new GraphQLError('Internal Server Error', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR'}
+        });
+      }
     }
   }
 
@@ -103,12 +109,12 @@ export class PostService {
           name: users.name,
         },
       })
-        .from(followers)
-        .where(eq(followers.followerUserId, userId)) // <-- This is the user ID
+        .from(friendship)
+        .where(eq(friendship.followerUserId, userId)) // <-- This is the user ID
         .limit(limit)
         .offset(offset)
         .orderBy(desc(posts.createdAt))
-        .leftJoin(posts, eq(followers.followingUserId, posts.authorId))
+        .leftJoin(posts, eq(friendship.followingUserId, posts.authorId))
         .leftJoin(comments, eq(posts.id, comments.postId))
         .leftJoin(likes, eq(posts.id, likes.postId))
         .leftJoin(users, eq(posts.authorId, users.id))

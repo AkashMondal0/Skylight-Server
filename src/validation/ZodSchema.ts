@@ -96,5 +96,3 @@ export const DeleteLikeSchema = z.object({
 
 export type CreateLikePayload = z.infer<typeof CreateLikeSchema>;
 export type DeleteLikePayload = z.infer<typeof DeleteLikeSchema>;
-
-// follow

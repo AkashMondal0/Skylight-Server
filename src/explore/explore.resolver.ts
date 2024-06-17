@@ -8,28 +8,28 @@ import { UpdateExploreInput } from './dto/update-explore.input';
 export class ExploreResolver {
   constructor(private readonly exploreService: ExploreService) {}
 
-  @Mutation(() => Explore)
-  createExplore(@Args('createExploreInput') createExploreInput: CreateExploreInput) {
-    return this.exploreService.create(createExploreInput);
-  }
+  // @Mutation(() => Explore)
+  // createExplore(@Args('createExploreInput') createExploreInput: CreateExploreInput) {
+  //   return this.exploreService.create(createExploreInput);
+  // }
 
-  @Query(() => [Explore], { name: 'explore' })
-  findAll() {
-    return this.exploreService.findAll();
-  }
+  // @Query(() => [Explore], { name: 'explore' })
+  // findAll() {
+  //   return this.exploreService.findAll();
+  // }
 
-  @Query(() => Explore, { name: 'explore' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.exploreService.findOne(id);
-  }
+  // @Query(() => Explore, { name: 'explore' })
+  // findOne(@Args('id', { type: () => Int }) id: number) {
+  //   return this.exploreService.findOne(id);
+  // }
 
-  @Mutation(() => Explore)
-  updateExplore(@Args('updateExploreInput') updateExploreInput: UpdateExploreInput) {
-    return this.exploreService.update(updateExploreInput.id, updateExploreInput);
-  }
+  // @Mutation(() => Explore)
+  // updateExplore(@Args('updateExploreInput') updateExploreInput: UpdateExploreInput) {
+  //   return this.exploreService.update(updateExploreInput.id, updateExploreInput);
+  // }
 
-  @Mutation(() => Explore)
-  removeExplore(@Args('id', { type: () => Int }) id: number) {
-    return this.exploreService.remove(id);
-  }
+  // @Mutation(() => Explore)
+  // removeExplore(@Args('id', { type: () => Int }) id: number) {
+  //   return this.exploreService.remove(id);
+  // }
 }

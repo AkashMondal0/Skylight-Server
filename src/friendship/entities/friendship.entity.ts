@@ -1,7 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 @ObjectType()
-export class Follow {
+export class Friendship {
   @Field(() => ID)
   id: string;
 
@@ -23,4 +23,3 @@ export class Follow {
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
 }
-
