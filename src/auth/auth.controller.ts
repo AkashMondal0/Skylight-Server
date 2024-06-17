@@ -6,7 +6,7 @@ import { RolesGuard } from './guard/roles.guard';
 import { ZodValidationPipe } from 'src/validation/Validation';
 import { LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
 import { MyAuthGuard } from './guard/My-jwt-auth.guard';
-import { SessionUser } from 'src/decorator/session.decorator';
+import { RestApiSessionUser } from 'src/decorator/session.decorator';
 
 @Controller({
   path: 'auth',
@@ -40,7 +40,7 @@ export class AuthController {
   @Version('1')
   @Get('session')
   @UseGuards(MyAuthGuard)
-  getProfile(@SessionUser() User: User) {
+  getProfile(@RestApiSessionUser() User: User) {
     return User;
   }
 }

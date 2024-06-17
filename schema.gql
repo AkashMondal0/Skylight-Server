@@ -2,13 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Post {
+type Users {
   id: ID!
-  caption: String!
-  fileUrl: [String!]!
+  username: String!
+  email: String!
+  name: String!
+  profilePicture: String
+  password: String
+  bio: String
   createdAt: DateTime
   updatedAt: DateTime
-  authorId: ID!
+  roles: [String!]
+  isVerified: Boolean
+  isPrivate: Boolean
 }
 
 """
@@ -25,12 +31,29 @@ type Comment {
   updatedAt: DateTime
 }
 
+type Post {
+  id: ID!
+  caption: String!
+  fileUrl: [String!]!
+  createdAt: DateTime
+  updatedAt: DateTime
+  authorId: ID!
+  commentCount: Float
+  likeCount: Float
+  alreadyLiked: Boolean
+  comments: [Comment!]
+  likes: [Users!]
+  user: Users
+}
+
 type Like {
   id: ID!
   authorId: ID!
   postId: ID!
   createdAt: DateTime
   updatedAt: DateTime
+  alreadyLiked: Boolean
+  user: Users
 }
 
 type Explore {
@@ -76,6 +99,7 @@ type Message {
 type Query {
   posts: [Post!]!
   post(id: ID!): Post!
+  profileFeed(limit: Int!, offset: Int!): [Post!]!
   comment(id: Int!): Comment!
   like(id: Int!): Like!
   explore(id: Int!): Explore!

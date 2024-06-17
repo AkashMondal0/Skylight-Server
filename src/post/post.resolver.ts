@@ -3,8 +3,8 @@ import { PostService } from './post.service';
 import { Post } from './entities/post.entity';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
-import { CurrentUser } from 'src/auth/graphql/CurrentUser';
 import { User } from 'src/types';
+import { GraphQSessionUser } from 'src/decorator/session.decorator';
 
 @Resolver(() => Post)
 export class PostResolver {
@@ -28,7 +28,7 @@ export class PostResolver {
   @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'profileFeed' })
   profileFeed(
-    @CurrentUser() session: User,
+    @GraphQSessionUser() session: User,
     @Args('limit', { type: () => Int }) limit: number,
     @Args('offset', { type: () => Int }) offset: number
   ) {
