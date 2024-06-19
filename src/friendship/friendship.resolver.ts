@@ -5,6 +5,8 @@ import { CreateFriendshipInput } from './dto/create-friendship.input';
 import { DestroyFriendship } from './dto/delete-friendship.input';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { User } from 'src/types';
 
 @Resolver(() => Friendship)
 export class FriendshipResolver {
@@ -16,10 +18,10 @@ export class FriendshipResolver {
     return this.friendshipService.create(createFriendshipInput);
   }
 
-  // @Query(() => [Friendship], { name: 'friendship' })
-  // findAll() {
-  //   return this.friendshipService.findAll();
-  // }
+  @Query(() => [Friendship], { name: 'feedTimelineConnection' })
+  feedTimelineConnection(@SessionUserGraphQl() user: User) {
+    return this.friendshipService.feedTimelineConnection(user.id);
+  }
 
   // @Query(() => Friendship, { name: 'friendship' })
   // findOne(@Args('id', { type: () => Int }) id: number) {
@@ -32,8 +34,8 @@ export class FriendshipResolver {
   // }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => Friendship,{ name: 'destroyFriendship' })
+  @Mutation(() => Friendship, { name: 'destroyFriendship' })
   destroyFriendship(@Args('destroyFriendship') destroyFriendship: DestroyFriendship) {
-    return this.friendshipService.deleteFriendship(destroyFriendship);
+    // return this.friendshipService.deleteFriendship(destroyFriendship);
   }
 }

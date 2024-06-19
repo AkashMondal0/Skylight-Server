@@ -48,9 +48,7 @@ type Post {
 
 type Friendship {
   id: ID!
-  followerUserId: ID!
-  followingUserId: ID!
-  followerUsername: String!
+  authorUsername: String!
   followingUsername: String!
   createdAt: DateTime
   updatedAt: DateTime
@@ -60,6 +58,7 @@ type Query {
   posts: [Post!]!
   post(id: ID!): Post!
   profileFeed(limit: Int!, offset: Int!): [Post!]!
+  feedTimelineConnection: [Friendship!]!
 }
 
 type Mutation {
@@ -68,13 +67,11 @@ type Mutation {
 }
 
 input CreateFriendshipInput {
-  followerUserId: String!
-  followingUserId: String!
-  followerUsername: String!
   followingUsername: String!
+  authorUsername: String!
 }
 
 input DestroyFriendship {
-  followerUserId: String!
-  followingUserId: String!
+  followingUsername: String!
+  authorUsername: String!
 }

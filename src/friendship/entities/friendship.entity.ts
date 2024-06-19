@@ -5,16 +5,10 @@ export class Friendship {
   @Field(() => ID)
   id: string;
 
-  @Field(() => ID)
-  followerUserId: string;
+  @Field(()=>String)
+  authorUsername: string;
 
-  @Field(() => ID)
-  followingUserId: string;
-
-  @Field()
-  followerUsername: string;
-
-  @Field()
+  @Field(()=>String)
   followingUsername: string;
 
   @Field(() => Date, { nullable: true })

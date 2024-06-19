@@ -18,14 +18,13 @@ type User = {
     refreshToken?: string | null | unknown;
     loggedDevice?: any[] | unknown;
     roles?: Role[] | string[];
+    salt?: string;
 }
 
 type Friendship = {
     id: string;
-    followerUserId: string;
-    followingUserId: string;
-    followerUsername: string;
     followingUsername: string;
+    authorUsername: string;
     createdAt: Date | string | unknown;
     updatedAt: Date | string | unknown;
 }

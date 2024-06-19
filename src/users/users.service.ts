@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { eq, like, or } from 'drizzle-orm';
 import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { users } from 'src/db/drizzle/drizzle.schema';
+import { UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
 import { RegisterUserPayload } from 'src/validation/ZodSchema';
 
@@ -14,12 +14,14 @@ export class UsersService {
 
   async createUser(userCredential: RegisterUserPayload): Promise<User | null> {
 
-    const hashPassword = await createHash(userCredential.password)
+    const salt = `${Math.random().toString(36).substring(2, 15)}`
+    const hashPassword = await createHash(userCredential.password + salt)
 
     try {
-      const newUser = await this.drizzleProvider.db.insert(users).values({
+      const newUser = await this.drizzleProvider.db.insert(UserSchema).values({
         username: userCredential.username,
         password: hashPassword,
+        salt: salt,
         name: userCredential.name,
         email: userCredential.email,
       }).returning()
@@ -38,18 +40,18 @@ export class UsersService {
   async findOneUserById(id: string): Promise<User | null> {
     try {
       const user = await this.drizzleProvider.db.select({
-        id: users.id,
-        username: users.username,
-        name: users.name,
-        email: users.email,
-        profilePicture: users.profilePicture,
-        password: users.password,
-        bio: users.bio,
-        createdAt: users.createdAt,
-        accessToken: users.accessToken,
-        roles: users.roles
-      }).from(users)
-        .where(eq(users.id, id))
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        accessToken: UserSchema.accessToken,
+        roles: UserSchema.roles
+      }).from(UserSchema)
+        .where(eq(UserSchema.id, id))
         .limit(1)
 
       if (!user[0]) {
@@ -66,22 +68,23 @@ export class UsersService {
   async findOneByUsername(email: string): Promise<User | null> {
     try {
       const user = await this.drizzleProvider.db.select({
-        id: users.id,
-        username: users.username,
-        name: users.name,
-        email: users.email,
-        profilePicture: users.profilePicture,
-        password: users.password,
-        bio: users.bio,
-        createdAt: users.createdAt,
-        accessToken: users.accessToken,
-        roles: users.roles
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        accessToken: UserSchema.accessToken,
+        salt: UserSchema.salt,
+        roles: UserSchema.roles
       })
-        .from(users)
+        .from(UserSchema)
         .where(
           or(
-            eq(users.email, email),
-            eq(users.username, email)
+            eq(UserSchema.email, email),
+            eq(UserSchema.username, email)
           )
         )
         .limit(1)
@@ -99,21 +102,21 @@ export class UsersService {
   async findOneByUsernameAndEmail(email: string, username: string): Promise<User | null> {
     try {
       const user = await this.drizzleProvider.db.select({
-        id: users.id,
-        username: users.username,
-        name: users.name,
-        email: users.email,
-        profilePicture: users.profilePicture,
-        password: users.password,
-        bio: users.bio,
-        createdAt: users.createdAt,
-        accessToken: users.accessToken,
-        roles: users.roles
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        accessToken: UserSchema.accessToken,
+        roles: UserSchema.roles
       })
-        .from(users)
+        .from(UserSchema)
         .where(or(
-          eq(users.email, email),
-          eq(users.username, username)
+          eq(UserSchema.email, email),
+          eq(UserSchema.username, username)
         ))
         .limit(1)
 
@@ -132,7 +135,7 @@ export class UsersService {
   //   const hashPassword = await createHash(userCredential.password)
 
   //   try {
-  //     const user = await this.drizzleProvider.db.update(users).set({
+  //     const user = await this.drizzleProvider.db.update(UserSchema).set({
   //       username: userCredential.username,
   //       password: hashPassword,
   //       name: userCredential.name,
@@ -141,7 +144,7 @@ export class UsersService {
   //       profilePicture: userCredential.profilePicture,
   //       roles: userCredential.roles
   //     })
-  //       .where(eq(users.username, userCredential.username))
+  //       .where(eq(UserSchema.username, userCredential.username))
   //       .returning()
 
   //     if (!user[0]) {
@@ -156,8 +159,8 @@ export class UsersService {
 
   // async deleteUser(id: string): Promise<boolean> {
   //   try {
-  //     await this.drizzleProvider.db.delete(users)
-  //       .where(eq(users.id, id))
+  //     await this.drizzleProvider.db.delete(UserSchema)
+  //       .where(eq(UserSchema.id, id))
   //     return true
   //   } catch (error) {
   //     Logger.error(error)
@@ -166,22 +169,22 @@ export class UsersService {
   // }
 
 
-  
+
   async findManyByUsernameAndEmail(keywords: string): Promise<User[] | []> {
     try {
       const data = await this.drizzleProvider.db.select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        name: users.name,
-        profilePicture: users.profilePicture,
-        bio: users.bio,
-        isVerified: users.isVerified,
-        isPrivate: users.isPrivate,
-      }).from(users).where(
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        name: UserSchema.name,
+        profilePicture: UserSchema.profilePicture,
+        bio: UserSchema.bio,
+        isVerified: UserSchema.isVerified,
+        isPrivate: UserSchema.isPrivate,
+      }).from(UserSchema).where(
         or(
-          like(users.username, `%${keywords}%`),
-          like(users.name, `%${keywords}%`)
+          like(UserSchema.username, `%${keywords}%`),
+          like(UserSchema.name, `%${keywords}%`)
         )
       ).limit(20)
 

@@ -4,7 +4,6 @@ import { Post } from './entities/post.entity';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { User } from 'src/types';
-import { GraphQSessionUser } from 'src/decorator/session.decorator';
 
 @Resolver(() => Post)
 export class PostResolver {
@@ -22,17 +21,17 @@ export class PostResolver {
 
   @Query(() => Post, { name: 'post' })
   findOne(@Args('id', { type: () => ID }) id: string) {
-    return this.postService.findOne(id);
+    // return this.postService.findOne(id);
   }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'profileFeed' })
   profileFeed(
-    @GraphQSessionUser() session: User,
+    // @GraphQSessionUser() session: User,
     @Args('limit', { type: () => Int }) limit: number,
     @Args('offset', { type: () => Int }) offset: number
   ) {
-    return this.postService.postTimelineConnection(session.id, limit, offset);
+    // return this.postService.postTimelineConnection(session.id, limit, offset);
   }
 
   // @Mutation(() => Post)
