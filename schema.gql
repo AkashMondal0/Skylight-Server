@@ -49,7 +49,9 @@ type Post {
 type Friendship {
   id: ID!
   authorUsername: String!
+  authorUserId: String!
   followingUsername: String!
+  followingUserId: String!
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -67,8 +69,10 @@ type Mutation {
 }
 
 input CreateFriendshipInput {
-  followingUsername: String!
   authorUsername: String!
+  authorUserId: String!
+  followingUsername: String!
+  followingUserId: String!
 }
 
 input DestroyFriendship {

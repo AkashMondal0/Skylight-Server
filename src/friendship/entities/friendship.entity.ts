@@ -9,7 +9,13 @@ export class Friendship {
   authorUsername: string;
 
   @Field(()=>String)
+  authorUserId: string;
+
+  @Field(()=>String)
   followingUsername: string;
+
+  @Field(()=>String)
+  followingUserId: string;
 
   @Field(() => Date, { nullable: true })
   createdAt?: Date;

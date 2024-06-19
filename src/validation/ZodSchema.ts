@@ -35,16 +35,22 @@ export type RegisterUserPayload = z.infer<typeof RegisterUserSchema>;
 // post 
 
 export const CreatePostSchema = z.object({
-    caption: z.string({ required_error: "Caption is required" }).min(1, { message: "Caption must be at least 3 characters long" }).max(100, { message: "Caption must be at most 100 characters long" }).optional(),
+    content: z.string({ required_error: "content is required" }).min(1, { message: "content must be at least 3 characters long" }).max(100, { message: "content must be at most 100 characters long" }),
+    title: z.string({ required_error: "Title is required" }).min(1, { message: "Title must be at least 3 characters long" }).max(100, { message: "Title must be at most 100 characters long" }).optional(),
     fileUrl: z.array(z.string().url({ message: "Invalid URL" })).nonempty({ message: "File URL must not be empty" }),
-    authorId: z.string({ required_error: "Author ID is required" }).uuid({ message: "Invalid UUID" })
+    authorId: z.string({ required_error: "Author ID is required" }).uuid({ message: "Invalid UUID" }),
+    status: z.enum(['draft', 'published', 'archived'], { message: "Invalid status" }),
+    tags: z.array(z.string()).optional()
 })
 
 export const UpdatePostSchema = z.object({
-    caption: z.string({ required_error: "Caption is required" }).min(1, { message: "Caption must be at least 3 characters long" }).max(100, { message: "Caption must be at most 100 characters long" }),
+    content: z.string({ required_error: "content is required" }).min(1, { message: "content must be at least 3 characters long" }).max(100, { message: "Caption must be at most 100 characters long" }),
+    title: z.string({ required_error: "Title is required" }).min(1, { message: "Title must be at least 3 characters long" }).max(100, { message: "Title must be at most 100 characters long" }).optional(),
     fileUrl: z.array(z.string().url({ message: "Invalid URL" })).nonempty({ message: "File URL must not be empty" }),
     authorId: z.string({ required_error: "Author ID is required" }).uuid({ message: "Invalid UUID" }),
-    id: z.string({ required_error: "Post ID is required" }).uuid({ message: "Invalid UUID" })
+    id: z.string({ required_error: "Post ID is required" }).uuid({ message: "Invalid UUID" }),
+    status: z.enum(['draft', 'published', 'archived'], { message: "Invalid status" }),
+    tags: z.array(z.string()).optional()
 })
 
 export const DeletePostSchema = z.object({

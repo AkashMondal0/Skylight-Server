@@ -39,7 +39,7 @@ export class AuthService {
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
 
-    const isPasswordMatching = await comparePassword(pass, user.password + user.salt);
+    const isPasswordMatching = await comparePassword(pass, user.password);
 
     if (!isPasswordMatching) {
       // throw error wrong credentials

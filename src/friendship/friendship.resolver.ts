@@ -18,24 +18,15 @@ export class FriendshipResolver {
     return this.friendshipService.create(createFriendshipInput);
   }
 
+  @UseGuards(GqlAuthGuard)
   @Query(() => [Friendship], { name: 'feedTimelineConnection' })
   feedTimelineConnection(@SessionUserGraphQl() user: User) {
-    return this.friendshipService.feedTimelineConnection(user.id);
+    // return this.friendshipService.feedTimelineConnection(user.id);
   }
-
-  // @Query(() => Friendship, { name: 'friendship' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.friendshipService.findOne(id);
-  // }
-
-  // @Mutation(() => Friendship)
-  // updateFriendship(@Args('updateFriendshipInput') updateFriendshipInput: UpdateFriendshipInput) {
-  //   return this.friendshipService.update(updateFriendshipInput.id, updateFriendshipInput);
-  // }
 
   @UseGuards(GqlAuthGuard)
   @Mutation(() => Friendship, { name: 'destroyFriendship' })
   destroyFriendship(@Args('destroyFriendship') destroyFriendship: DestroyFriendship) {
-    // return this.friendshipService.deleteFriendship(destroyFriendship);
+    return this.friendshipService.deleteFriendship(destroyFriendship);
   }
 }

@@ -10,8 +10,8 @@ export const UserSchema = pgTable('users', {
     username: varchar('username').notNull().unique(),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
-    password: varchar('password', { length: 255 }).notNull(),
-    profilePicture: varchar('profile_picture', { length: 255 }),
+    password: varchar('password').notNull(),
+    profilePicture: varchar('profile_picture'),
     bio: text('bio'),
     roles: roleEnum('roles').array().notNull().default(sql`ARRAY['user']::role[]`),
     createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -20,7 +20,6 @@ export const UserSchema = pgTable('users', {
     isVerified: boolean('is_verified').notNull().default(false),
     isPrivate: boolean('is_private').notNull().default(false),
     accessToken: varchar('access_token'),
-    loggedDevice: varchar('logged_device').array(),
     // refreshToken: varchar('refresh_token'),
     // salt: varchar('salt').notNull()
 }, (users) => ({
@@ -30,10 +29,30 @@ export const UserSchema = pgTable('users', {
 export const FriendshipSchema = pgTable('friendships', {
     id: uuid('id').defaultRandom().primaryKey(),
     followingUsername: varchar('following_username').notNull().references(() => UserSchema.username, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    followingUserId: uuid('following_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     authorUsername: varchar('author_username').notNull().references(() => UserSchema.username, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    authorUserId: uuid('author_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     status: friendshipStatusEnum('status').notNull().default('pending'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`)
+    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
+    // additional fields
+    isFeedFavorite: boolean('is_feed_favorite').default(false),
+    isCloseFriends: boolean('is_close_friends').default(false),
+    // block
+    blocking: boolean('blocking').default(false),
+    isRestricted: boolean('is_restricted').default(false),
+    // notification
+    notificationPost: boolean('notification_post').default(true),
+    notificationStory: boolean('notification_story').default(true),
+    isNotificationReel: boolean('is_notification_reel').default(true),
+    // mute options
+    isMutingNotification: boolean('is_muting_notification').default(false),
+    isMutingPost: boolean('is_muting_post').default(false),
+    isMutingStory: boolean('is_muting_story').default(false),
+    isMutingReel: boolean('is_muting_reel').default(false),
+    // request inboxes
+    outgoingRequest: boolean('outgoing_request').default(false),
+    incomingRequest: boolean('incoming_request').default(false),
 }, (friendships) => ({
     followingIdx: index('following_idx').on(friendships.followingUsername),
     authorIdIdx: index('author_id_idx').on(friendships.authorUsername),
@@ -46,6 +65,7 @@ export const PostSchema = pgTable('posts', {
     id: uuid('id').defaultRandom().primaryKey(),
     title: varchar('title'),
     content: text('content'),
+    fileUrl: varchar('file_url').array(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     tags: text('tags').array(),
     status: postStatusEnum('status').notNull().default('draft'),

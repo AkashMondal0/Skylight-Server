@@ -7,35 +7,38 @@ import { PostResponse } from 'src/types/response.type';
 import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
 import { PostType, User } from 'src/types';
 import { GraphQLError } from 'graphql';
+import { PostSchema } from 'src/db/drizzle/drizzle.schema';
 
 @Injectable()
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
-  create (){}
   findAll (){}
   findOne (){}
   update (){}
   remove (){}
   postTimelineConnection (){}
   
-  // async create(body: CreatePostPayload): Promise<PostType | HttpException> {
-  //   try {
-  //     const data = await this.drizzleProvider.db.insert(posts).values({
-  //       caption: body.caption,
-  //       fileUrl: body.fileUrl,
-  //       authorId: body.authorId,
-  //     }).returning()
+  async create(body: CreatePostPayload): Promise<PostType | HttpException> {
+    try {
+      const data = await this.drizzleProvider.db.insert(PostSchema).values({
+        content: body.content,
+        fileUrl: body.fileUrl,
+        authorId: body.authorId,
+        status: body.status,
+        tags: body.tags,
+        title: body.title ?? "",
+      }).returning()
 
-  //     if (!data[0]) {
-  //       throw new HttpException('Database Internal Server Error ', 500)
-  //     }
+      if (!data[0]) {
+        throw new HttpException('Database Internal Server Error ', 500)
+      }
 
-  //     return data[0]
-  //   } catch (error) {
-  //     Logger.error(error)
-  //     throw new HttpException('Internal Server Error', 500)
-  //   }
-  // }
+      return data[0]
+    } catch (error) {
+      Logger.error(error)
+      throw new HttpException('Internal Server Error', 500)
+    }
+  }
 
   // async findAll(): Promise<PostType[] | GraphQLError> {
   //   // try {

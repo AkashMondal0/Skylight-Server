@@ -53,13 +53,20 @@ type Message = {
     updatedAt: Date;
 }
 
+enum PostStatus {
+    Draft = 'draft',
+    Published = 'published',
+    Archived = 'archived',
+    // 'draft', 'published', 'archived'
+}
 type PostType = {
     id: string | null
-    caption: string | null
+    content: string | null
     fileUrl: string[] | null
     createdAt: Date | unknown | string | null
     updatedAt?: Date | unknown | string | null
     authorId?: string
+    status?: PostStatus | string
 }
 
 
@@ -89,5 +96,5 @@ export {
     PostType,
     CommentType,
     LikeType,
-    Friendship  
+    Friendship
 }

@@ -13,15 +13,12 @@ export class UsersService {
   ) { }
 
   async createUser(userCredential: RegisterUserPayload): Promise<User | null> {
-
-    const salt = `${Math.random().toString(36).substring(2, 15)}`
-    const hashPassword = await createHash(userCredential.password + salt)
+    const hashPassword = await createHash(userCredential.password)
 
     try {
       const newUser = await this.drizzleProvider.db.insert(UserSchema).values({
         username: userCredential.username,
         password: hashPassword,
-        salt: salt,
         name: userCredential.name,
         email: userCredential.email,
       }).returning()
@@ -77,7 +74,6 @@ export class UsersService {
         bio: UserSchema.bio,
         createdAt: UserSchema.createdAt,
         accessToken: UserSchema.accessToken,
-        salt: UserSchema.salt,
         roles: UserSchema.roles
       })
         .from(UserSchema)
