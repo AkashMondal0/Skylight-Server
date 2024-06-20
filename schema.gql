@@ -22,6 +22,15 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Author {
+  id: String!
+  username: String
+  email: String
+  name: String
+  profilePicture: String
+  followed_by: Boolean
+}
+
 type Comment {
   id: ID!
   comment: String!
@@ -29,21 +38,56 @@ type Comment {
   postId: ID!
   createdAt: DateTime
   updatedAt: DateTime
+  user: Author
 }
 
 type Post {
   id: ID!
-  caption: String!
+  content: String
+  title: String
   fileUrl: [String!]!
   createdAt: DateTime
   updatedAt: DateTime
-  authorId: ID!
+  authorId: ID
   commentCount: Float
   likeCount: Float
-  alreadyLiked: Boolean
+  is_Liked: Boolean
+  user: Author
   comments: [Comment!]
-  likes: [Users!]
-  user: Users
+  likes: [Author!]
+  top_Like: [Author!]
+}
+
+type ProfileFriendship {
+  status: String
+  following: Boolean
+  followed_by: Boolean
+  isFeedFavorite: Boolean
+  isCloseFriends: Boolean
+  blocking: Boolean
+  isRestricted: Boolean
+  notificationPost: Boolean
+  notificationStory: Boolean
+  isNotificationReel: Boolean
+  isMutingNotification: Boolean
+  isMutingPost: Boolean
+  isMutingStory: Boolean
+  isMutingReel: Boolean
+  outgoingRequest: Boolean
+  incomingRequest: Boolean
+}
+
+type ProfileView {
+  id: ID!
+  username: String
+  email: String
+  name: String
+  profilePicture: String
+  postCount: Float
+  followerCount: Float
+  followingCount: Float
+  friendship: ProfileFriendship
+  top_followers: [Author!]
 }
 
 type Friendship {
@@ -57,10 +101,8 @@ type Friendship {
 }
 
 type Query {
-  posts: [Post!]!
-  post(id: ID!): Post!
-  profileFeed(limit: Int!, offset: Int!): [Post!]!
-  feedTimelineConnection: [Friendship!]!
+  profileView(username: String!): ProfileView!
+  feedTimelineConnection: [Post!]!
 }
 
 type Mutation {

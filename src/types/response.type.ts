@@ -1,23 +1,60 @@
-import { CommentType, LikeType, PostType } from "."
+import { CommentType, Friendship, LikeType, PostType } from "."
 
 interface AuthorData {
     id: string
     username: string
     email: string
-    name: string
+    name?: string
     profilePicture?: string | null
-    isFollowing?: boolean,
+    followed_by?: boolean | unknown
 }
 interface PostResponse extends PostType {
     commentCount: number,
     likeCount: number,
     comments?: CommentType[] | [],
     likes?: LikeType[] | []
-    alreadyLiked: boolean | unknown,
+    is_Liked: boolean | unknown,
     user: AuthorData | null
+}
+
+interface FriendshipType extends Friendship {
+    following: boolean;
+    followed_by: boolean;
+    status?: string;
+    isFeedFavorite?: boolean;
+    isCloseFriends?: boolean;
+    blocking?: boolean;
+    isRestricted?: boolean;
+    notificationPost?: boolean;
+    notificationStory?: boolean;
+    isNotificationReel?: boolean;
+    isMutingNotification?: boolean;
+    isMutingPost?: boolean;
+    isMutingStory?: boolean;
+    isMutingReel?: boolean;
+    outgoingRequest?: boolean;
+    incomingRequest?: boolean;
+}
+
+interface ProfileView extends AuthorData {
+    isVerified: boolean
+    isPrivate: boolean
+    posts?: PostResponse[] | []
+    followers?: AuthorData[] | []
+    following?: AuthorData[] | []
+    postCount: number
+    followerCount: number
+    followingCount: number
+    friendship: {
+        followed_by: number | boolean | unknown,
+        following: number | boolean | unknown,
+    }
+    top_followers?: AuthorData[] | unknown[]
 }
 
 export {
     PostResponse,
-    AuthorData
+    AuthorData,
+    FriendshipType,
+    ProfileView
 }

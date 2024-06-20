@@ -10,13 +10,4 @@ import { FriendshipService } from './friendship.service';
 })
 export class FriendshipController {
     constructor(private readonly friendshipService: FriendshipService) { }
-
-
-    @Get()
-    @Version('1')
-    @HttpCode(HttpStatus.OK)
-    @UseGuards(MyAuthGuard)
-    async feedTimelineConnection(@Req() req: FastifyRequest) {
-        return this.friendshipService.feedTimelineConnection(req.user);
-    }
 }

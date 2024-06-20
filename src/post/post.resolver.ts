@@ -4,43 +4,20 @@ import { Post } from './entities/post.entity';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { User } from 'src/types';
+import { UsersService } from 'src/users/users.service';
+import { ProfileView } from 'src/users/entities/profile.entity';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 
 @Resolver(() => Post)
 export class PostResolver {
-  constructor(private readonly postService: PostService) { }
-
-  // @Mutation(() => Post)
-  // createPost(@Args('createPostInput') createPostInput: CreatePostInput) {
-  //   return this.postService.create(createPostInput);
-  // }
-  @UseGuards(GqlAuthGuard)
-  @Query(() => [Post], { name: 'posts' })
-  findAll() {
-    return this.postService.findAll();
-  }
-
-  @Query(() => Post, { name: 'post' })
-  findOne(@Args('id', { type: () => ID }) id: string) {
-    // return this.postService.findOne(id);
-  }
+  constructor(
+    private readonly postService: PostService,
+    private readonly usersService: UsersService
+  ) { }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => [Post], { name: 'profileFeed' })
-  profileFeed(
-    // @GraphQSessionUser() session: User,
-    @Args('limit', { type: () => Int }) limit: number,
-    @Args('offset', { type: () => Int }) offset: number
-  ) {
-    // return this.postService.postTimelineConnection(session.id, limit, offset);
+  @Query(() => ProfileView, { name: 'profileView' })
+  findProfile(@SessionUserGraphQl() user: User, @Args('username', { type: () => String }) username: string) {
+    return this.usersService.findProfile(user, username);
   }
-
-  // @Mutation(() => Post)
-  // updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
-  //   return this.postService.update(updatePostInput.id, updatePostInput);
-  // }
-
-  // @Mutation(() => Post)
-  // removePost(@Args('id', { type: () => Int }) id: number) {
-  //   return this.postService.remove(id);
-  // }
 }

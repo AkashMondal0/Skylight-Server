@@ -6,13 +6,14 @@ import { DestroyFriendship } from './dto/delete-friendship.input';
 import { and, eq, desc, count, countDistinct, exists } from 'drizzle-orm';
 import { Friendship, User } from 'src/types';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { PostResponse } from 'src/types/response.type';
 
 @Injectable()
 export class FriendshipService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
 
-  async create(createFollowInput: CreateFriendshipInput): Promise<Friendship> {
+  async create(createFollowInput: CreateFriendshipInput): Promise<Friendship|GraphQLError> {
     try {
       const check = await this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
         eq(FriendshipSchema.followingUserId, createFollowInput.followingUserId),
@@ -49,12 +50,26 @@ export class FriendshipService {
     }
   }
 
-  async feedTimelineConnection(loggedUser: User): Promise<any> {
+  async deleteFriendship(destroyFriendship: DestroyFriendship): Promise<Friendship|GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.delete(FriendshipSchema).where(and(
+        eq(FriendshipSchema.followingUsername, destroyFriendship.followingUsername),
+        eq(FriendshipSchema.authorUsername, destroyFriendship.authorUsername),
+      )).returning()
+
+      return data[0];
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Error destroy friendship')
+    }
+  }
+
+  async feedTimelineConnection(loggedUser: User): Promise<PostResponse[]> {
     try {
       if (!loggedUser.id) {
         throw new GraphQLError('User not found', {
           extensions: {
-            code: "USER_NOT_FOUND",
+            code: "UNAUTHORIZED_USER",
             http: { status: 401 },
           }
         })
@@ -66,7 +81,8 @@ export class FriendshipService {
         commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
         likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
         createdAt: PostSchema.createdAt,
-        isLiked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+        updatedAt: PostSchema.updatedAt,
+        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
           eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
           eq(LikeSchema.postId, PostSchema.id)
         ))),
@@ -80,12 +96,6 @@ export class FriendshipService {
             eq(FriendshipSchema.followingUserId, loggedUser.id),
             eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
           ))),
-          // "is_restricted": false,
-          // "blocking": false,
-          // "is_bestie": false,
-          // "is_feed_favorite": false,
-          // "muting": false,
-          // "is_muting_reel": false
         },
       })
         .from(FriendshipSchema)
@@ -97,10 +107,8 @@ export class FriendshipService {
         .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
-        .groupBy(
-          PostSchema.id,
-          UserSchema.id,
-        )
+        .groupBy(PostSchema.id, UserSchema.id)
+
       return data;
     } catch (error) {
       Logger.error(error)
@@ -109,17 +117,4 @@ export class FriendshipService {
     }
   }
 
-  async deleteFriendship(destroyFriendship: DestroyFriendship): Promise<Friendship> {
-    try {
-      const data = await this.drizzleProvider.db.delete(FriendshipSchema).where(and(
-        eq(FriendshipSchema.followingUsername, destroyFriendship.followingUsername),
-        eq(FriendshipSchema.authorUsername, destroyFriendship.authorUsername),
-      )).returning()
-
-      return data[0];
-    } catch (error) {
-      Logger.error(error)
-      throw new GraphQLError('Error destroy friendship')
-    }
-  }
 }

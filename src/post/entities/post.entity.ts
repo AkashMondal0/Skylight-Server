@@ -2,13 +2,18 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Users } from 'src/users/entities/users.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { User ,LikeType, CommentType} from 'src/types';
+import { Author } from 'src/users/entities/author.entity';
+import { AuthorData } from 'src/types/response.type';
 @ObjectType()
 export class Post {
   @Field(() => ID)
   id: string;
 
-  @Field()
-  caption: string;
+  @Field(() => String , { nullable: true })
+  content: string;
+
+  @Field(() => String , { nullable: true })
+  title: string;
 
   @Field(() => [String])
   fileUrl: string[];
@@ -19,8 +24,8 @@ export class Post {
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
 
-  @Field(() => ID)
-  authorId: string;
+  @Field(() => ID, { nullable: true })
+  authorId?: string;
 
   @Field(() => Number, { nullable: true })
   commentCount: number;
@@ -29,14 +34,17 @@ export class Post {
   likeCount: number;
 
   @Field(() => Boolean, { nullable: true })
-  alreadyLiked: boolean | unknown;
+  is_Liked: boolean | unknown;
 
+  @Field(() => Author, { nullable: true })
+  user: AuthorData;
+  
   @Field(() => [Comment], { nullable: true })
-  comments: CommentType[];
+  comments?: CommentType[];
 
-  @Field(() => [Users], { nullable: true })
-  likes: LikeType[];
-
-  @Field(() => Users, { nullable: true })
-  user: User;
+  @Field(() => [Author], { nullable: true })
+  likes?: AuthorData[];
+  
+  @Field(() => [Author], { nullable: true })
+  top_Like: AuthorData[];
 }

@@ -1,4 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { AuthorData } from 'src/types/response.type';
+import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Comment {
@@ -19,4 +21,7 @@ export class Comment {
 
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
+
+  @Field(() => Author , { nullable: true })
+  user: AuthorData;
 }

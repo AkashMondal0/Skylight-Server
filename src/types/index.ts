@@ -21,12 +21,23 @@ type User = {
     salt?: string;
 }
 
+enum FriendshipStatus {
+    // 'pending', 'accepted', 'rejected', 'blocked', 'deleted'
+    Pending = 'pending',
+    Accepted = 'accepted',
+    Rejected = 'rejected',
+    Blocked = 'blocked',
+    Deleted = 'deleted',
+}
 type Friendship = {
-    id: string;
-    followingUsername: string;
-    authorUsername: string;
-    createdAt: Date | string | unknown;
-    updatedAt: Date | string | unknown;
+    id?: string;
+    followingUsername?: string;
+    authorUsername?: string;
+    followingUserId?: string;
+    authorUserId?: string;
+    createdAt?: Date | string | unknown;
+    updatedAt?: Date | string | unknown;
+    status?: FriendshipStatus|string;
 }
 
 type Conversation = {
