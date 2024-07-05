@@ -1,4 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from 'src/types';
+import { Users } from 'src/users/entities/users.entity';
 
 @ObjectType()
 export class Like {
@@ -16,4 +18,10 @@ export class Like {
 
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
+
+  @Field(() => Boolean, { nullable: true })
+  alreadyLiked: boolean | unknown;
+
+  @Field(() => Users, { nullable: true })
+  user: User[]
 }

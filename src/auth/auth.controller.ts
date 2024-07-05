@@ -1,11 +1,12 @@
 import { Body, Controller, Post, Request, UseGuards, Get, Version, UsePipes, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UsersService } from 'src/users/users.service';
 import { Role, User } from 'src/types';
 import { Roles } from './SetMetadata';
 import { RolesGuard } from './guard/roles.guard';
 import { ZodValidationPipe } from 'src/validation/Validation';
-import {  LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
+import { LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
+import { MyAuthGuard } from './guard/My-jwt-auth.guard';
+import { RestApiSessionUser } from 'src/decorator/session.decorator';
 
 @Controller({
   path: 'auth',
@@ -13,9 +14,7 @@ import {  LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSc
 })
 
 export class AuthController {
-  constructor(private authService: AuthService,
-    private usersService: UsersService
-  ) { }
+  constructor(private authService: AuthService) { }
 
   @Version('1')
   @Post('login')
@@ -31,11 +30,17 @@ export class AuthController {
     return this.authService.signUp(body);
   }
 
+  // @Version('1')
+  // @Post('logout')
+  // @UsePipes(new ZodValidationPipe(RegisterUserSchema))
+  // async signOut(@Body() body: RegisterUserPayload) {
+  //   return this.authService.signOut(body);
+  // }
+
   @Version('1')
-  @Get('profile')
-  @Roles(Role.User)
-  @UseGuards(RolesGuard)
-  getProfile(@Request() req: any) {
-    return req.user;
+  @Get('session')
+  @UseGuards(MyAuthGuard)
+  getProfile(@RestApiSessionUser() User: User) {
+    return User;
   }
 }

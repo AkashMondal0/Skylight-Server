@@ -30,8 +30,8 @@ export class Users {
   @Field(() => Date, { nullable: true })
   updatedAt?: Date;
 
-  @Field(() => [Role], { nullable: true })
-  roles?: Role[];
+  @Field(() => [String], { nullable: true })
+  roles?: string[];
 
   @Field({ nullable: true })
   isVerified?: boolean;

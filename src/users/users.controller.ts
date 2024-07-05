@@ -15,8 +15,8 @@ export class UsersController {
     // }
 
     // @Get()
-    // findAll(@Req() req: FastifyRequest, @Res() res: FastifyReply) {
-    //     res.status(HttpStatus.OK).send('This action returns all cats');
+    // findAll(@) {
+    //     return this.usersService.findProfile(username);
     // }
 
     // @Get(':id')

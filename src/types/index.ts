@@ -2,7 +2,7 @@ enum Role {
     User = 'user',
     Admin = 'admin',
 }
-interface User {
+type User = {
     id: string;
     username: string;
     name: string;
@@ -18,19 +18,29 @@ interface User {
     refreshToken?: string | null | unknown;
     loggedDevice?: any[] | unknown;
     roles?: Role[] | string[];
+    salt?: string;
 }
 
-interface Follow {
-    id: string;
-    followerUserId: string;
-    followingUserId: string;
-    followerUsername: string;
-    followingUsername: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+enum FriendshipStatus {
+    // 'pending', 'accepted', 'rejected', 'blocked', 'deleted'
+    Pending = 'pending',
+    Accepted = 'accepted',
+    Rejected = 'rejected',
+    Blocked = 'blocked',
+    Deleted = 'deleted',
+}
+type Friendship = {
+    id?: string;
+    followingUsername?: string;
+    authorUsername?: string;
+    followingUserId?: string;
+    authorUserId?: string;
+    createdAt?: Date | string | unknown;
+    updatedAt?: Date | string | unknown;
+    status?: FriendshipStatus|string;
 }
 
-interface Conversation {
+type Conversation = {
     id: string;
     members: string[];
     isGroup: boolean;
@@ -42,7 +52,7 @@ interface Conversation {
     createdAt?: Date;
     updatedAt?: Date | string;
 }
-interface Message {
+type Message = {
     id: string;
     content: string;
     fileUrl: string[];
@@ -54,17 +64,24 @@ interface Message {
     updatedAt: Date;
 }
 
-interface Post {
-    id: string
-    caption: string | null
+enum PostStatus {
+    Draft = 'draft',
+    Published = 'published',
+    Archived = 'archived',
+    // 'draft', 'published', 'archived'
+}
+type PostType = {
+    id: string | null
+    content: string | null
     fileUrl: string[] | null
     createdAt: Date | unknown | string | null
     updatedAt?: Date | unknown | string | null
-    authorId: string
+    authorId?: string
+    status?: PostStatus | string
 }
 
 
-interface Comment {
+type CommentType = {
     id: string;
     comment: string;
     authorId: string;
@@ -73,12 +90,13 @@ interface Comment {
     updatedAt?: Date;
 }
 
-interface Like {
+type LikeType = {
     id: string;
     authorId: string;
     postId: string;
     createdAt?: Date;
     updatedAt?: Date;
+    user: User[]
 }
 
 export {
@@ -86,8 +104,8 @@ export {
     Role,
     Message,
     Conversation,
-    Post,
-    Comment,
-    Like,
-    Follow,
+    PostType,
+    CommentType,
+    LikeType,
+    Friendship
 }

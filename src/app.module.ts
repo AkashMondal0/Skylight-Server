@@ -14,9 +14,9 @@ import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
 import { ExploreModule } from './explore/explore.module';
-import { FollowModule } from './follow/follow.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
+import { FriendshipModule } from './friendship/friendship.module';
 
 @Module({
   imports: [
@@ -39,9 +39,9 @@ import { MessageModule } from './message/message.module';
     CommentModule,
     LikeModule,
     ExploreModule,
-    FollowModule,
     ConversationModule,
     MessageModule,
+    FriendshipModule,
   ],
   controllers: [AppController],
   providers: [AppService],
