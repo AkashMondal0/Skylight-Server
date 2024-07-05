@@ -1,23 +1,20 @@
-import { Resolver, Query,Args } from '@nestjs/graphql';
+import { Resolver, Query, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { Users } from './entities/users.entity';
 import { ProfileView } from './entities/profile.entity';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { User } from 'src/types';
 
 @Resolver(() => Users)
 export class UsersResolver {
-  private readonly usersService: UsersService
-  constructor() { }
+  
+  constructor(private readonly usersService: UsersService) { }
 
-  // @Query(() => [Users], { name: 'users' })
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
-
-  // @UseGuards(GqlAuthGuard)
-  // @Query(() => ProfileView, { name: 'profileView' })
-  // findProfile(@Args('username', { type: () => String }) username: string) {
-  //   return this.usersService.findProfile(username);
-  // }
+  @UseGuards(GqlAuthGuard)
+  @Query(() => ProfileView, { name: 'profileView' })
+  findProfile(@SessionUserGraphQl() user: User, @Args('username', { type: () => String }) username: string) {
+    return this.usersService.findProfile(user, username);
+  }
 }

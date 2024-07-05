@@ -31,33 +31,6 @@ type Author {
   followed_by: Boolean
 }
 
-type Comment {
-  id: ID!
-  comment: String!
-  authorId: ID!
-  postId: ID!
-  createdAt: DateTime
-  updatedAt: DateTime
-  user: Author
-}
-
-type Post {
-  id: ID!
-  content: String
-  title: String
-  fileUrl: [String!]!
-  createdAt: DateTime
-  updatedAt: DateTime
-  authorId: ID
-  commentCount: Float
-  likeCount: Float
-  is_Liked: Boolean
-  user: Author
-  comments: [Comment!]
-  likes: [Author!]
-  top_Like: [Author!]
-}
-
 type ProfileFriendship {
   status: String
   following: Boolean
@@ -88,6 +61,33 @@ type ProfileView {
   followingCount: Float
   friendship: ProfileFriendship
   top_followers: [Author!]
+}
+
+type Comment {
+  id: ID!
+  comment: String!
+  authorId: ID!
+  postId: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  user: Author
+}
+
+type Post {
+  id: ID!
+  content: String
+  title: String
+  fileUrl: [String!]!
+  createdAt: DateTime
+  updatedAt: DateTime
+  authorId: ID
+  commentCount: Float
+  likeCount: Float
+  is_Liked: Boolean
+  user: Author
+  comments: [Comment!]
+  likes: [Author!]
+  top_Like: [Author!]
 }
 
 type Friendship {
