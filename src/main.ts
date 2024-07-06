@@ -6,24 +6,27 @@ import {
 import { AppModule } from './app.module';
 import { Logger, VersioningType } from '@nestjs/common';
 import configuration from './configs/configuration';
+import fastifyCookie from '@fastify/cookie';
 const envs = configuration()
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({
-      // logger: true,
-    })
+    new FastifyAdapter({})
   )
   // Don't forget to enable CORS
   app.enableCors({
-    credentials: true,
+    // credentials: true,
     origin: '*',
   })
 
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: ['1']
+  });
+
+  await app.register(fastifyCookie, {
+    secret: envs.JWT_SECRET, // for cookies signature
   });
 
 

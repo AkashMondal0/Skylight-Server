@@ -102,6 +102,7 @@ type Friendship {
 
 type Query {
   profileView(username: String!): ProfileView!
+  MyProfile: ProfileView!
   feedTimelineConnection: [Post!]!
 }
 

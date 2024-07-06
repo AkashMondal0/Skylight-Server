@@ -2,7 +2,6 @@ import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
 import { PostService } from './post.service';
 import { Post } from './entities/post.entity';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { User } from 'src/types';
 import { UsersService } from 'src/users/users.service';
 import { ProfileView } from 'src/users/entities/profile.entity';
