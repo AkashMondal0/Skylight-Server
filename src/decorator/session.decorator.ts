@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+
 export const RestApiSessionUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
@@ -14,3 +15,8 @@ export const SessionUserGraphQl = createParamDecorator(
     return ctx.getContext().req.user;
   },
 );
+
+export const Cookies = createParamDecorator((data: string, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest();
+  return data ? request.cookies?.[data] : request.cookies;
+});

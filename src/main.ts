@@ -16,8 +16,9 @@ async function bootstrap() {
   )
   // Don't forget to enable CORS
   app.enableCors({
-    // credentials: true,
     origin: '*',
+    credentials: true,
+    exposedHeaders: ["set-cookie"],
   })
 
   app.enableVersioning({
