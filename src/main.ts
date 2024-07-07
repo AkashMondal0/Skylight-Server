@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { Logger, VersioningType } from '@nestjs/common';
 import configuration from './configs/configuration';
 import fastifyCookie from '@fastify/cookie';
+import cors from '@fastify/cors'
 const envs = configuration()
 
 async function bootstrap() {
@@ -14,17 +15,17 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({})
   )
-  // Don't forget to enable CORS
-  app.enableCors({
-    origin: '*',
-    credentials: true,
-    exposedHeaders: ["set-cookie"],
-  })
 
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: ['1']
   });
+
+  await app.register(cors, {
+    origin: true,
+    credentials: true,
+    exposedHeaders: ["set-cookie"],
+  })
 
   await app.register(fastifyCookie, {
     secret: envs.JWT_SECRET, // for cookies signature
@@ -42,7 +43,7 @@ async function bootstrap() {
     }
 
     if (err) {
-      Logger.log("start",err)
+      Logger.log("start", err)
       return
     }
     Logger.log(`Server running at ${appUri}`)

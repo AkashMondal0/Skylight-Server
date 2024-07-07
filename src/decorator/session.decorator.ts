@@ -11,7 +11,6 @@ export const RestApiSessionUser = createParamDecorator(
 export const SessionUserGraphQl = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const ctx = GqlExecutionContext.create(context);
-    console.log(ctx.getContext().req);
     return ctx.getContext().req.user;
   },
 );

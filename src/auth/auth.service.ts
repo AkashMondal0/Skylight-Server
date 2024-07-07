@@ -15,7 +15,7 @@ export class AuthService {
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
-    try {
+  
       const user = await this.usersService.findOneByUsername(username);
 
       if (!user || !user.password) {
@@ -31,13 +31,9 @@ export class AuthService {
       }
 
       return user;
-    } catch (error) {
-      throw new HttpException("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 
   async signIn(response: FastifyReply, email: string, pass: string): Promise<User | HttpException> {
-    try {
       const user = await this.usersService.findOneByUsername(email);
 
       if (!user || !user.password) {
@@ -75,13 +71,9 @@ export class AuthService {
         ...user,
         accessToken: accessToken,
       };
-    } catch (error) {
-      throw new HttpException("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 
   async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<User | HttpException> {
-    try {
 
       const user = await this.usersService.findOneByUsernameAndEmail(body.email, body.username);
 
@@ -122,18 +114,10 @@ export class AuthService {
         ...newUser,
         accessToken
       }
-    } catch (error) {
-      throw new HttpException("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 
   async signOut(request: FastifyRequest, response: FastifyReply): Promise<string | HttpException> {
-    try {
-      // await this.redisProvider.redisClient.del(request.user.id);
       response.clearCookie('auth-session-token');
       return 'Logged Out Successfully';
-    } catch (error) {
-      throw new HttpException("Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 }

@@ -25,11 +25,11 @@ export class FriendshipResolver {
     return this.friendshipService.deleteFriendship(destroyFriendship);
   }
 
-  // @UseGuards(GqlAuthGuard)
-  @Query(() => [Post], { name: 'feedTimelineConnection' })
-  feedTimelineConnection(@SessionUserGraphQl() user: User) {
-    return this.friendshipService.feedTimelineConnection(user);
-  }
+  // // @UseGuards(GqlAuthGuard)
+  // @Query(() => [Post], { name: 'feedTimelineConnection' })
+  // feedTimelineConnection(@SessionUserGraphQl() user: User) {
+  //   return this.friendshipService.feedTimelineConnection(user);
+  // }
 
   
 }
