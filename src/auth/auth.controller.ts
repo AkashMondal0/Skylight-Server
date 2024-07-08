@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Body, Controller, Post, Request, UseGuards, Get, Version, UsePipes, Req, } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards, Get, Version, UsePipes, Req, Res, } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role, User } from 'src/types';
 import { Roles } from './SetMetadata';
@@ -19,22 +19,22 @@ export class AuthController {
   @Version('1')
   @Post('login')
   @UsePipes(new ZodValidationPipe(LoginUserSchema))
-  async signIn(@Body() body: LoginUserPayload) {
-    return this.authService.signIn(body.email, body.password);
+  async signIn(@Body() body: LoginUserPayload, @Res({ passthrough: true }) response: FastifyReply) {
+    return this.authService.signIn(response, body.email, body.password);
   }
 
   @Version('1')
   @Post('register')
   @UsePipes(new ZodValidationPipe(RegisterUserSchema))
-  async signUp(@Body() body: RegisterUserPayload) {
-    return this.authService.signUp(body);
+  async signUp(@Body() body: RegisterUserPayload, @Res({ passthrough: true }) response: FastifyReply) {
+    return this.authService.signUp(response, body);
   }
 
   @Version('1')
   @Post('logout')
-  @UsePipes(new ZodValidationPipe(RegisterUserSchema))
-  async signOut(@Body() body: RegisterUserPayload) {
-    return this.authService.signOut(body);
+  @UseGuards(MyAuthGuard)
+  async signOut(@Req() request: FastifyRequest,@Res({ passthrough: true }) response: FastifyReply) {
+    return this.authService.signOut(request, response);
   }
 
   @Version('1')

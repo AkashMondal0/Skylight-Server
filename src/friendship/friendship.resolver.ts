@@ -3,11 +3,7 @@ import { FriendshipService } from './friendship.service';
 import { Friendship } from './entities/friendship.entity';
 import { CreateFriendshipInput } from './dto/create-friendship.input';
 import { DestroyFriendship } from './dto/delete-friendship.input';
-// import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
-import { UseGuards } from '@nestjs/common';
-import { SessionUserGraphQl } from 'src/decorator/session.decorator';
-import { User } from 'src/types';
-import { Post } from 'src/post/entities/post.entity';
+
 
 @Resolver(() => Friendship)
 export class FriendshipResolver {
@@ -16,7 +12,7 @@ export class FriendshipResolver {
   // @UseGuards(GqlAuthGuard)
   @Mutation(() => Friendship, { name: 'createFriendship' })
   createFriendship(@Args('createFriendshipInput') createFriendshipInput: CreateFriendshipInput) {
-    return this.friendshipService.create(createFriendshipInput);
+    return this.friendshipService.createFriendship(createFriendshipInput);
   }
 
   // @UseGuards(GqlAuthGuard)
@@ -25,11 +21,4 @@ export class FriendshipResolver {
     return this.friendshipService.deleteFriendship(destroyFriendship);
   }
 
-  // @UseGuards(GqlAuthGuard)
-  @Query(() => [Post], { name: 'feedTimelineConnection' })
-  feedTimelineConnection(@SessionUserGraphQl() user: User) {
-    return this.friendshipService.feedTimelineConnection(user);
-  }
-
-  
 }
