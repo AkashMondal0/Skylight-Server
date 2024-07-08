@@ -16,10 +16,4 @@ export class UsersResolver {
   findProfile(@SessionUserGraphQl() user: User, @Args('username', { type: () => String }) username: string) {
     return this.usersService.findProfile(user, username);
   }
-
-  @UseGuards(GqlAuthGuard)
-  @Query(() => ProfileView, { name: 'MyProfile' })
-  MyProfile(@SessionUserGraphQl() user: User) {
-    return user
-  }
 }

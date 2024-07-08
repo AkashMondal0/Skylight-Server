@@ -91,18 +91,11 @@ type Post {
 }
 
 type Friendship {
-  id: ID!
-  authorUsername: String!
-  authorUserId: String!
-  followingUsername: String!
-  followingUserId: String!
-  createdAt: DateTime
-  updatedAt: DateTime
+  friendShip: Boolean!
 }
 
 type Query {
   profileView(username: String!): ProfileView!
-  MyProfile: ProfileView!
   feedTimelineConnection: [Post!]!
 }
 

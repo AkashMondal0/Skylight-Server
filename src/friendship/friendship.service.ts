@@ -13,7 +13,7 @@ export class FriendshipService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
 
-  async create(createFollowInput: CreateFriendshipInput): Promise<Friendship|GraphQLError> {
+  async createFriendship(createFollowInput: CreateFriendshipInput): Promise<{ friendShip: boolean } | GraphQLError> {
     try {
       const check = await this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
         eq(FriendshipSchema.followingUserId, createFollowInput.followingUserId),
@@ -29,14 +29,17 @@ export class FriendshipService {
           }
         })
       }
-      const data = await this.drizzleProvider.db.insert(FriendshipSchema).values({
+
+      await this.drizzleProvider.db.insert(FriendshipSchema).values({
         followingUsername: createFollowInput.followingUsername,
         authorUsername: createFollowInput.authorUsername,
         authorUserId: createFollowInput.authorUserId,
         followingUserId: createFollowInput.followingUserId,
-      }).returning()
+      })
 
-      return data[0];
+      return {
+        friendShip: true,
+      };
 
     } catch (error) {
       Logger.error(error)
@@ -50,14 +53,16 @@ export class FriendshipService {
     }
   }
 
-  async deleteFriendship(destroyFriendship: DestroyFriendship): Promise<Friendship|GraphQLError> {
+  async deleteFriendship(destroyFriendship: DestroyFriendship): Promise<{ friendShip: boolean } | GraphQLError> {
     try {
-      const data = await this.drizzleProvider.db.delete(FriendshipSchema).where(and(
+      await this.drizzleProvider.db.delete(FriendshipSchema).where(and(
         eq(FriendshipSchema.followingUsername, destroyFriendship.followingUsername),
         eq(FriendshipSchema.authorUsername, destroyFriendship.authorUsername),
-      )).returning()
+      ))
 
-      return data[0];
+      return {
+        friendShip: false,
+      }
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Error destroy friendship')
