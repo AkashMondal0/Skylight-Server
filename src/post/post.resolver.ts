@@ -26,7 +26,12 @@ export class PostResolver {
   @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'feedTimelineConnection' })
   feedTimelineConnection(@SessionUserGraphQl() user: User) {
-    // console.log(user)
     return this.friendshipService.feedTimelineConnection(user);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => Post, { name: 'postView' })
+  viewOnePost(@SessionUserGraphQl() user: User,@Args('id', { type: () => String }) id: string) {
+    return this.postService.viewOnePost(user,id);
   }
 }

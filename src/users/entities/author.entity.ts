@@ -21,6 +21,9 @@ export class Author {
 
   @Field(() => Boolean, { nullable: true })
   followed_by?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  following?: boolean;
 }
 
 

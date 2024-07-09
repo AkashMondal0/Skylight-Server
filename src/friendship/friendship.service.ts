@@ -101,6 +101,10 @@ export class FriendshipService {
             eq(FriendshipSchema.followingUserId, loggedUser.id),
             eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
           ))),
+          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, UserSchema.id), // <- replace with user id
+            eq(FriendshipSchema.authorUserId, loggedUser.id)
+          ))),
         },
       })
         .from(FriendshipSchema)

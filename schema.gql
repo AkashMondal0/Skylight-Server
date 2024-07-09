@@ -29,6 +29,7 @@ type Author {
   name: String
   profilePicture: String
   followed_by: Boolean
+  following: Boolean
 }
 
 type ProfileFriendship {
@@ -90,6 +91,10 @@ type Post {
   top_Like: [Author!]
 }
 
+type LikeResponse {
+  like: Boolean!
+}
+
 type Friendship {
   friendShip: Boolean!
 }
@@ -97,9 +102,12 @@ type Friendship {
 type Query {
   profileView(username: String!): ProfileView!
   feedTimelineConnection: [Post!]!
+  postView(id: String!): Post!
 }
 
 type Mutation {
+  createLike(id: String!): LikeResponse!
+  destroyLike(id: String!): LikeResponse!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }
@@ -112,6 +120,8 @@ input CreateFriendshipInput {
 }
 
 input DestroyFriendship {
-  followingUsername: String!
   authorUsername: String!
+  authorUserId: String!
+  followingUsername: String!
+  followingUserId: String!
 }

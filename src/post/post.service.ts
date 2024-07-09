@@ -7,18 +7,18 @@ import { PostResponse } from 'src/types/response.type';
 import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
 import { PostType, User } from 'src/types';
 import { GraphQLError } from 'graphql';
-import { PostSchema } from 'src/db/drizzle/drizzle.schema';
+import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 
 @Injectable()
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
-  findAll (){}
-  findOne (){}
-  update (){}
-  remove (){}
-  postTimelineConnection (){}
-  
-  async create(body: CreatePostPayload): Promise<PostType | HttpException> {
+  findAll() { }
+  findOne() { }
+  update() { }
+  remove() { }
+  postTimelineConnection() { }
+
+  async createPost(body: CreatePostPayload): Promise<PostType | HttpException> {
     try {
       const data = await this.drizzleProvider.db.insert(PostSchema).values({
         content: body.content,
@@ -40,107 +40,48 @@ export class PostService {
     }
   }
 
-  // async findAll(): Promise<PostType[] | GraphQLError> {
-  //   // try {
-  //   //   const data = await this.drizzleProvider.db.select().from(posts)
-  //   //   return data
-  //   // } catch (error) {
-  //   //   Logger.error(error)
-  //   //   if (error instanceof GraphQLError) {
-  //   //     throw error;
-  //   //   } else {
-  //   //     throw new GraphQLError('Internal Server Error', {
-  //   //       extensions: { code: 'INTERNAL_SERVER_ERROR' }
-  //   //     });
-  //   //   }
-  //   // }
-  // }
 
-  // async findOne(id: string): Promise<PostType | GraphQLError> {
-  //   try {
-  //     const data = await this.drizzleProvider.db.select().from(posts)
-  //       .where(eq(posts.id, id)).limit(1)
-  //     return data[0]
-  //   } catch (error) {
-  //     Logger.error(error)
-  //     throw new GraphQLError(error)
-  //   }
-  // }
+  async viewOnePost(loggedUser: User, id: string): Promise<PostType | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
+        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+          eq(LikeSchema.postId, PostSchema.id)
+        ))),
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+          followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, loggedUser.id),
+            eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
+          ))),
+          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, UserSchema.id), // <- replace with user id
+            eq(FriendshipSchema.authorUserId, loggedUser.id)
+          ))),
+        },
+      }).from(PostSchema)
+        .where(eq(PostSchema.id, id)).limit(1)
+        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .groupBy(PostSchema.id, UserSchema.id)
 
-  // async update(body: UpdatePostPayload): Promise<PostType | HttpException> {
-  //   try {
-  //     const data = await this.drizzleProvider.db.update(posts).set({
-  //       caption: body.caption,
-  //       fileUrl: body.fileUrl,
-  //     }).where(eq(posts.id, body.id)).returning()
+      return data[0]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError(error)
+    }
+  }
 
-  //     if (!data[0]) {
-  //       throw new HttpException('Database Internal Server Error ', 500)
-  //     }
-
-  //     return data[0]
-  //   } catch (error) {
-  //     Logger.error(error)
-  //     throw new HttpException('Internal Server Error', 500)
-  //   }
-  // }
-
-  // async remove(id: string): Promise<boolean | HttpException> {
-  //   try {
-  //     await this.drizzleProvider.db.delete(posts).where(eq(posts.id, id));
-  //     return false
-  //   } catch (error) {
-  //     Logger.error(error)
-  //     return true
-  //   }
-  // }
-
-  // async postTimelineConnection(userId: string, limit: number, offset: number): Promise<PostResponse[] | []> {
-  //   try {
-  //     const data = await this.drizzleProvider.db.select({
-  //       id: posts.id,
-  //       caption: posts.caption,
-  //       fileUrl: posts.fileUrl,
-  //       commentCount: count(eq(comments.postId, posts.id)),
-  //       likeCount: countDistinct(eq(likes.postId, posts.id)),
-  //       createdAt: posts.createdAt,
-  //       alreadyLiked: exists(this.drizzleProvider.db.select().from(likes).where(and(
-  //         eq(likes.authorId, userId), // <-- This is the user ID
-  //         eq(likes.postId, posts.id)
-  //       ))),
-  //       user: {
-  //         id: users.id,
-  //         username: users.username,
-  //         email: users.email,
-  //         profilePicture: users.profilePicture,
-  //         name: users.name,
-  //       },
-  //     })
-  //       .from(friendship)
-  //       .where(eq(friendship.followerUserId, userId)) // <-- This is the user ID
-  //       .limit(limit)
-  //       .offset(offset)
-  //       .orderBy(desc(posts.createdAt))
-  //       .leftJoin(posts, eq(friendship.followingUserId, posts.authorId))
-  //       .leftJoin(comments, eq(posts.id, comments.postId))
-  //       .leftJoin(likes, eq(posts.id, likes.postId))
-  //       .leftJoin(users, eq(posts.authorId, users.id))
-  //       .groupBy(posts.id, users.id)
-
-  //     if (data.length <= 0) {
-  //       return []
-  //     }
-
-  //     return data.map((post) => {
-  //       return {
-  //         ...post,
-  //         comments: [],
-  //         likes: [],
-  //       }
-  //     })
-  //   } catch (error) {
-  //     console.log(error)
-  //     return []
-  //   }
-  // }
 }

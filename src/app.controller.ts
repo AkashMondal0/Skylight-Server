@@ -11,7 +11,7 @@ export class AppController {
   @Version('1')
   @Get()
   LandingPage(@Req() request: FastifyRequest, @Res({ passthrough: true }) response: FastifyReply): any {
-    console.log('Request:', request.cookies)
+    // console.log('Request:', request.cookies)
     // response.setCookie('akash', 'cookieValue', {
     //   path: '/',
     //   secure: true,

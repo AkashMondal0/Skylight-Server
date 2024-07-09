@@ -25,3 +25,9 @@ export class Like {
   @Field(() => Users, { nullable: true })
   user: User[]
 }
+
+@ObjectType()
+export class LikeResponse {
+  @Field(() => Boolean)
+  like: boolean;
+}
