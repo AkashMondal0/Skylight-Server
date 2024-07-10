@@ -103,6 +103,14 @@ type Query {
   profileView(username: String!): ProfileView!
   feedTimelineConnection: [Post!]!
   postView(id: String!): Post!
+  viewFollower(viewFollowerInput: getFriendshipInput!): [Author!]!
+  viewFollowing(viewFollowingInput: getFriendshipInput!): [Author!]!
+}
+
+input getFriendshipInput {
+  Username: String!
+  offset: Float!
+  limit: Float!
 }
 
 type Mutation {

@@ -12,8 +12,14 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     // Get the token from the cookies
     const token = request.cookies['auth-session-token'];
 
-    // Add the token to the request headers
-    request.headers.authorization = `Bearer ${token}`;
-    return request;
+    if (token) {
+      // Add the token to the request headers
+      request.headers.authorization = `Bearer ${token}`;
+      return request;
+    }
+
+    if (request.headers.authorization) {
+      return request;
+    }
   }
 }

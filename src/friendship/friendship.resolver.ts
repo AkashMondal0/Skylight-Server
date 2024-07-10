@@ -5,6 +5,10 @@ import { CreateFriendshipInput } from './dto/create-friendship.input';
 import { DestroyFriendship } from './dto/delete-friendship.input';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { Author } from 'src/users/entities/author.entity';
+import { User } from 'src/types';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { getFriendshipInput } from './dto/get-friendship.input';
 
 
 @Resolver(() => Friendship)
@@ -23,4 +27,15 @@ export class FriendshipResolver {
     return this.friendshipService.deleteFriendship(destroyFriendship);
   }
 
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Author], { name: 'viewFollower' })
+  viewFollower(@SessionUserGraphQl() user: User,@Args('viewFollowerInput') viewFollower: getFriendshipInput) {
+    return this.friendshipService.getFollower(user, viewFollower);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Author], { name: 'viewFollowing' })
+  viewFollowing(@SessionUserGraphQl() user: User,@Args('viewFollowingInput') viewFollowing: getFriendshipInput) {
+    return this.friendshipService.getFollowing(user, viewFollowing);
+  }
 }

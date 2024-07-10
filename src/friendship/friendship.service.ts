@@ -6,12 +6,12 @@ import { DestroyFriendship } from './dto/delete-friendship.input';
 import { and, eq, desc, count, countDistinct, exists } from 'drizzle-orm';
 import { Friendship, User } from 'src/types';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { PostResponse } from 'src/types/response.type';
+import { AuthorData, PostResponse } from 'src/types/response.type';
+import { getFriendshipInput } from './dto/get-friendship.input';
 
 @Injectable()
 export class FriendshipService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
-
 
   async createFriendship(createFollowInput: CreateFriendshipInput): Promise<{ friendShip: boolean } | GraphQLError> {
     try {
@@ -126,4 +126,60 @@ export class FriendshipService {
     }
   }
 
+
+  async getFollowing(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+        followed_by: exists(this.drizzleProvider.db.select()
+          .from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.authorUsername, Input.Username),
+            eq(FriendshipSchema.followingUsername, UserSchema.username),
+          ))),
+      })
+        .from(FriendshipSchema)
+        .where(eq(FriendshipSchema.authorUsername, Input.Username),)
+        .leftJoin(UserSchema, eq(FriendshipSchema.followingUsername, UserSchema.username))
+        .orderBy(desc(FriendshipSchema.createdAt))
+        .limit(Input.limit ?? 10)
+        .offset(Input.offset ?? 0)
+
+      return data
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Error get following')
+    }
+  }
+
+  async getFollower(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+     try {
+      const data = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+        followed_by: exists(this.drizzleProvider.db.select()
+          .from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.authorUsername, UserSchema.username),
+            eq(FriendshipSchema.followingUsername, Input.Username),
+          ))),
+      })
+        .from(FriendshipSchema)
+        .where(eq(FriendshipSchema.followingUsername, Input.Username),)
+        .leftJoin(UserSchema, eq(FriendshipSchema.authorUsername, UserSchema.username))
+        .orderBy(desc(FriendshipSchema.createdAt))
+        .limit(Input.limit ?? 10)
+        .offset(Input.offset ?? 0)
+
+      return data
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Error get following')
+    }
+  }
 }

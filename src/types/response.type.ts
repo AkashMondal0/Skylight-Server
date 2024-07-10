@@ -1,12 +1,13 @@
 import { CommentType, Friendship, LikeType, PostType } from "."
 
 interface AuthorData {
-    id: string
-    username: string
-    email: string
-    name?: string
-    profilePicture?: string | null
+    id: string | unknown
+    username: string | unknown
+    email: string | unknown
+    name: string | unknown
+    profilePicture: string | null
     followed_by?: boolean | unknown
+    following?: boolean | unknown
 }
 interface PostResponse extends PostType {
     commentCount: number,

@@ -1,6 +1,4 @@
 import { ObjectType, Field, ID} from '@nestjs/graphql';
-import { Post } from 'src/post/entities/post.entity';
-import { AuthorData, PostResponse } from 'src/types/response.type';
 
 @ObjectType()
 export class Author {
