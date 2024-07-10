@@ -127,7 +127,7 @@ export class FriendshipService {
   }
 
 
-  async getFollowing(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollowing(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -155,7 +155,7 @@ export class FriendshipService {
     }
   }
 
-  async getFollower(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollower(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
      try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,

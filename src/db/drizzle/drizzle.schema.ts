@@ -15,7 +15,7 @@ export const UserSchema = pgTable('users', {
     bio: text('bio'),
     roles: roleEnum('roles').array().notNull().default(sql`ARRAY['user']::role[]`),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
     // additional fields
     isVerified: boolean('is_verified').notNull().default(false),
     isPrivate: boolean('is_private').notNull().default(false),
@@ -24,6 +24,8 @@ export const UserSchema = pgTable('users', {
     // salt: varchar('salt').notNull()
 }, (users) => ({
     emailIdx: index('email_idx').on(users.email),
+    usernameIdx: index('username_idx').on(users.username),
+    emailUsernameIdx: index('email_username_idx').on(users.email, users.username)
 }))
 
 export const FriendshipSchema = pgTable('friendships', {
@@ -34,7 +36,7 @@ export const FriendshipSchema = pgTable('friendships', {
     authorUserId: uuid('author_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     status: friendshipStatusEnum('status').notNull().default('pending'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
     // additional fields
     isFeedFavorite: boolean('is_feed_favorite').default(false),
     isCloseFriends: boolean('is_close_friends').default(false),
@@ -67,11 +69,15 @@ export const PostSchema = pgTable('posts', {
     content: text('content'),
     fileUrl: varchar('file_url').array(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
-    tags: text('tags').array(),
+    // tags: varchar('tags').array().default([]),
     status: postStatusEnum('status').notNull().default('draft'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
-});
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
+}, (posts) => ({
+    authorIdIdx: index('post_author_id_idx').on(posts.authorId),
+    statusIdx: index('post_status_idx').on(posts.status),
+    authorStatusIdx: index('post_author_status_idx').on(posts.authorId, posts.status)
+}))
 
 
 export const CommentSchema = pgTable('comments', {
@@ -80,7 +86,12 @@ export const CommentSchema = pgTable('comments', {
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     postId: uuid('post_id').notNull().references(() => PostSchema.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
+}, (comments) => ({
+    authorIdIdx: index('comment_author_id_idx').on(comments.authorId),
+    postIdIdx: index('comment_post_id_idx').on(comments.postId),
+    authorPostIdx: index('comment_author_post_idx').on(comments.authorId, comments.postId)
+}))
 
 
 export const LikeSchema = pgTable('likes', {
@@ -88,7 +99,11 @@ export const LikeSchema = pgTable('likes', {
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     postId: uuid('post_id').notNull().references(() => PostSchema.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (likes) => ({
+    authorIdIdx: index('like_author_id_idx').on(likes.authorId),
+    postIdIdx: index('like_post_id_idx').on(likes.postId),
+    authorPostIdx: index('like_author_post_idx').on(likes.authorId, likes.postId)
+}))
 
 // chat
 export const MessagesSchema = pgTable('messages', {
@@ -100,7 +115,7 @@ export const MessagesSchema = pgTable('messages', {
     seenBy: varchar('seen_by').array(),
     conversationId: uuid('conversation_id').notNull().references(() => ConversationSchema.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 });
 
 export const ConversationSchema = pgTable('conversations', {
@@ -113,5 +128,5 @@ export const ConversationSchema = pgTable('conversations', {
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     lastMessageContent: varchar('last_message_content'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`).$onUpdate(() => sql`now()`),
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 });

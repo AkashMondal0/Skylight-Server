@@ -25,7 +25,6 @@ export class PostService {
         fileUrl: body.fileUrl,
         authorId: body.authorId,
         status: body.status,
-        tags: body.tags,
         title: body.title ?? "",
       }).returning()
 

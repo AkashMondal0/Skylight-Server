@@ -3,6 +3,7 @@ import { Body, Controller, Delete, HttpCode, HttpException, HttpStatus, Patch, P
 import { PostService } from './post.service';
 import { CreatePostPayload, CreatePostSchema, UpdatePostPayload, UpdatePostSchema } from 'src/validation/ZodSchema';
 import { ZodValidationPipe } from 'src/validation/Validation';
+import { MyAuthGuard } from 'src/auth/guard/My-jwt-auth.guard';
 @Controller({
     path: 'post',
     version: ['1']
@@ -10,14 +11,14 @@ import { ZodValidationPipe } from 'src/validation/Validation';
 export class PostController {
     constructor(private readonly postService: PostService) { }
 
-    // @Post()
-    // @Version('1')
-    // @HttpCode(HttpStatus.CREATED)
-    // @UsePipes(new ZodValidationPipe(CreatePostSchema))
-    // @UseGuards(MyAuthGuard)
-    // async CreatePost(@Body() body: CreatePostPayload) {
-    //     return this.postService.create(body);
-    // }
+    @Post()
+    @Version('1')
+    @HttpCode(HttpStatus.CREATED)
+    @UsePipes(new ZodValidationPipe(CreatePostSchema))
+    @UseGuards(MyAuthGuard)
+    async CreatePost(@Body() body: CreatePostPayload) {
+        return this.postService.createPost(body);
+    }
 
     // @Put()
     // @Version('1')

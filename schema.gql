@@ -91,6 +91,11 @@ type Post {
   top_Like: [Author!]
 }
 
+type GraphQLOperation {
+  status: Boolean!
+  message: String
+}
+
 type LikeResponse {
   like: Boolean!
 }
@@ -103,8 +108,20 @@ type Query {
   profileView(username: String!): ProfileView!
   feedTimelineConnection: [Post!]!
   postView(id: String!): Post!
+  findComments(createCommentInput: FindCommentInput!): [Comment!]!
   viewFollower(viewFollowerInput: getFriendshipInput!): [Author!]!
   viewFollowing(viewFollowingInput: getFriendshipInput!): [Author!]!
+}
+
+input FindCommentInput {
+  """Example field (placeholder)"""
+  postId: String!
+
+  """Example field (placeholder)"""
+  offset: Float!
+
+  """Example field (placeholder)"""
+  limit: Float!
 }
 
 input getFriendshipInput {
@@ -114,10 +131,34 @@ input getFriendshipInput {
 }
 
 type Mutation {
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  updateComment(updateCommentInput: UpdateCommentInput!): GraphQLOperation!
+  destroyComment(id: String!): GraphQLOperation!
   createLike(id: String!): LikeResponse!
   destroyLike(id: String!): LikeResponse!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
+}
+
+input CreateCommentInput {
+  """Example field (placeholder)"""
+  postId: String!
+
+  """Example field (placeholder)"""
+  content: String!
+
+  """Example field (placeholder)"""
+  authorId: String!
+}
+
+input UpdateCommentInput {
+  """Example field (placeholder)"""
+  postId: String
+  content: String!
+
+  """Example field (placeholder)"""
+  authorId: String
+  id: String!
 }
 
 input CreateFriendshipInput {

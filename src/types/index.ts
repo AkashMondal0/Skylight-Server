@@ -82,12 +82,12 @@ type PostType = {
 
 
 type CommentType = {
-    id: string;
-    comment: string;
+    id?: string;
+    content: string;
     authorId: string;
     postId: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: Date | unknown;
+    updatedAt?: Date | unknown;
 }
 
 type LikeType = {

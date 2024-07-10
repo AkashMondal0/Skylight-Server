@@ -53,9 +53,21 @@ interface ProfileView extends AuthorData {
     top_followers?: AuthorData[] | unknown[]
 }
 
+interface CommentResponse extends CommentType {
+    user?: AuthorData | unknown
+}
+
+
+interface GraphQLOperation {
+    status: boolean
+    message?: string
+}
+
 export {
     PostResponse,
     AuthorData,
     FriendshipType,
-    ProfileView
+    ProfileView,
+    CommentResponse,
+    GraphQLOperation
 }
