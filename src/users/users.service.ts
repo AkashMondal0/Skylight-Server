@@ -5,7 +5,7 @@ import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { User } from 'src/types';
-import { ProfileView } from 'src/types/response.type';
+import { AuthorData, ProfileView } from 'src/types/response.type';
 import { RegisterUserPayload } from 'src/validation/ZodSchema';
 
 @Injectable()
@@ -128,7 +128,7 @@ export class UsersService {
     }
   }
 
-  async findManyByUsernameAndEmail(keywords: string): Promise<User[] | []> {
+  async findManyByUsernameAndEmail(keywords: string): Promise<AuthorData[] | []> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -137,12 +137,12 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
-        isVerified: UserSchema.isVerified,
         isPrivate: UserSchema.isPrivate,
       }).from(UserSchema).where(
         or(
           like(UserSchema.username, `%${keywords}%`),
-          like(UserSchema.name, `%${keywords}%`)
+          like(UserSchema.name, `%${keywords}%`),
+          like(UserSchema.email, `%${keywords}%`),
         )
       ).limit(20)
 
@@ -229,5 +229,4 @@ export class UsersService {
       throw new GraphQLError("An error occurred while fetching user profile")
     }
   }
-
 }

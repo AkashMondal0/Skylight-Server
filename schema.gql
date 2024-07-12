@@ -107,6 +107,7 @@ type Friendship {
 
 type Query {
   profileView(username: String!): ProfileView!
+  findUsersByKeyword(keyword: String!): [Author!]!
   findProfilePosts(findPosts: SearchByUsernameInput!): [Post!]!
   feedTimelineConnection: [Post!]!
   postView(id: String!): Post!
