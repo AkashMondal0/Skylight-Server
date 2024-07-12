@@ -37,7 +37,8 @@ export class PostService {
           name: UserSchema.name,
         },
       }).from(PostSchema)
-        .where(eq(PostSchema.username, findPosts.Username))
+        .where(eq(PostSchema.username, findPosts.username))
+        .orderBy(desc(PostSchema.createdAt))
         .limit(Number(findPosts.limit) ?? 12)
         .offset(Number(findPosts.offset) ?? 0)
         .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))

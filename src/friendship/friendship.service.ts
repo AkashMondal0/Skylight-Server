@@ -126,7 +126,6 @@ export class FriendshipService {
     }
   }
 
-
   async findAllFollowing(loggedUser: User, Input: SearchByUsernameInput): Promise<AuthorData[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
@@ -137,18 +136,23 @@ export class FriendshipService {
         name: UserSchema.name,
         followed_by: exists(this.drizzleProvider.db.select()
           .from(FriendshipSchema).where(and(
-            eq(FriendshipSchema.authorUsername, Input.Username),
-            eq(FriendshipSchema.followingUsername, UserSchema.username),
+            eq(FriendshipSchema.authorUsername, UserSchema.username),
+            eq(FriendshipSchema.followingUsername, Input.username),
           ))),
       })
         .from(FriendshipSchema)
-        .where(eq(FriendshipSchema.authorUsername, Input.Username),)
+        .where(eq(FriendshipSchema.authorUsername, Input.username),)
         .leftJoin(UserSchema, eq(FriendshipSchema.followingUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data
+      return data.map((item) => {
+        return {
+          ...item,
+          following: true,
+        }
+      })
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Error get following')
@@ -163,23 +167,28 @@ export class FriendshipService {
         email: UserSchema.email,
         profilePicture: UserSchema.profilePicture,
         name: UserSchema.name,
-        followed_by: exists(this.drizzleProvider.db.select()
+        following: exists(this.drizzleProvider.db.select()
           .from(FriendshipSchema).where(and(
-            eq(FriendshipSchema.authorUsername, UserSchema.username),
-            eq(FriendshipSchema.followingUsername, Input.Username),
+            eq(FriendshipSchema.authorUsername, Input.username),
+            eq(FriendshipSchema.followingUsername, UserSchema.username),
           ))),
       })
         .from(FriendshipSchema)
-        .where(eq(FriendshipSchema.followingUsername, Input.Username),)
+        .where(eq(FriendshipSchema.followingUsername, Input.username))
         .leftJoin(UserSchema, eq(FriendshipSchema.authorUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data
+      return data.map((item) => {
+        return {
+          ...item,
+          followed_by: true,
+        }
+      })
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError('Error get following')
+      throw new GraphQLError('Error get follower')
     }
   }
 }

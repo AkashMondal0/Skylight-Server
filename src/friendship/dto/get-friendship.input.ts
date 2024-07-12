@@ -4,7 +4,7 @@ import { InputType, Int, Field } from '@nestjs/graphql';
 export class SearchByUsernameInput {
 
   @Field(()=>String,)
-  Username: string;
+  username: string;
 
   @Field(()=>Number, {nullable:true})
   offset: number;

@@ -111,12 +111,12 @@ type Query {
   feedTimelineConnection: [Post!]!
   postView(id: String!): Post!
   findComments(createCommentInput: FindCommentInput!): [Comment!]!
-  viewFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
-  viewFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
+  findAllFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
+  findAllFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
 }
 
 input SearchByUsernameInput {
-  Username: String!
+  username: String!
   offset: Float
   limit: Float
 }
