@@ -11,14 +11,14 @@ import { MyAuthGuard } from 'src/auth/guard/My-jwt-auth.guard';
 export class PostController {
     constructor(private readonly postService: PostService) { }
 
-    @Post()
-    @Version('1')
-    @HttpCode(HttpStatus.CREATED)
-    @UsePipes(new ZodValidationPipe(CreatePostSchema))
-    @UseGuards(MyAuthGuard)
-    async CreatePost(@Body() body: CreatePostPayload) {
-        return this.postService.createPost(body);
-    }
+    // @Post('create')
+    // @Version('1')
+    // @HttpCode(HttpStatus.CREATED)
+    // @UsePipes(new ZodValidationPipe(CreatePostSchema))
+    // @UseGuards(MyAuthGuard)
+    // async CreatePost(@Body() body: CreatePostPayload) {
+    //     return this.postService.createPost(body);
+    // }
 
     // @Put()
     // @Version('1')

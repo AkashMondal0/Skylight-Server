@@ -8,6 +8,8 @@ import { ProfileView } from 'src/users/entities/profile.entity';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { FriendshipService } from 'src/friendship/friendship.service';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
+import { CreatePostInput } from './dto/create-post.input';
+import { SearchByUsernameInput } from 'src/friendship/dto/get-friendship.input';
 
 @Resolver(() => Post)
 export class PostResolver {
@@ -17,11 +19,11 @@ export class PostResolver {
     private readonly friendshipService: FriendshipService
   ) { }
 
-  // @UseGuards(GqlAuthGuard)
-  // @Query(() => ProfileView, { name: 'profileView' })
-  // findProfile(@SessionUserGraphQl() user: User, @Args('username', { type: () => String }) username: string) {
-  //   return this.usersService.findProfile(user, username);
-  // }
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Post], { name: 'findProfilePosts' })
+  findProfilePosts(@SessionUserGraphQl() user: User, @Args("findPosts") findPosts: SearchByUsernameInput) {
+    return this.postService.findAllByProfileName(user, findPosts);
+  }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'feedTimelineConnection' })
@@ -33,5 +35,11 @@ export class PostResolver {
   @Query(() => Post, { name: 'postView' })
   viewOnePost(@SessionUserGraphQl() user: User,@Args('id', { type: () => String }) id: string) {
     return this.postService.viewOnePost(user,id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Post, { name: 'createPost' })
+  createPost(@SessionUserGraphQl() user: User,@Args('createPostInput') createPostInput: CreatePostInput) {
+    return this.postService.createPost(user,createPostInput);
   }
 }

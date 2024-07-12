@@ -77,6 +77,7 @@ type PostType = {
     createdAt: Date | unknown | string | null
     updatedAt?: Date | unknown | string | null
     authorId?: string
+    username?: string
     status?: PostStatus | string
 }
 

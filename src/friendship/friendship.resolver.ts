@@ -8,7 +8,7 @@ import { UseGuards } from '@nestjs/common';
 import { Author } from 'src/users/entities/author.entity';
 import { User } from 'src/types';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
-import { getFriendshipInput } from './dto/get-friendship.input';
+import { SearchByUsernameInput } from './dto/get-friendship.input';
 
 
 @Resolver(() => Friendship)
@@ -29,13 +29,13 @@ export class FriendshipResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'viewFollower' })
-  viewFollower(@SessionUserGraphQl() user: User, @Args('viewFollowerInput') viewFollower: getFriendshipInput) {
+  viewFollower(@SessionUserGraphQl() user: User, @Args('viewFollowerInput') viewFollower: SearchByUsernameInput) {
     return this.friendshipService.findAllFollower(user, viewFollower);
   }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'viewFollowing' })
-  viewFollowing(@SessionUserGraphQl() user: User, @Args('viewFollowingInput') viewFollowing: getFriendshipInput) {
+  viewFollowing(@SessionUserGraphQl() user: User, @Args('viewFollowingInput') viewFollowing: SearchByUsernameInput) {
     return this.friendshipService.findAllFollowing(user, viewFollowing);
   }
 }

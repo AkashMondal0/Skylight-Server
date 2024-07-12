@@ -13,7 +13,7 @@ export class Post {
   content: string;
 
   @Field(() => String , { nullable: true })
-  title: string;
+  title?: string;
 
   @Field(() => [String])
   fileUrl: string[];
@@ -26,6 +26,9 @@ export class Post {
 
   @Field(() => ID, { nullable: true })
   authorId?: string;
+
+  @Field(() => ID, { nullable: true })
+  username?: string;
 
   @Field(() => Number, { nullable: true })
   commentCount: number;

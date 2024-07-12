@@ -8,38 +8,50 @@ import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
 import { PostType, User } from 'src/types';
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { CreatePostInput } from './dto/create-post.input';
+import { SearchByUsernameInput } from 'src/friendship/dto/get-friendship.input';
 
 @Injectable()
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
-  findAll() { }
-  findOne() { }
-  update() { }
-  remove() { }
-  postTimelineConnection() { }
-
-  async createPost(body: CreatePostPayload): Promise<PostType | HttpException> {
+ 
+  async findAllByProfileName(loggedUser: User, findPosts: SearchByUsernameInput): Promise<PostType[] | GraphQLError> {
     try {
-      const data = await this.drizzleProvider.db.insert(PostSchema).values({
-        content: body.content,
-        fileUrl: body.fileUrl,
-        authorId: body.authorId,
-        status: body.status,
-        title: body.title ?? "",
-      }).returning()
+      const data = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
+        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+          eq(LikeSchema.postId, PostSchema.id)
+        ))),
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+        },
+      }).from(PostSchema)
+        .where(eq(PostSchema.username, findPosts.Username))
+        .limit(Number(findPosts.limit) ?? 12)
+        .offset(Number(findPosts.offset) ?? 0)
+        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .groupBy(PostSchema.id, UserSchema.id)
 
-      if (!data[0]) {
-        throw new HttpException('Database Internal Server Error ', 500)
-      }
-
-      return data[0]
+      return data
     } catch (error) {
       Logger.error(error)
-      throw new HttpException('Internal Server Error', 500)
+      throw new GraphQLError(error)
     }
   }
-
-
+  
   async viewOnePost(loggedUser: User, id: string): Promise<PostType | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
@@ -75,6 +87,26 @@ export class PostService {
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
         .groupBy(PostSchema.id, UserSchema.id)
+
+      return data[0]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError(error)
+    }
+  }
+
+  async createPost(loggedUser: User, body: CreatePostInput): Promise<PostType | GraphQLError> {
+    try {
+      if (loggedUser.id !== body.authorId) {
+        throw new GraphQLError('You are not authorized to perform this action')
+      }
+      const data = await this.drizzleProvider.db.insert(PostSchema).values({
+        content: body.content,
+        fileUrl: body.fileUrl,
+        authorId: body.authorId,
+        status: body.status,
+        username: loggedUser.username
+      }).returning()
 
       return data[0]
     } catch (error) {

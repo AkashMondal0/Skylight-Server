@@ -7,7 +7,7 @@ import { and, eq, desc, count, countDistinct, exists } from 'drizzle-orm';
 import { Friendship, User } from 'src/types';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { AuthorData, PostResponse } from 'src/types/response.type';
-import { getFriendshipInput } from './dto/get-friendship.input';
+import { SearchByUsernameInput } from './dto/get-friendship.input';
 
 @Injectable()
 export class FriendshipService {
@@ -127,7 +127,7 @@ export class FriendshipService {
   }
 
 
-  async findAllFollowing(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollowing(loggedUser: User, Input: SearchByUsernameInput): Promise<AuthorData[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -145,8 +145,8 @@ export class FriendshipService {
         .where(eq(FriendshipSchema.authorUsername, Input.Username),)
         .leftJoin(UserSchema, eq(FriendshipSchema.followingUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
-        .limit(Input.limit ?? 10)
-        .offset(Input.offset ?? 0)
+        .limit(Number(Input.limit) ?? 12)
+        .offset(Number(Input.offset) ?? 0)
 
       return data
     } catch (error) {
@@ -155,7 +155,7 @@ export class FriendshipService {
     }
   }
 
-  async findAllFollower(loggedUser: User, Input: getFriendshipInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollower(loggedUser: User, Input: SearchByUsernameInput): Promise<AuthorData[] | GraphQLError> {
      try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -173,8 +173,8 @@ export class FriendshipService {
         .where(eq(FriendshipSchema.followingUsername, Input.Username),)
         .leftJoin(UserSchema, eq(FriendshipSchema.authorUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
-        .limit(Input.limit ?? 10)
-        .offset(Input.offset ?? 0)
+        .limit(Number(Input.limit) ?? 12)
+        .offset(Number(Input.offset) ?? 0)
 
       return data
     } catch (error) {

@@ -68,6 +68,7 @@ export const PostSchema = pgTable('posts', {
     title: varchar('title'),
     content: text('content'),
     fileUrl: varchar('file_url').array(),
+    username: varchar('username').notNull().references(() => UserSchema.username, { onDelete: 'cascade' }),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     // tags: varchar('tags').array().default([]),
     status: postStatusEnum('status').notNull().default('draft'),

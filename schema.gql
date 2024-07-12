@@ -82,6 +82,7 @@ type Post {
   createdAt: DateTime
   updatedAt: DateTime
   authorId: ID
+  username: ID
   commentCount: Float
   likeCount: Float
   is_Liked: Boolean
@@ -106,11 +107,18 @@ type Friendship {
 
 type Query {
   profileView(username: String!): ProfileView!
+  findProfilePosts(findPosts: SearchByUsernameInput!): [Post!]!
   feedTimelineConnection: [Post!]!
   postView(id: String!): Post!
   findComments(createCommentInput: FindCommentInput!): [Comment!]!
-  viewFollower(viewFollowerInput: getFriendshipInput!): [Author!]!
-  viewFollowing(viewFollowingInput: getFriendshipInput!): [Author!]!
+  viewFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
+  viewFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
+}
+
+input SearchByUsernameInput {
+  Username: String!
+  offset: Float
+  limit: Float
 }
 
 input FindCommentInput {
@@ -124,13 +132,8 @@ input FindCommentInput {
   limit: Float!
 }
 
-input getFriendshipInput {
-  Username: String!
-  offset: Float!
-  limit: Float!
-}
-
 type Mutation {
+  createPost(createPostInput: CreatePostInput!): Post!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   updateComment(updateCommentInput: UpdateCommentInput!): GraphQLOperation!
   destroyComment(id: String!): GraphQLOperation!
@@ -138,6 +141,14 @@ type Mutation {
   destroyLike(id: String!): LikeResponse!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
+}
+
+input CreatePostInput {
+  content: String!
+  fileUrl: [String!]
+  authorId: String!
+  title: String
+  status: String!
 }
 
 input CreateCommentInput {
