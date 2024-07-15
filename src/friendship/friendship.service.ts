@@ -43,13 +43,9 @@ export class FriendshipService {
 
     } catch (error) {
       Logger.error(error)
-      if (error instanceof GraphQLError) {
-        throw error;
-      } else {
-        throw new GraphQLError('Internal Server Error', {
-          extensions: { code: 'INTERNAL_SERVER_ERROR' }
-        });
-      }
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 
@@ -65,20 +61,14 @@ export class FriendshipService {
       }
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError('Error destroy friendship')
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 
   async feedTimelineConnection(loggedUser: User): Promise<PostResponse[]> {
     try {
-      if (!loggedUser.id) {
-        throw new GraphQLError('User not found', {
-          extensions: {
-            code: "UNAUTHORIZED_USER",
-            http: { status: 401 },
-          }
-        })
-      }
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
         content: PostSchema.content,
@@ -120,8 +110,9 @@ export class FriendshipService {
       return data;
     } catch (error) {
       Logger.error(error)
-      // console.log(error)
-      throw new GraphQLError('Error feed Timeline Connection friendship')
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 
@@ -136,7 +127,12 @@ export class FriendshipService {
         followed_by: exists(this.drizzleProvider.db.select()
           .from(FriendshipSchema).where(and(
             eq(FriendshipSchema.authorUsername, UserSchema.username),
-            eq(FriendshipSchema.followingUsername, Input.username),
+            eq(FriendshipSchema.followingUsername, loggedUser.username),
+          ))),
+        following: exists(this.drizzleProvider.db.select()
+          .from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.authorUsername, loggedUser.username),
+            eq(FriendshipSchema.followingUsername, UserSchema.username),
           ))),
       })
         .from(FriendshipSchema)
@@ -146,15 +142,12 @@ export class FriendshipService {
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data.map((item) => {
-        return {
-          ...item,
-          following: true,
-        }
-      })
+      return data
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError('Error get following')
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 
@@ -168,8 +161,13 @@ export class FriendshipService {
         name: UserSchema.name,
         following: exists(this.drizzleProvider.db.select()
           .from(FriendshipSchema).where(and(
-            eq(FriendshipSchema.authorUsername, Input.username),
+            eq(FriendshipSchema.authorUsername, loggedUser.username),
             eq(FriendshipSchema.followingUsername, UserSchema.username),
+          ))),
+        followed_by: exists(this.drizzleProvider.db.select()
+          .from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.authorUsername, UserSchema.username),
+            eq(FriendshipSchema.followingUsername, loggedUser.username),
           ))),
       })
         .from(FriendshipSchema)
@@ -179,15 +177,12 @@ export class FriendshipService {
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data.map((item) => {
-        return {
-          ...item,
-          followed_by: true,
-        }
-      })
+      return data
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError('Error get follower')
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 }

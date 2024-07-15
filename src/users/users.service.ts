@@ -226,7 +226,9 @@ export class UsersService {
       }
     } catch (error) {
       Logger.error(error)
-      throw new GraphQLError("An error occurred while fetching user profile")
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
     }
   }
 }
