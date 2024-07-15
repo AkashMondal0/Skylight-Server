@@ -112,12 +112,11 @@ export class FriendshipService {
         .limit(12)
         .offset(0)
         .orderBy(desc(PostSchema.createdAt))
-        .leftJoin(PostSchema, eq(FriendshipSchema.followingUserId, PostSchema.authorId))
+        .innerJoin(PostSchema, eq(FriendshipSchema.followingUserId, PostSchema.authorId))
         .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
-        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
-        .groupBy(PostSchema.id, UserSchema.id)
-
+        .innerJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .groupBy(PostSchema.id, UserSchema.id) 
       return data;
     } catch (error) {
       Logger.error(error)
