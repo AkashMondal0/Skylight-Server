@@ -1,3 +1,5 @@
+import { AuthorData } from "./response.type";
+
 enum Role {
     User = 'user',
     Admin = 'admin',
@@ -97,7 +99,7 @@ type LikeType = {
     postId: string;
     createdAt?: Date;
     updatedAt?: Date;
-    user: User[]
+    user: AuthorData[]
 }
 
 export {

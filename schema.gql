@@ -66,7 +66,7 @@ type ProfileView {
 
 type Comment {
   id: ID!
-  comment: String!
+  content: String!
   authorId: ID!
   postId: ID!
   createdAt: DateTime
@@ -110,8 +110,9 @@ type Query {
   findUsersByKeyword(keyword: String!): [Author!]!
   findProfilePosts(findPosts: SearchByUsernameInput!): [Post!]!
   feedTimelineConnection: [Post!]!
-  postView(id: String!): Post!
+  findOnePostWithComment(id: String!): Post!
   findComments(createCommentInput: FindCommentInput!): [Comment!]!
+  findAllLikes(findAllLikesInput: SearchById!): [Author!]!
   findAllFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
   findAllFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
 }
@@ -131,6 +132,12 @@ input FindCommentInput {
 
   """Example field (placeholder)"""
   limit: Float!
+}
+
+input SearchById {
+  id: String!
+  offset: Float
+  limit: Float
 }
 
 type Mutation {

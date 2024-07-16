@@ -32,9 +32,9 @@ export class PostResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => Post, { name: 'postView' })
-  viewOnePost(@SessionUserGraphQl() user: User,@Args('id', { type: () => String }) id: string) {
-    return this.postService.viewOnePost(user,id);
+  @Query(() => Post, { name: 'findOnePostWithComment' })
+  findOnePostWithComment(@SessionUserGraphQl() user: User,@Args('id', { type: () => String }) id: string) {
+    return this.postService.findOnePostWithComment(user,id);
   }
 
   @UseGuards(GqlAuthGuard)

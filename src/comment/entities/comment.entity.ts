@@ -8,7 +8,7 @@ export class Comment {
   id: string;
 
   @Field()
-  comment: string;
+  content: string;
 
   @Field(() => ID)
   authorId: string;

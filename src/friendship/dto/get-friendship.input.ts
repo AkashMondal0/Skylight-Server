@@ -12,3 +12,16 @@ export class SearchByUsernameInput {
   @Field(()=>Number, {nullable:true})
   limit: number;
 }
+
+@InputType()
+export class SearchById {
+
+  @Field(()=>String,)
+  id: string;
+
+  @Field(()=>Number, {nullable:true})
+  offset: number;
+
+  @Field(()=>Number, {nullable:true})
+  limit: number;
+}

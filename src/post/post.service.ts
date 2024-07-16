@@ -52,8 +52,8 @@ export class PostService {
       throw new GraphQLError(error)
     }
   }
-  
-  async viewOnePost(loggedUser: User, id: string): Promise<PostType | GraphQLError> {
+
+  async findOnePostWithComment(loggedUser: User, id: string): Promise<PostResponse | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
@@ -83,13 +83,38 @@ export class PostService {
           ))),
         },
       }).from(PostSchema)
-        .where(eq(PostSchema.id, id)).limit(1)
+        .where(eq(PostSchema.id, id))
+        .limit(1)
         .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
         .groupBy(PostSchema.id, UserSchema.id)
 
-      return data[0]
+      const comments = await this.drizzleProvider.db.select({
+        id: CommentSchema.id,
+        postId: CommentSchema.postId,
+        content: CommentSchema.content,
+        authorId: CommentSchema.authorId,
+        createdAt: CommentSchema.createdAt,
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+        }
+      })
+        .from(CommentSchema)
+        .where(eq(CommentSchema.postId, data[0].id))
+        .leftJoin(UserSchema, eq(CommentSchema.authorId, UserSchema.id))
+        .orderBy(desc(CommentSchema.createdAt))
+        .limit(8)
+        .offset(0)
+
+      return {
+        ...data[0],
+        comments
+      }
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError(error)
