@@ -37,5 +37,14 @@ async function bootstrap() {
     }
   }
   Logger.log(`Application is running on: ${await app.getUrl()}`)
+  setInterval(() => {
+    fetch("https://skylight-nestjs-server.onrender.com/v1")
+      .then((res) => {
+        Logger.log("hit api")
+      }).catch((e) => {
+        Logger.error("hit api error")
+      })
+  }, 1000 * 60 * 5)
 }
+
 bootstrap();
