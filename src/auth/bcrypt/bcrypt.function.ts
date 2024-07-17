@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 
 const createHash = async (password: string) => {

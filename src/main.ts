@@ -18,13 +18,13 @@ async function bootstrap() {
   });
 
   await app.register(cors, {
-    origin: "*",
+    origin: true,
     credentials: true,
     exposedHeaders: ["set-cookie"],
   })
 
   await app.register(fastifyCookie, {
-    secret: envs.JWT_SECRET, // for cookies signature
+    secret: envs.JWT_SECRET,
   });
 
   await app.listen(envs.POST ?? 5000, "0.0.0.0")
