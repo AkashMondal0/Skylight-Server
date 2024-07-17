@@ -1,3 +1,4 @@
+import { AuthenticationError } from "@nestjs/apollo";
 import { Injectable, ExecutionContext } from "@nestjs/common";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { AuthGuard } from "@nestjs/passport";
@@ -18,8 +19,9 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
       return request;
     }
 
-    if (request.headers.authorization) {
-      return request;
+    if (!request.headers.authorization) {
+      throw new AuthenticationError('You are not logged-in.');
     }
+    return request;
   }
 }
