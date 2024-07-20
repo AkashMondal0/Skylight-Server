@@ -1,9 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Body, Controller, Post, Request, UseGuards, Get, Version, UsePipes, Req, Res, } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Get, Version, UsePipes, Req, Res, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Role, User } from 'src/types';
-import { Roles } from './SetMetadata';
-import { RolesGuard } from './guard/roles.guard';
 import { ZodValidationPipe } from 'src/validation/Validation';
 import { LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
 import { MyAuthGuard } from './guard/My-jwt-auth.guard';

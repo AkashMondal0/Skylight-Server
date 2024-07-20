@@ -10,19 +10,19 @@ export class Message {
   conversationId: string;
 
   @Field(() => String, { nullable: true })
-  authorId?: string | null;
+  authorId: string | null;
 
   @Field()
   content: string;
 
-  @Field(() => Author)
-  user: Author;
+  @Field(() => Author, { nullable: true })
+  user?: Author | null;
 
-  @Field(() => [String])
-  fileUrl: string[];
+  @Field(() => [String], { nullable: true })
+  fileUrl?: string[] | null;
 
   @Field(() => Boolean, { nullable: true })
-  deleted: boolean | null;
+  deleted?: boolean | null;
 
   @Field(() => [String], { nullable: true })
   seenBy?: string[] | null;

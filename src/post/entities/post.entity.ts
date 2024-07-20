@@ -1,53 +1,59 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Users } from 'src/users/entities/users.entity';
+import { ObjectType, Field } from '@nestjs/graphql';
 import { Comment } from 'src/comment/entities/comment.entity';
-import { User ,LikeType, CommentType} from 'src/types';
 import { Author } from 'src/users/entities/author.entity';
-import { AuthorData } from 'src/types/response.type';
+
+enum PostStatus {
+  Draft = 'draft',
+  Published = 'published',
+  Archived = 'archived',
+}
 @ObjectType()
 export class Post {
-  @Field(() => ID)
+  @Field(() => String)
   id: string;
 
-  @Field(() => String , { nullable: true })
-  content: string;
+  @Field(() => String, { nullable: true })
+  content: string | null;
 
-  @Field(() => String , { nullable: true })
-  title?: string;
+  @Field(() => String, { nullable: true })
+  title?: string | null;
 
-  @Field(() => [String])
-  fileUrl: string[];
-
-  @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  @Field(() => [String], { nullable: true })
+  fileUrl?: string[] | null;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date;
+  createdAt?: Date | unknown;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Date, { nullable: true })
+  updatedAt?: Date | unknown;
+
+  @Field(() => String, { nullable: true })
   authorId?: string;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => String, { nullable: true })
   username?: string;
 
   @Field(() => Number, { nullable: true })
-  commentCount: number;
+  commentCount?: number;
 
   @Field(() => Number, { nullable: true })
-  likeCount: number;
+  likeCount?: number;
 
   @Field(() => Boolean, { nullable: true })
-  is_Liked: boolean | unknown;
+  is_Liked?: boolean | unknown | null;
 
   @Field(() => Author, { nullable: true })
-  user: AuthorData;
-  
+  user?: Author | null | unknown;
+
   @Field(() => [Comment], { nullable: true })
-  comments?: CommentType[];
+  comments?: Comment[] | null;
 
   @Field(() => [Author], { nullable: true })
-  likes?: AuthorData[];
-  
+  likes?: Author[] | null;
+
   @Field(() => [Author], { nullable: true })
-  top_Like: AuthorData[];
+  top_Like?: Author[] | null;
+
+  @Field(() => [String], { nullable: true })
+  status?: PostStatus | string
 }

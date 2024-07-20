@@ -1,7 +1,7 @@
-import { User } from ".";
+import { Author } from "src/users/entities/author.entity";
 
 declare module 'fastify' {
     export interface FastifyRequest {
-        user: User;
+        user: Author;
     }
 }

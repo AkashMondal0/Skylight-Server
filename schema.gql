@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 
 type Users {
-  id: ID!
+  id: String!
   username: String!
   email: String!
   name: String!
@@ -15,6 +15,10 @@ type Users {
   roles: [String!]
   isVerified: Boolean
   isPrivate: Boolean
+  accessToken: String!
+  refreshToken: String!
+  loggedDevice: String!
+  salt: String!
 }
 
 """
@@ -24,18 +28,29 @@ scalar DateTime
 
 type Author {
   id: String!
-  username: String
-  email: String
-  name: String
+  username: String!
+  email: String!
+  name: String!
   profilePicture: String
-  followed_by: Boolean
+  password: String
+  bio: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  roles: [String!]
+  isVerified: Boolean
+  isPrivate: Boolean
+  accessToken: String
+  refreshToken: String
+  loggedDevice: String
+  salt: String
+  followed_by: Boolean!
   following: Boolean
 }
 
-type ProfileFriendship {
-  status: String
+type Friendship {
   following: Boolean
   followed_by: Boolean
+  status: String
   isFeedFavorite: Boolean
   isCloseFriends: Boolean
   blocking: Boolean
@@ -51,38 +66,49 @@ type ProfileFriendship {
   incomingRequest: Boolean
 }
 
-type ProfileView {
-  id: ID!
+type Profile {
+  id: String
   username: String
   email: String
   name: String
   profilePicture: String
+  password: String
+  bio: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  roles: [String!]
+  isVerified: Boolean
+  isPrivate: Boolean
+  accessToken: String
+  refreshToken: String
+  loggedDevice: String
+  salt: String
   postCount: Float
   followerCount: Float
   followingCount: Float
-  friendship: ProfileFriendship
+  friendship: Friendship
   top_followers: [Author!]
 }
 
 type Comment {
-  id: ID!
+  id: String!
   content: String!
-  authorId: ID!
-  postId: ID!
+  authorId: String!
+  postId: String!
   createdAt: DateTime
   updatedAt: DateTime
   user: Author
 }
 
 type Post {
-  id: ID!
+  id: String!
   content: String
   title: String
-  fileUrl: [String!]!
+  fileUrl: [String!]
   createdAt: DateTime
   updatedAt: DateTime
-  authorId: ID
-  username: ID
+  authorId: String
+  username: String
   commentCount: Float
   likeCount: Float
   is_Liked: Boolean
@@ -90,15 +116,17 @@ type Post {
   comments: [Comment!]
   likes: [Author!]
   top_Like: [Author!]
+  status: [String!]
 }
 
-type GraphQLOperation {
-  status: Boolean!
-  message: String
-}
-
-type LikeResponse {
-  like: Boolean!
+type Like {
+  id: String!
+  authorId: String!
+  postId: String!
+  createdAt: DateTime
+  updatedAt: DateTime
+  alreadyLiked: Boolean
+  user: Users
 }
 
 type Message {
@@ -106,8 +134,8 @@ type Message {
   conversationId: String!
   authorId: String
   content: String!
-  user: Author!
-  fileUrl: [String!]!
+  user: Author
+  fileUrl: [String!]
   deleted: Boolean
   seenBy: [String!]
   createdAt: DateTime
@@ -129,41 +157,20 @@ type Conversation {
   groupDescription: String
 }
 
-type Friendship {
-  friendShip: Boolean!
-}
-
 type Query {
-  profileView(username: String!): ProfileView!
+  findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
-  findProfilePosts(findPosts: SearchByUsernameInput!): [Post!]!
+  findProfilePosts(findPosts: GraphQLPageQuery!): [Post!]!
   feedTimelineConnection: [Post!]!
   findOnePostWithComment(id: String!): Post!
-  findComments(createCommentInput: FindCommentInput!): [Comment!]!
-  findAllLikes(findAllLikesInput: SearchById!): [Author!]!
+  findComments(createCommentInput: GraphQLPageQuery!): [Comment!]!
+  findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
   findAllConversation: [Conversation!]!
-  findAllFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
-  findAllFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
+  findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
+  findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
 }
 
-input SearchByUsernameInput {
-  username: String!
-  offset: Float
-  limit: Float
-}
-
-input FindCommentInput {
-  """Example field (placeholder)"""
-  postId: String!
-
-  """Example field (placeholder)"""
-  offset: Float!
-
-  """Example field (placeholder)"""
-  limit: Float!
-}
-
-input SearchById {
+input GraphQLPageQuery {
   id: String!
   offset: Float
   limit: Float
@@ -172,10 +179,10 @@ input SearchById {
 type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   createComment(createCommentInput: CreateCommentInput!): Comment!
-  updateComment(updateCommentInput: UpdateCommentInput!): GraphQLOperation!
-  destroyComment(id: String!): GraphQLOperation!
-  createLike(id: String!): LikeResponse!
-  destroyLike(id: String!): LikeResponse!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  destroyComment(id: String!): Comment!
+  createLike(id: String!): Like!
+  destroyLike(id: String!): Like!
   createConversation(createConversationInput: CreateConversationInput!): Conversation!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!

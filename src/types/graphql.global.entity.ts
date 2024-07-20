@@ -1,11 +1,14 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, InputType } from '@nestjs/graphql';
 
-@ObjectType()
-export class GraphQLOperation {
+@InputType()
+export class GraphQLPageQuery {
 
-  @Field(() => Boolean)
-  status: boolean;
+  @Field(() => String)
+  id: string;
 
-  @Field(() => String, { nullable: true })
-  message?: string;
+  @Field(() => Number, { nullable: true })
+  offset?: number;
+
+  @Field(() => Number, { nullable: true })
+  limit?: number;
 }

@@ -6,9 +6,8 @@ import { DestroyFriendship } from './dto/delete-friendship.input';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { Author } from 'src/users/entities/author.entity';
-import { User } from 'src/types';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
-import { SearchByUsernameInput } from './dto/get-friendship.input';
+import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
 
 
 @Resolver(() => Friendship)
@@ -29,13 +28,13 @@ export class FriendshipResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'findAllFollower' })
-  findAllFollower(@SessionUserGraphQl() user: User, @Args('viewFollowerInput') viewFollower: SearchByUsernameInput) {
+  findAllFollower(@SessionUserGraphQl() user: Author, @Args('viewFollowerInput') viewFollower: GraphQLPageQuery) {
     return this.friendshipService.findAllFollower(user, viewFollower);
   }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'findAllFollowing' })
-  findAllFollowing(@SessionUserGraphQl() user: User, @Args('viewFollowingInput') viewFollowing: SearchByUsernameInput) {
+  findAllFollowing(@SessionUserGraphQl() user: Author, @Args('viewFollowingInput') viewFollowing: GraphQLPageQuery) {
     return this.friendshipService.findAllFollowing(user, viewFollowing);
   }
 }

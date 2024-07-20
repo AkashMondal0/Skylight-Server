@@ -1,28 +1,27 @@
 import { FastifyReply } from 'fastify';
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-// import { comments, friendship, likes, posts, users } from 'src/db/drizzle/drizzle.schema';
 import { count, eq, desc, exists, and, countDistinct } from "drizzle-orm";
-import { PostResponse } from 'src/types/response.type';
 import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
-import { PostType, User } from 'src/types';
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreatePostInput } from './dto/create-post.input';
-import { SearchByUsernameInput } from 'src/friendship/dto/get-friendship.input';
+import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { Author } from 'src/users/entities/author.entity';
+import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
- 
-  async findAllByProfileName(loggedUser: User, findPosts: SearchByUsernameInput): Promise<PostType[] | GraphQLError> {
+
+  async findAllPostsByProfileName(loggedUser: Author, findPosts: GraphQLPageQuery): Promise<Post[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
         content: PostSchema.content,
         fileUrl: PostSchema.fileUrl,
-        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
-        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
+        commentCount: count(CommentSchema.id),
+        likeCount: count(LikeSchema.id),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
         is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
@@ -37,11 +36,11 @@ export class PostService {
           name: UserSchema.name,
         },
       }).from(PostSchema)
-        .where(eq(PostSchema.username, findPosts.username))
+        .where(eq(PostSchema.username, findPosts.id))
         .orderBy(desc(PostSchema.createdAt))
         .limit(Number(findPosts.limit) ?? 12)
         .offset(Number(findPosts.offset) ?? 0)
-        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .leftJoin(CommentSchema, eq(CommentSchema.id, CommentSchema.postId))
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
         .groupBy(PostSchema.id, UserSchema.id)
@@ -53,7 +52,7 @@ export class PostService {
     }
   }
 
-  async findOnePostWithComment(loggedUser: User, id: string): Promise<PostResponse | GraphQLError> {
+  async findOnePostWithComment(loggedUser: Author, id: string): Promise<Post | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
@@ -121,17 +120,18 @@ export class PostService {
     }
   }
 
-  async createPost(loggedUser: User, body: CreatePostInput): Promise<PostType | GraphQLError> {
+  async createPost(loggedUser: Author, body: CreatePostInput): Promise<Post | GraphQLError> {
     try {
       if (loggedUser.id !== body.authorId) {
         throw new GraphQLError('You are not authorized to perform this action')
       }
       const data = await this.drizzleProvider.db.insert(PostSchema).values({
-        content: body.content,
+        content: body.content ?? "",
         fileUrl: body.fileUrl,
-        authorId: body.authorId,
+        authorId: loggedUser.id,
         status: body.status,
-        username: loggedUser.username
+        username: loggedUser.username,
+        title: body.title ?? "",
       }).returning()
 
       return data[0]

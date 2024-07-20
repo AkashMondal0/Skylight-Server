@@ -1,42 +1,56 @@
-import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
-import { Role } from 'src/types';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class Users {
-  @Field(() => ID)
+
+  @Field(() => String)
   id: string;
 
-  @Field()
+  @Field(() => String)
   username: string;
 
-  @Field()
+  @Field(() => String)
   email: string;
 
-  @Field()
+  @Field(() => String)
   name: string;
 
-  @Field({ nullable: true })
-  profilePicture?: string;
+  @Field(() => String, { nullable: true })
+  profilePicture?: string | null
 
-  @Field({ nullable: true })
-  password?: string;
+  @Field(() => String, { nullable: true })
+  password?: string | null;
 
-  @Field({ nullable: true })
-  bio?: string;
-
-  @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  @Field(() => String, { nullable: true })
+  bio?: string | null;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date;
+  createdAt?: Date | null | unknown; 
+
+  @Field(() => Date, { nullable: true })
+  updatedAt?: Date | null | unknown;
 
   @Field(() => [String], { nullable: true })
-  roles?: string[];
+  roles?: string[] | null;
 
-  @Field({ nullable: true })
-  isVerified?: boolean;
+  @Field(() => Boolean, { nullable: true })
+  isVerified?: boolean | null;
 
-  @Field({ nullable: true })
-  isPrivate?: boolean;
+  @Field(() => Boolean, { nullable: true })
+  isPrivate?: boolean | null;
+
+  @Field(() => String)
+  accessToken?: string | null;
+
+  @Field(() => String)
+  refreshToken?: string | unknown;
+
+  @Field(() => String)
+  loggedDevice?: any[] | unknown;
+
+  // @Field(() => String)
+  // roles?: Role[] | string[];
+
+  @Field(() => String)
+  salt?: string;
 }
-
