@@ -17,6 +17,7 @@ import { ExploreModule } from './explore/explore.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { FriendshipModule } from './friendship/friendship.module';
+import { EventsModule } from './socket/sokcet.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { FriendshipModule } from './friendship/friendship.module';
     ConversationModule,
     MessageModule,
     FriendshipModule,
+    EventsModule
   ],
   controllers: [AppController],
   providers: [AppService],
