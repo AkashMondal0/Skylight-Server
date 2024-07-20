@@ -42,18 +42,6 @@ type Friendship = {
     status?: FriendshipStatus|string;
 }
 
-type Conversation = {
-    id: string;
-    members: string[];
-    isGroup: boolean;
-    groupName?: string | null;
-    groupImage?: string | null;
-    groupDescription?: string | null;
-    authorId: string;
-    lastMessageContent: string
-    createdAt?: Date;
-    updatedAt?: Date | string;
-}
 type Message = {
     id: string;
     content: string;
@@ -106,7 +94,6 @@ export {
     User,
     Role,
     Message,
-    Conversation,
     PostType,
     CommentType,
     LikeType,

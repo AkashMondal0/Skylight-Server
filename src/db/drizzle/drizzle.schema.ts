@@ -127,6 +127,7 @@ export const ConversationSchema = pgTable('conversations', {
     groupImage: varchar('group_image'),
     groupDescription: varchar('group_description'),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id'),
     lastMessageContent: varchar('last_message_content'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),

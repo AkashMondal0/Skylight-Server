@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID} from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class Author {
@@ -6,22 +6,22 @@ export class Author {
   id: string;
 
   @Field(() => String, { nullable: true })
-  username: string;
+  username?: string | null;
 
   @Field(() => String, { nullable: true })
-  email: string;
+  email?: string | null;
 
   @Field(() => String, { nullable: true })
-  name?: string;
+  name?: string | null;
 
   @Field(() => String, { nullable: true })
-  profilePicture?: string;
+  profilePicture?: string | null;
 
   @Field(() => Boolean, { nullable: true })
-  followed_by?: boolean;
+  followed_by?: boolean | null;
 
   @Field(() => Boolean, { nullable: true })
-  following?: boolean;
+  following?: boolean | null;
 }
 
 

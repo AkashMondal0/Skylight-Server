@@ -1,34 +1,41 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-
+import { ObjectType, Field } from '@nestjs/graphql';
+import { Message } from 'src/message/entities/message.entity';
+import { Author } from 'src/users/entities/author.entity';
 @ObjectType()
 export class Conversation {
-  @Field(() => ID)
+  @Field(() => String)
   id: string;
 
   @Field(() => [String])
-  members: string[];
+  members?: string[];
 
-  @Field()
-  isGroup: boolean;
-
-  @Field({ nullable: true })
-  groupName?: string;
-
-  @Field({ nullable: true })
-  groupImage?: string;
-
-  @Field({ nullable: true })
-  groupDescription?: string;
-
-  @Field(() => ID)
+  @Field(() => String)
   authorId: string;
 
-  @Field()
-  lastMessageContent: string;
+  @Field(() => [Message])
+  messages?: Message[]
+
+  @Field(() => Author,{ nullable: true })
+  user?: Author | null
+
+  @Field(() => Boolean, { nullable: true })
+  isGroup: boolean | null;
+
+  @Field(() => String, { nullable: true })
+  lastMessageContent: string | null;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  createdAt?: Date | null;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date | string;
+  updatedAt?: Date | null;
+
+  @Field(() => String, { nullable: true })
+  groupName?: string | null;
+
+  @Field(() => String, { nullable: true })
+  groupImage?: string | null;
+
+  @Field(() => String, { nullable: true })
+  groupDescription?: string | null;
 }

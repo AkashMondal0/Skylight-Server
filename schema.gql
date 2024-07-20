@@ -101,6 +101,34 @@ type LikeResponse {
   like: Boolean!
 }
 
+type Message {
+  id: String!
+  conversationId: String!
+  authorId: String
+  content: String!
+  user: Author!
+  fileUrl: [String!]!
+  deleted: Boolean
+  seenBy: [String!]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type Conversation {
+  id: String!
+  members: [String!]!
+  authorId: String!
+  messages: [Message!]!
+  user: Author
+  isGroup: Boolean
+  lastMessageContent: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  groupName: String
+  groupImage: String
+  groupDescription: String
+}
+
 type Friendship {
   friendShip: Boolean!
 }
@@ -113,6 +141,7 @@ type Query {
   findOnePostWithComment(id: String!): Post!
   findComments(createCommentInput: FindCommentInput!): [Comment!]!
   findAllLikes(findAllLikesInput: SearchById!): [Author!]!
+  findAllConversation: [Conversation!]!
   findAllFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
   findAllFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
 }
@@ -147,6 +176,7 @@ type Mutation {
   destroyComment(id: String!): GraphQLOperation!
   createLike(id: String!): LikeResponse!
   destroyLike(id: String!): LikeResponse!
+  createConversation(createConversationInput: CreateConversationInput!): Conversation!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }
@@ -178,6 +208,26 @@ input UpdateCommentInput {
   """Example field (placeholder)"""
   authorId: String
   id: String!
+}
+
+input CreateConversationInput {
+  """Example field (placeholder)"""
+  authorId: String!
+
+  """Example field (placeholder)"""
+  memberIds: [String!]!
+
+  """Example field (placeholder)"""
+  isGroup: Boolean!
+
+  """Example field (placeholder)"""
+  groupName: String
+
+  """Example field (placeholder)"""
+  groupDescription: String
+
+  """Example field (placeholder)"""
+  groupImage: String
 }
 
 input CreateFriendshipInput {
