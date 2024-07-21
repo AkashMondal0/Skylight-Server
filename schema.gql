@@ -147,6 +147,7 @@ type Query {
   findComments(createCommentInput: GraphQLPageQuery!): [Comment!]!
   findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
   findAllConversation(GraphQLPageQuery: GraphQLPageQuery!): [Conversation!]!
+  findOneConversation(GraphQLPageQuery: GraphQLPageQuery!): Conversation!
   findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!

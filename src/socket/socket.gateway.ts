@@ -64,8 +64,20 @@ export class EventsGateway {
     this.server.to(client.id).emit('events', username);
   }
 
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
+  @SubscribeMessage('incoming-message')
+  async incomingMessage(@MessageBody() data: number): Promise<number> {
+    return data;
+  }
+  @SubscribeMessage('incoming-user-keyboard-pressing')
+  async incomingUserKeyboardPressing(@MessageBody() data: number): Promise<number> {
+    return data;
+  }
+  @SubscribeMessage('incoming-message-seen')
+  async incomingMessageSeen(@MessageBody() data: number): Promise<number> {
+    return data;
+  }
+  @SubscribeMessage('incoming-notification')
+  async incomingNotification(@MessageBody() data: number): Promise<number> {
     return data;
   }
 }

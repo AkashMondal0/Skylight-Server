@@ -3,9 +3,9 @@ import { CreateConversationInput } from './dto/create-conversation.input';
 import { UpdateConversationInput } from './dto/update-conversation.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
-import { and, arrayContains, desc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, arrayContains, desc, eq, or } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { ConversationSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { ConversationSchema, MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { Conversation } from './entities/conversation.entity';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
@@ -113,42 +113,86 @@ export class ConversationService {
     return data
   }
 
-  findOne(id: number) {
+  async findOne(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation | GraphQLError> {
 
-    // const findUserData = async (id: string) => {
-    //   const _data = await this.drizzleProvider.db.select({
-    //     id: UserSchema.id,
-    //     email: UserSchema.email,
-    //     username: UserSchema.username,
-    //     profilePicture: UserSchema.profilePicture,
-    //     name: UserSchema.name
-    //   })
-    //     .from(UserSchema)
-    //     .where(eq(UserSchema.id, id))
-    //   return _data[0] ?? null
-    // }
+    const data = await this.drizzleProvider.db.select({
+      id: ConversationSchema.id,
+      authorId: ConversationSchema.authorId,
+      members: ConversationSchema.members,
+      isGroup: ConversationSchema.isGroup,
+      groupDescription: ConversationSchema.groupDescription,
+      groupImage: ConversationSchema.groupImage,
+      groupName: ConversationSchema.groupName,
+      updatedAt: ConversationSchema.updatedAt,
+      lastMessageContent: ConversationSchema.lastMessageContent,
+      user: {
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+      }
+    })
+      .from(ConversationSchema)
+      .where(
+        or(
+          // if id is dm conversation
+          and(
+            arrayContains(ConversationSchema.members, [
+              user.id,
+              graphQLPageQuery.id
+            ]),
+            eq(ConversationSchema.isGroup, false)
+          ),
+          // if id is group conversation
+          and(
+            eq(ConversationSchema.id, graphQLPageQuery.id),
+            eq(ConversationSchema.isGroup, true),
+          ),
+        )
+      )
+      .leftJoin(UserSchema, and(
+        eq(UserSchema.id, ConversationSchema.userId),
+        eq(ConversationSchema.isGroup, false),
+      ))
+      .limit(1)
 
-    // const _data = await Promise.all(
-    //   data.map(async (item) => {
-    //     return {
-    //       ...item,
-    //       messages: [],
-    //       members:[],
-    //     }
-    //   })
-    // )
+    if (!data[0]) {
+      throw new GraphQLError("Not Fount")
+    }
 
-    // console.log(_data)
-    // const finalData = await Promise.all(
-    //   data.map(async (item) => {
-    //     return {
-    //       ...item,
-    //       members: !item.isGroup ? await findUserData(item.members as string[]) : [],
-    //       messages: []
-    //     }
-    //   })
-    // )
-    return `This action returns a #${id} conversation`;
+    const messages = await this.drizzleProvider.db.select({
+      id: MessagesSchema.id,
+      conversationId: MessagesSchema.conversationId,
+      authorId: MessagesSchema.authorId,
+      content: MessagesSchema.content,
+      fileUrl: MessagesSchema.fileUrl,
+      deleted: MessagesSchema.deleted,
+      seenBy: MessagesSchema.seenBy,
+      createdAt: MessagesSchema.createdAt,
+      updatedAt: MessagesSchema.updatedAt,
+      user: {
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+      }
+    })
+      .from(MessagesSchema)
+      .where(and(
+        eq(MessagesSchema.conversationId, data[0].id),
+        eq(MessagesSchema.deleted, false),
+      ))
+      .leftJoin(UserSchema, eq(UserSchema.id, MessagesSchema.authorId))
+      .orderBy(desc(MessagesSchema.createdAt))
+      .limit(graphQLPageQuery.limit ?? 16)
+      .offset(graphQLPageQuery.offset ?? 0)
+
+    return {
+      ...data[0],
+      messages
+    }
   }
 
   update(id: number, updateConversationInput: UpdateConversationInput) {

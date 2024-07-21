@@ -23,15 +23,19 @@ export class ConversationResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Conversation], { name: 'findAllConversation' })
-  findAllConversation(@SessionUserGraphQl() user: Author, @Args('GraphQLPageQuery') graphQLPageQuery: GraphQLPageQuery) {
-    return this.conversationService.findAll(user,graphQLPageQuery);
+  findAllConversation(@SessionUserGraphQl() user: Author,
+    @Args('GraphQLPageQuery') graphQLPageQuery: GraphQLPageQuery) {
+    return this.conversationService.findAll(user, graphQLPageQuery);
   }
 
-  // @UseGuards(GqlAuthGuard)
-  // @Query(() => AuthorConversation, { name: 'findOneConversation' })
-  // findOneConversation(@Args('id', { type: () => String }) id: string) {
-  //   return this.conversationService.findOne(id);
-  // }
+  @UseGuards(GqlAuthGuard)
+  @Query(() => Conversation, { name: 'findOneConversation' })
+  findOneConversation(
+    @SessionUserGraphQl() user: Author,
+    @Args('GraphQLPageQuery') graphQLPageQuery: GraphQLPageQuery
+  ) {
+    return this.conversationService.findOne(user, graphQLPageQuery);
+  }
 
   // @Mutation(() => Conversation)
   // updateConversation(@Args('updateConversationInput') updateConversationInput: UpdateConversationInput) {
