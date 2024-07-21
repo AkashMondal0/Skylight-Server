@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Users } from 'src/users/entities/users.entity';
+import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Like {
@@ -21,6 +21,6 @@ export class Like {
   @Field(() => Boolean, { nullable: true })
   alreadyLiked?: boolean | null;
 
-  @Field(() => Users, { nullable: true })
-  user?: Users[] | null
+  @Field(() => Author, { nullable: true })
+  user: Author[] | null
 }

@@ -8,6 +8,7 @@ import { GraphQLError } from 'graphql';
 import { ConversationSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { Conversation } from './entities/conversation.entity';
 import { Author } from 'src/users/entities/author.entity';
+import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
 @Injectable()
 export class ConversationService {
   constructor(
@@ -79,7 +80,7 @@ export class ConversationService {
   }
 
 
-  async findAll(user: Author): Promise<Conversation[] | GraphQLError> {
+  async findAll(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation[] | GraphQLError> {
 
     const data = await this.drizzleProvider.db.select({
       id: ConversationSchema.id,
@@ -106,7 +107,8 @@ export class ConversationService {
         eq(ConversationSchema.isGroup, false),
       ))
       .orderBy(desc(ConversationSchema.updatedAt))
-      .limit(12);
+      .limit(graphQLPageQuery.limit ?? 12)
+      .offset(graphQLPageQuery.offset ?? 0)
 
     return data
   }

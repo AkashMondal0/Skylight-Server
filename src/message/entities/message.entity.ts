@@ -28,8 +28,8 @@ export class Message {
   seenBy?: string[] | null;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date | null;
+  createdAt?: Date | null | unknown;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date | null;
+  updatedAt?: Date | null| unknown;
 }

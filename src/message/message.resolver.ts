@@ -1,22 +1,28 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { MessageService } from './message.service';
 import { Message } from './entities/message.entity';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { Author } from 'src/users/entities/author.entity';
+import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
 import { CreateMessageInput } from './dto/create-message.input';
-import { UpdateMessageInput } from './dto/update-message.input';
+import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Message)
 export class MessageResolver {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(private readonly messageService: MessageService) { }
 
-  // @Mutation(() => Message)
-  // createMessage(@Args('createMessageInput') createMessageInput: CreateMessageInput) {
-  //   return this.messageService.create(createMessageInput);
-  // }
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Message)
+  createMessage(@SessionUserGraphQl() user: Author, @Args('createMessageInput') createMessageInput: CreateMessageInput) {
+    return this.messageService.create(user,createMessageInput);
+  }
 
-  // @Query(() => [Message], { name: 'message' })
-  // findAll() {
-  //   return this.messageService.findAll();
-  // }
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Message], { name: 'findAllMessages' })
+  findAllMessages(@SessionUserGraphQl() user: Author, @Args('graphQLPageQuery') graphQLPageQuery: GraphQLPageQuery) {
+    return this.messageService.findAll(user, graphQLPageQuery);
+  }
 
   // @Query(() => Message, { name: 'message' })
   // findOne(@Args('id', { type: () => Int }) id: number) {

@@ -6,6 +6,7 @@ import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { Author } from 'src/users/entities/author.entity';
+import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
 
 
 @Resolver(() => Conversation)
@@ -22,8 +23,8 @@ export class ConversationResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Conversation], { name: 'findAllConversation' })
-  findAllConversation(@SessionUserGraphQl() user: Author) {
-    return this.conversationService.findAll(user);
+  findAllConversation(@SessionUserGraphQl() user: Author, @Args('GraphQLPageQuery') graphQLPageQuery: GraphQLPageQuery) {
+    return this.conversationService.findAll(user,graphQLPageQuery);
   }
 
   // @UseGuards(GqlAuthGuard)

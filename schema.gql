@@ -2,30 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Users {
-  id: String!
-  username: String!
-  email: String!
-  name: String!
-  profilePicture: String
-  password: String
-  bio: String
-  createdAt: DateTime
-  updatedAt: DateTime
-  roles: [String!]
-  isVerified: Boolean
-  isPrivate: Boolean
-  accessToken: String!
-  refreshToken: String!
-  loggedDevice: String!
-  salt: String!
-}
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type Author {
   id: String!
   username: String!
@@ -46,6 +22,11 @@ type Author {
   followed_by: Boolean!
   following: Boolean
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Friendship {
   following: Boolean
@@ -126,7 +107,7 @@ type Like {
   createdAt: DateTime
   updatedAt: DateTime
   alreadyLiked: Boolean
-  user: Users
+  user: Author
 }
 
 type Message {
@@ -165,7 +146,8 @@ type Query {
   findOnePostWithComment(id: String!): Post!
   findComments(createCommentInput: GraphQLPageQuery!): [Comment!]!
   findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
-  findAllConversation: [Conversation!]!
+  findAllConversation(GraphQLPageQuery: GraphQLPageQuery!): [Conversation!]!
+  findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
 }
@@ -184,6 +166,7 @@ type Mutation {
   createLike(id: String!): Like!
   destroyLike(id: String!): Like!
   createConversation(createConversationInput: CreateConversationInput!): Conversation!
+  createMessage(createMessageInput: CreateMessageInput!): Message!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }
@@ -235,6 +218,20 @@ input CreateConversationInput {
 
   """Example field (placeholder)"""
   groupImage: String
+}
+
+input CreateMessageInput {
+  """Example field (placeholder)"""
+  content: String!
+
+  """Example field (placeholder)"""
+  authorId: String!
+
+  """Example field (placeholder)"""
+  conversationId: String!
+
+  """Example field (placeholder)"""
+  fileUrl: [String!]!
 }
 
 input CreateFriendshipInput {

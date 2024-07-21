@@ -1,7 +1,16 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
 export class CreateMessageInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => String, { description: 'Example field (placeholder)' })
+  content: string;
+
+  @Field(() => String, { description: 'Example field (placeholder)' })
+  authorId: string;
+
+  @Field(() => String, { description: 'Example field (placeholder)' })
+  conversationId: string;
+
+  @Field(() => [String], { description: 'Example field (placeholder)' })
+  fileUrl: string[];
 }
