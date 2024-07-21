@@ -6,7 +6,7 @@ import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { FriendshipService } from 'src/friendship/friendship.service';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { CreatePostInput } from './dto/create-post.input';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 
 @Resolver(() => Post)

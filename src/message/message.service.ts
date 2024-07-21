@@ -7,7 +7,7 @@ import { Message } from './entities/message.entity';
 import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { eq, desc } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 @Injectable()
 export class MessageService {

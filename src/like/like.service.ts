@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 import { FriendshipSchema, LikeSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { and, eq, exists } from 'drizzle-orm';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 
 @Injectable()

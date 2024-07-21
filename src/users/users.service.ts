@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { RegisterUserPayload } from 'src/validation/ZodSchema';
+import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { Author } from './entities/author.entity';
 import { Profile } from './entities/profile.entity';
 

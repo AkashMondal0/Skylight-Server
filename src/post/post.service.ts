@@ -2,11 +2,11 @@ import { FastifyReply } from 'fastify';
 import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { count, eq, desc, exists, and, countDistinct } from "drizzle-orm";
-import { CreatePostPayload, UpdatePostPayload } from 'src/validation/ZodSchema';
+import { CreatePostPayload, UpdatePostPayload } from 'src/lib/validation/ZodSchema';
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreatePostInput } from './dto/create-post.input';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 import { Post } from './entities/post.entity';
 

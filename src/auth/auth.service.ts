@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from './bcrypt/bcrypt.function';
-import { RegisterUserPayload } from 'src/validation/ZodSchema';
+import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';
 import { Author } from 'src/users/entities/author.entity';

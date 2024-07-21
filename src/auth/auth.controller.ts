@@ -1,9 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Body, Controller, Post, UseGuards, Get, Version, UsePipes, Req, Res, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ZodValidationPipe } from 'src/validation/Validation';
-import { LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/validation/ZodSchema';
+import { ZodValidationPipe } from 'src/lib/validation/Validation';
+import { LoginUserPayload, LoginUserSchema, RegisterUserPayload, RegisterUserSchema } from 'src/lib/validation/ZodSchema';
 import { MyAuthGuard } from './guard/My-jwt-auth.guard';
+import { RestApiSessionUser } from 'src/decorator/session.decorator';
+import { Author } from 'src/users/entities/author.entity';
 
 @Controller({
   path: 'auth',
@@ -30,14 +32,14 @@ export class AuthController {
   @Version('1')
   @Post('logout')
   @UseGuards(MyAuthGuard)
-  async signOut(@Req() request: FastifyRequest,@Res({ passthrough: true }) response: FastifyReply) {
+  async signOut(@Req() request: FastifyRequest, @Res({ passthrough: true }) response: FastifyReply) {
     return this.authService.signOut(request, response);
   }
 
   @Version('1')
   @Get('session')
   @UseGuards(MyAuthGuard)
-  getProfile(@Req() request: FastifyRequest) {
-    return request.user;
+  getProfile(@RestApiSessionUser() user: Author) {
+    return user;
   }
 }

@@ -6,7 +6,7 @@ import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { GraphQLError } from 'graphql';
 import { CommentSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { eq } from 'drizzle-orm';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 import { Comment } from './entities/comment.entity';
 

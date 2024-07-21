@@ -5,7 +5,7 @@ import { GraphQLError } from 'graphql';
 import { DestroyFriendship } from './dto/delete-friendship.input';
 import { and, eq, desc, count, countDistinct, exists } from 'drizzle-orm';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 import { Post } from 'src/post/entities/post.entity';
 

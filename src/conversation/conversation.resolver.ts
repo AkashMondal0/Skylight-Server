@@ -6,7 +6,7 @@ import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { Author } from 'src/users/entities/author.entity';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 
 @Resolver(() => Conversation)

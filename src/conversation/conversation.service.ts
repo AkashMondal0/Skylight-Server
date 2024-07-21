@@ -8,7 +8,7 @@ import { GraphQLError } from 'graphql';
 import { ConversationSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { Conversation } from './entities/conversation.entity';
 import { Author } from 'src/users/entities/author.entity';
-import { GraphQLPageQuery } from 'src/types/graphql.global.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 @Injectable()
 export class ConversationService {
   constructor(
