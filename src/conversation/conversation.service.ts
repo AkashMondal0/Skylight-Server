@@ -158,7 +158,34 @@ export class ConversationService {
       .limit(1)
 
     if (!data[0]) {
-      throw new GraphQLError("Not Fount")
+      const findUser = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+      })
+        .from(UserSchema)
+        .where(eq(UserSchema.id, graphQLPageQuery.id))
+      if (!findUser[0].id) {
+        throw new GraphQLError("Conversation Not Fount")
+      }
+      // create private ==> // graphQLPageQuery.id // userId
+      const data = await this.drizzleProvider.db.insert(ConversationSchema).values({
+        authorId: user.id,
+        members: [
+          user.id,
+          findUser[0].id // userId
+        ],
+        userId: findUser[0].id,
+        isGroup: false,
+      }).returning()
+
+      return {
+        ...data[0],
+        user: findUser[0],
+        messages: []
+      }
     }
 
     const messages = await this.drizzleProvider.db.select({
@@ -171,20 +198,12 @@ export class ConversationService {
       seenBy: MessagesSchema.seenBy,
       createdAt: MessagesSchema.createdAt,
       updatedAt: MessagesSchema.updatedAt,
-      user: {
-        id: UserSchema.id,
-        username: UserSchema.username,
-        email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-        name: UserSchema.name,
-      }
     })
       .from(MessagesSchema)
       .where(and(
-        eq(MessagesSchema.conversationId, data[0].id),
+        eq(MessagesSchema.conversationId, data[0].id), // <--- id
         eq(MessagesSchema.deleted, false),
       ))
-      .leftJoin(UserSchema, eq(UserSchema.id, MessagesSchema.authorId))
       .orderBy(desc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
