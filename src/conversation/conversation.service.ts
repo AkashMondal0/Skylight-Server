@@ -3,7 +3,7 @@ import { CreateConversationInput } from './dto/create-conversation.input';
 import { UpdateConversationInput } from './dto/update-conversation.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
-import { and, arrayContains, desc, eq, or } from 'drizzle-orm';
+import { and, arrayContains, desc, eq, or, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { ConversationSchema, MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { Conversation } from './entities/conversation.entity';
@@ -102,13 +102,16 @@ export class ConversationService {
     })
       .from(ConversationSchema)
       .where(arrayContains(ConversationSchema.members, [user.id]))
-      .leftJoin(UserSchema, and(
-        eq(UserSchema.id, ConversationSchema.userId),
-        eq(ConversationSchema.isGroup, false),
+      .leftJoin(UserSchema, eq(UserSchema.id,
+        sql`CASE 
+          WHEN ${ConversationSchema.userId} = ${user.id} THEN ${ConversationSchema.authorId}
+          WHEN ${ConversationSchema.authorId} = ${user.id} THEN ${ConversationSchema.userId}
+          ELSE ${ConversationSchema.userId}
+        END`
       ))
       .orderBy(desc(ConversationSchema.updatedAt))
       .limit(graphQLPageQuery.limit ?? 12)
-      .offset(graphQLPageQuery.offset ?? 0)
+      .offset(graphQLPageQuery.offset ?? 0);
 
     return data
   }
@@ -151,9 +154,12 @@ export class ConversationService {
           ),
         )
       )
-      .leftJoin(UserSchema, and(
-        eq(UserSchema.id, ConversationSchema.userId),
-        eq(ConversationSchema.isGroup, false),
+      .leftJoin(UserSchema, eq(UserSchema.id,
+        sql`CASE 
+          WHEN ${ConversationSchema.userId} = ${user.id} THEN ${ConversationSchema.authorId}
+          WHEN ${ConversationSchema.authorId} = ${user.id} THEN ${ConversationSchema.userId}
+          ELSE ${ConversationSchema.userId}
+        END`
       ))
       .limit(1)
 
