@@ -3,7 +3,7 @@ import { CreateConversationInput } from './dto/create-conversation.input';
 import { UpdateConversationInput } from './dto/update-conversation.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
-import { and, arrayContains, desc, eq, or, sql } from 'drizzle-orm';
+import { and, arrayContains, asc, desc, eq, or, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { ConversationSchema, MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { Conversation } from './entities/conversation.entity';
@@ -113,7 +113,12 @@ export class ConversationService {
       .limit(graphQLPageQuery.limit ?? 12)
       .offset(graphQLPageQuery.offset ?? 0);
 
-    return data
+    return data.map((item) => {
+      return {
+        ...item,
+        messages: []
+      }
+    })
   }
 
   async findOne(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation | GraphQLError> {
@@ -210,7 +215,7 @@ export class ConversationService {
         eq(MessagesSchema.conversationId, data[0].id), // <--- id
         eq(MessagesSchema.deleted, false),
       ))
-      .orderBy(desc(MessagesSchema.createdAt))
+      .orderBy(asc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
 

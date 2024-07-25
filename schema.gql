@@ -121,6 +121,7 @@ type Message {
   seenBy: [String!]
   createdAt: DateTime
   updatedAt: DateTime
+  members: [String!]
 }
 
 type Conversation {
@@ -233,6 +234,9 @@ input CreateMessageInput {
 
   """Example field (placeholder)"""
   fileUrl: [String!]!
+
+  """Example field (placeholder)"""
+  members: [String!]!
 }
 
 input CreateFriendshipInput {

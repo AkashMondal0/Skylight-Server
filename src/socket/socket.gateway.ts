@@ -12,6 +12,7 @@ import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { WsJwtGuard } from 'src/auth/guard/Ws-Jwt-auth.guard';
 import { RedisProvider } from 'src/db/redisio/redis.provider';
+import { Message } from 'src/message/entities/message.entity';
 
 @WebSocketGateway({
   cors: {
@@ -64,20 +65,38 @@ export class EventsGateway {
     this.server.to(client.id).emit('events', username);
   }
 
-  @SubscribeMessage('incoming-message')
-  async incomingMessage(@MessageBody() data: number): Promise<number> {
-    return data;
+  @SubscribeMessage('incoming-message-client')
+  async incomingMessage(@MessageBody() data: Message,
+    @ConnectedSocket() client: Socket) {
+
+    const userIds = await Promise.all(data.members?.map(async (userId) => {
+      return await this.redisProvider.getHashValue("skylight:clients", userId);
+    }) ?? []);
+
+    if (!userIds[0]) return
+    this.server.to(userIds[0]).emit('incoming-message-server', data);
+    //   this.redisProvider.redisClient.publish("message", JSON.stringify(data));
   }
-  @SubscribeMessage('incoming-user-keyboard-pressing')
+  @SubscribeMessage('incoming-user-keyboard-pressing-client')
   async incomingUserKeyboardPressing(@MessageBody() data: number): Promise<number> {
     return data;
   }
-  @SubscribeMessage('incoming-message-seen')
+  @SubscribeMessage('incoming-message-seen-client')
   async incomingMessageSeen(@MessageBody() data: number): Promise<number> {
     return data;
   }
-  @SubscribeMessage('incoming-notification')
+  @SubscribeMessage('incoming-notification-client')
   async incomingNotification(@MessageBody() data: number): Promise<number> {
     return data;
+  }
+  //
+  @SubscribeMessage('test')
+  async test(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log("client data", data)
+    this.server.emit('test', data);
+    this.server.to(data.id).emit('test', data);
   }
 }

@@ -13,4 +13,7 @@ export class CreateMessageInput {
 
   @Field(() => [String], { description: 'Example field (placeholder)' })
   fileUrl: string[];
+
+  @Field(() => [String], { description: 'Example field (placeholder)' })
+  members: string[];
 }

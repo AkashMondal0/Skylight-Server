@@ -31,5 +31,8 @@ export class Message {
   createdAt?: Date | null | unknown;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date | null| unknown;
+  updatedAt?: Date | null | unknown;
+
+  @Field(() => [String], { nullable: true })
+  members?: string[]
 }
