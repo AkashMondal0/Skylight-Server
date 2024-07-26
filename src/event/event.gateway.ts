@@ -51,15 +51,17 @@ export class EventGateway implements OnModuleInit {
             });
 
         this.redisSubscriber.on("message", (channel, message) => {
+            const data = JSON.parse(message)
             switch (channel) {
                 case event_name.conversation.message:
-                    this.server.emit('test', message);
+                    this.server.to(data.members[0]).emit(event_name.conversation.message, data);
                     return
                 case event_name.conversation.seen:
-                    console.log("seen", message)
+                    // console.log("seen", message)
                     return
                 case event_name.conversation.typing:
-                    console.log("typing", message)
+                    // console.log("typing", message)
+                    this.server.to(data.members[0]).emit(event_name.conversation.typing, data);
                     return
                 default:
                     return
@@ -81,6 +83,23 @@ export class EventGateway implements OnModuleInit {
         return { userId, username }
     }
 
+    async findUserBySocketId(userIds?: string[]): Promise<string[] | null> {
+
+        if (!userIds || userIds.length < 0) return null
+
+        const ids = await Promise.all(userIds?.map(async (userId) => {
+            return await this.redisProvider.getHashValue("skylight:clients", userId);
+        }) ?? []);
+
+        if (!ids || ids.length < 0) return null
+
+        return ids.filter(id => id !== null) as string[];
+    }
+
+    publishMessage(channel: string, data: any) {
+        this.redisProvider.redisClient.publish(channel, JSON.stringify(data))
+    }
+
     async handleConnection(client: Socket) {
         const userId = this.extractUserIdAndName(client)?.userId
         if (!userId) return
@@ -93,38 +112,37 @@ export class EventGateway implements OnModuleInit {
         await this.redisProvider.deleteHashValue("skylight:clients", userId)
     }
 
-    // @UseGuards(WsJwtGuard)
-    // @UsePipes(new ValidationPipe())
-    @SubscribeMessage('events')
-    async findAll(
+    /// user message
+    @SubscribeMessage(event_name.conversation.message)
+    async IncomingClientMessage(
         @MessageBody() data: any,
         @ConnectedSocket() client: Socket,
-    ): Promise<void> {
-        console.log("event", data)
-        const username = await this.redisProvider.getHashValue("skylight:clients", data)
-        this.server.emit('events', { data: username, message: "event" });
-        this.server.to(client.id).emit('events', username);
+    ) {
+        const ids = await this.findUserBySocketId(data.members)
+        if (!ids) return
+        await this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify({ ...data, members: ids }))
     }
 
-    @SubscribeMessage('incoming-message-client')
-    async incomingMessage(@MessageBody() data: Message,
-        @ConnectedSocket() client: Socket) {
-
-        const userIds = await Promise.all(data.members?.map(async (userId) => {
-            return await this.redisProvider.getHashValue("skylight:clients", userId);
-        }) ?? []);
-
-        if (!userIds[0]) return
-        this.server.to(userIds[0]).emit('incoming-message-server', data);
-        //   this.redisProvider.redisClient.publish("message", JSON.stringify(data));
+    /// user typing
+    @SubscribeMessage(event_name.conversation.typing)
+    async IncomingClientTyping(
+        @MessageBody() data: any,
+        @ConnectedSocket() client: Socket,
+    ) {
+        const ids = await this.findUserBySocketId(data.members)
+        if (!ids) return
+        await this.redisProvider.redisClient.publish(event_name.conversation.typing, JSON.stringify({ ...data, members: ids }))
     }
 
+    // @UseGuards(WsJwtGuard)
+    // @UsePipes(new ValidationPipe())
     @SubscribeMessage('test')
     async test(
         @MessageBody() data: any,
         @ConnectedSocket() client: Socket,
     ) {
         console.log("socket Test", data)
-        this.server.emit('test', data);
+        this.server.emit('test', "this from server - > test");
+        // await this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify(data))
     }
 }

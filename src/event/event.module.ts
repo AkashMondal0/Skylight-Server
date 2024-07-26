@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { EventGateway } from './event.gateway';
-import { EventService } from './event.service';
 import { RedisModule } from 'src/db/redis/redis.module';
 
 @Module({
   imports: [RedisModule],
-  providers: [EventGateway, EventService],
+  providers: [EventGateway],
   exports: [EventGateway],
 })
 export class EventsModule { }
