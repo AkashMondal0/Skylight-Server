@@ -28,20 +28,6 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type Message {
-  id: String!
-  conversationId: String!
-  authorId: String
-  content: String!
-  user: Author
-  fileUrl: [String!]
-  deleted: Boolean
-  seenBy: [String!]
-  createdAt: DateTime
-  updatedAt: DateTime
-  members: [String!]
-}
-
 type Friendship {
   following: Boolean
   followed_by: Boolean
@@ -122,6 +108,20 @@ type Like {
   updatedAt: DateTime
   alreadyLiked: Boolean
   user: Author
+}
+
+type Message {
+  id: String!
+  conversationId: String!
+  authorId: String
+  content: String!
+  user: Author
+  fileUrl: [String!]
+  deleted: Boolean
+  seenBy: [String!]
+  createdAt: DateTime
+  updatedAt: DateTime
+  members: [String!]
 }
 
 type Conversation {

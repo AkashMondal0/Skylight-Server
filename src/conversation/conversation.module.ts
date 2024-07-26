@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { ConversationResolver } from './conversation.resolver';
 import { ConversationController } from './conversation.controller';
-import { RedisModule } from 'src/db/redisio/redis.module';
+import { RedisModule } from 'src/db/redis/redis.module';
 import { DrizzleModule } from 'src/db/drizzle/drizzle.module';
 
 @Module({

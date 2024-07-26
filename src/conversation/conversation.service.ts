@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateConversationInput } from './dto/create-conversation.input';
 import { UpdateConversationInput } from './dto/update-conversation.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { RedisProvider } from 'src/db/redisio/redis.provider';
+import { RedisProvider } from 'src/db/redis/redis.provider';
 import { and, arrayContains, asc, desc, eq, or, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { ConversationSchema, MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
