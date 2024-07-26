@@ -2,15 +2,19 @@ import { Controller, Get, Req, Res, Version } from '@nestjs/common';
 import { AppService } from './app.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from './configs/configuration';
+import { EventsGateway } from './socket/socket.gateway';
 @Controller({
   version: ['1'],
 })
 export class AppController {
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService,
+    private eventsGateway: EventsGateway
+  ) { }
 
   @Version('1')
   @Get()
   LandingPage(): any {
+    this.eventsGateway.server.emit("test","this v1 home page")
     return this.appService.render()
   }
 

@@ -18,6 +18,7 @@ import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventsModule } from './socket/sokcet.module';
+import { EventsGateway } from './socket/socket.gateway';
 
 @Module({
   imports: [
@@ -46,7 +47,7 @@ import { EventsModule } from './socket/sokcet.module';
     EventsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,EventsGateway],
 })
 
 export class AppModule { }

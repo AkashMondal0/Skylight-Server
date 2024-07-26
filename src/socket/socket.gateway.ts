@@ -53,7 +53,7 @@ export class EventsGateway {
     await this.redisProvider.deleteHashValue("skylight:clients", userId)
   }
 
-  @UseGuards(WsJwtGuard)
+  // @UseGuards(WsJwtGuard)
   // @UsePipes(new ValidationPipe())
   @SubscribeMessage('events')
   async findAll(
@@ -62,6 +62,7 @@ export class EventsGateway {
   ): Promise<void> {
     console.log("event", data)
     const username = await this.redisProvider.getHashValue("skylight:clients", data)
+    this.server.emit('events', {data:username,message:"event"});
     this.server.to(client.id).emit('events', username);
   }
 
@@ -95,8 +96,7 @@ export class EventsGateway {
     @MessageBody() data: any,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log("client data", data)
+    console.log("socket Test", data)
     this.server.emit('test', data);
-    this.server.to(data.id).emit('test', data);
   }
 }
