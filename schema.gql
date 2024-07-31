@@ -145,7 +145,7 @@ type Query {
   findProfilePosts(findPosts: GraphQLPageQuery!): [Post!]!
   feedTimelineConnection: [Post!]!
   findOnePostWithComment(id: String!): Post!
-  findComments(createCommentInput: GraphQLPageQuery!): [Comment!]!
+  findAllComments(createCommentInput: GraphQLPageQuery!): Post!
   findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
   findAllConversation(GraphQLPageQuery: GraphQLPageQuery!): [Conversation!]!
   findOneConversation(GraphQLPageQuery: GraphQLPageQuery!): Conversation!

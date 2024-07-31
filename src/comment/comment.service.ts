@@ -4,11 +4,12 @@ import { CreateCommentInput } from './dto/create-comment.input';
 import { UpdateCommentInput } from './dto/update-comment.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { GraphQLError } from 'graphql';
-import { CommentSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { CommentSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { eq } from 'drizzle-orm';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
 import { Comment } from './entities/comment.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Injectable()
 export class CommentService {
@@ -39,8 +40,28 @@ export class CommentService {
   }
 
 
-  async findAll(loggedUser: Author, findCommentInput: GraphQLPageQuery): Promise<Comment[] | GraphQLError> {
+  async findAll(loggedUser: Author, findCommentInput: GraphQLPageQuery): Promise<Post | GraphQLError> {
     try {
+      const post = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        title: PostSchema.title,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+        },
+      }).from(PostSchema)
+        .where(eq(PostSchema.id, findCommentInput.id))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .limit(1)
+        .groupBy(PostSchema.id,UserSchema.id)
+
       const comments = await this.drizzleProvider.db.select({
         id: CommentSchema.id,
         postId: CommentSchema.postId,
@@ -61,7 +82,7 @@ export class CommentService {
         .orderBy(desc(CommentSchema.createdAt))
         .limit(10)
         .offset(0)
-      return comments
+      return { ...post[0], comments }
 
     } catch (error) {
       Logger.error(error)

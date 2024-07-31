@@ -16,7 +16,7 @@ import { Message } from 'src/message/entities/message.entity';
 
 @WebSocketGateway({
     cors: {
-        origin: ["https://skylight.skysolo.me", true],
+        origin: ["https://skylight.skysolo.me","https://skylight-test.skysolo.me","http://localhost:3000"],
         credentials: true,
     },
     transports: ['websocket'],
@@ -54,6 +54,7 @@ export class EventGateway implements OnModuleInit {
             const data = JSON.parse(message)
             switch (channel) {
                 case event_name.conversation.message:
+                    // console.log("client", message)
                     this.server.to(data.members[0]).emit(event_name.conversation.message, data);
                     return
                 case event_name.conversation.seen:
@@ -141,8 +142,8 @@ export class EventGateway implements OnModuleInit {
         @MessageBody() data: any,
         @ConnectedSocket() client: Socket,
     ) {
-        console.log("socket Test", data)
+        // console.log("socket Test", data)
         this.server.emit('test', "this from server - > test");
-        // await this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify(data))
+        // await this.redisSubscriber.publish("test", JSON.stringify({ data: data }))
     }
 }

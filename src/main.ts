@@ -18,7 +18,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: true,
+    origin: ["https://skylight.skysolo.me","https://skylight-test.skysolo.me","http://localhost:3000"],
     credentials: true,
     exposedHeaders: ["set-cookie"]
   });

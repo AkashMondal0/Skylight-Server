@@ -8,6 +8,7 @@ import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Resolver(() => Comment)
 export class CommentResolver {
@@ -20,7 +21,7 @@ export class CommentResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => [Comment], { name: 'findComments' })
+  @Query(() => Post, { name: 'findAllComments' })
   findAll(@SessionUserGraphQl() user: Author, @Args('createCommentInput') findCommentInput: GraphQLPageQuery) {
     return this.commentService.findAll(user, findCommentInput);
   }
