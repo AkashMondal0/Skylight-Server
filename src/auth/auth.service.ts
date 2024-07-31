@@ -2,17 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from './bcrypt/bcrypt.function';
-import { RegisterUserPayload } from 'src/validation/ZodSchema';
-import { User } from 'src/types';
+import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';
+import { Author } from 'src/users/entities/author.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    // private redisProvider: RedisProvider
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -34,7 +33,7 @@ export class AuthService {
     return user;
   }
 
-  async signIn(response: FastifyReply, email: string, pass: string): Promise<User | HttpException> {
+  async signIn(response: FastifyReply, email: string, pass: string): Promise<Author | HttpException> {
     const user = await this.usersService.findOneByUsername(email);
 
     if (!user || !user.password) {
@@ -60,28 +59,19 @@ export class AuthService {
     }, { expiresIn: '1d' })
 
     response.setCookie('auth-session-token', accessToken, {
-      // httpOnly: true,
-      // maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      // secure: true,
-      // sameSite: "lax",
-      // path: '/',
-      // domain: configuration().DOMAIN
-
       domain: configuration().DOMAIN,
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
       priority: "medium"
     })
-    // await this.redisProvider.redisClient.set(user.id, JSON.stringify(user), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
-
     return {
       ...user,
       accessToken: accessToken,
     };
   }
 
-  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<User | HttpException> {
+  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<Author | HttpException> {
 
     const user = await this.usersService.findOneByUsernameAndEmail(body.email, body.username);
 
@@ -111,13 +101,6 @@ export class AuthService {
     }, { expiresIn: '1d' })
 
     response.setCookie('auth-session-token', accessToken, {
-      // httpOnly: true,
-      // maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      // secure: true,
-      // sameSite: "lax",
-      // path: '/',
-      // domain: configuration().DOMAIN
-
       domain: configuration().DOMAIN,
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30,

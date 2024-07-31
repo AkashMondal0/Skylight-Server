@@ -1,7 +1,22 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
 export class CreateConversationInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => String, { description: 'Example field (placeholder)' })
+  authorId: string;
+
+  @Field(() => [String], { description: 'Example field (placeholder)' })
+  memberIds: string[];
+
+  @Field(() => Boolean, { description: 'Example field (placeholder)' })
+  isGroup: boolean;
+
+  @Field(() => String, { description: 'Example field (placeholder)',nullable:true })
+  groupName: string;
+
+  @Field(() => String, { description: 'Example field (placeholder)' ,nullable:true})
+  groupDescription: string;
+
+  @Field(() => String, { description: 'Example field (placeholder)',nullable:true})
+  groupImage: string;
 }

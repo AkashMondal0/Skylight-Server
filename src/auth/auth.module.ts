@@ -7,7 +7,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './strategy/local.strategy';
 import configuration from 'src/configs/configuration';
-import { RedisModule } from 'src/db/redisio/redis.module';
+import { RedisModule } from 'src/db/redis/redis.module';
 
 @Module({
   imports: [

@@ -4,10 +4,10 @@ import { CreateFriendshipInput } from './dto/create-friendship.input';
 import { GraphQLError } from 'graphql';
 import { DestroyFriendship } from './dto/delete-friendship.input';
 import { and, eq, desc, count, countDistinct, exists } from 'drizzle-orm';
-import { Friendship, User } from 'src/types';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { AuthorData, PostResponse } from 'src/types/response.type';
-import { SearchByUsernameInput } from './dto/get-friendship.input';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
+import { Author } from 'src/users/entities/author.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Injectable()
 export class FriendshipService {
@@ -67,7 +67,7 @@ export class FriendshipService {
     }
   }
 
-  async feedTimelineConnection(loggedUser: User): Promise<PostResponse[]> {
+  async feedTimelineConnection(loggedUser: Author): Promise<Post[]> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
@@ -116,7 +116,7 @@ export class FriendshipService {
     }
   }
 
-  async findAllFollowing(loggedUser: User, Input: SearchByUsernameInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollowing(loggedUser: Author, Input: GraphQLPageQuery): Promise<Author[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -136,13 +136,13 @@ export class FriendshipService {
           ))),
       })
         .from(FriendshipSchema)
-        .where(eq(FriendshipSchema.authorUsername, Input.username),)
+        .where(eq(FriendshipSchema.authorUsername, Input.id),)
         .leftJoin(UserSchema, eq(FriendshipSchema.followingUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data
+      return data as Author[]
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Internal Server Error', {
@@ -151,7 +151,7 @@ export class FriendshipService {
     }
   }
 
-  async findAllFollower(loggedUser: User, Input: SearchByUsernameInput): Promise<AuthorData[] | GraphQLError> {
+  async findAllFollower(loggedUser: Author, Input: GraphQLPageQuery): Promise<Author[] | GraphQLError> {
      try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -171,13 +171,13 @@ export class FriendshipService {
           ))),
       })
         .from(FriendshipSchema)
-        .where(eq(FriendshipSchema.followingUsername, Input.username))
+        .where(eq(FriendshipSchema.followingUsername, Input.id))
         .leftJoin(UserSchema, eq(FriendshipSchema.authorUsername, UserSchema.username))
         .orderBy(desc(FriendshipSchema.createdAt))
         .limit(Number(Input.limit) ?? 12)
         .offset(Number(Input.offset) ?? 0)
 
-      return data
+      return data as Author[]
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Internal Server Error', {

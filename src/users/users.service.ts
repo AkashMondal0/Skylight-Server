@@ -4,9 +4,9 @@ import { GraphQLError } from 'graphql';
 import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { User } from 'src/types';
-import { AuthorData, ProfileView } from 'src/types/response.type';
-import { RegisterUserPayload } from 'src/validation/ZodSchema';
+import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
+import { Author } from './entities/author.entity';
+import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +14,7 @@ export class UsersService {
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  async createUser(userCredential: RegisterUserPayload): Promise<User | null> {
+  async createUser(userCredential: RegisterUserPayload): Promise<Author | null> {
     const hashPassword = await createHash(userCredential.password)
 
     try {
@@ -36,7 +36,7 @@ export class UsersService {
     }
   }
 
-  async findOneUserById(id: string): Promise<User | null> {
+  async findOneUserById(id: string): Promise<Author | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -64,7 +64,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsername(email: string): Promise<User | null> {
+  async findOneByUsername(email: string): Promise<Author | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -97,7 +97,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsernameAndEmail(email: string, username: string): Promise<User | null> {
+  async findOneByUsernameAndEmail(email: string, username: string): Promise<Author | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -128,7 +128,7 @@ export class UsersService {
     }
   }
 
-  async findManyByUsernameAndEmail(keywords: string): Promise<AuthorData[] | []> {
+  async findManyByUsernameAndEmail(keywords: string): Promise<Author[] | []> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -157,7 +157,7 @@ export class UsersService {
     }
   }
 
-  async findProfile(user: User, username: string): Promise<ProfileView | GraphQLError> {
+  async findProfile(user: Author, username: string): Promise<Profile | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -198,31 +198,33 @@ export class UsersService {
       const followerCount = await this.drizzleProvider.db.select({
         count: countDistinct(FriendshipSchema.authorUserId)
       }).from(FriendshipSchema).where(eq(FriendshipSchema.followingUserId, data[0].id))
+
       const followingCount = await this.drizzleProvider.db.select({
         count: countDistinct(FriendshipSchema.followingUserId)
       }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data[0].id))
 
-      const followingList = [
-        "259f9837-1514-4183-9157-bc1f1f504f0e",
-        "72932765-a392-42eb-b936-d7a8ceb1a541",
-        "e4a31dd8-13f9-4c8e-9e55-01baa79c3b5e"
-      ] // <- Update the following list here
 
-      const top_followers = await this.drizzleProvider.db.select({
-        id: UserSchema.id,
-        username: UserSchema.username,
-        email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-      })
-        .from(FriendshipSchema)
-        .leftJoin(UserSchema, eq(UserSchema.id, FriendshipSchema.authorUserId))
-        .where(inArray(FriendshipSchema.authorUserId, followingList))
+      // const followingList = [
+      //   "259f9837-1514-4183-9157-bc1f1f504f0e",
+      //   "72932765-a392-42eb-b936-d7a8ceb1a541",
+      //   "e4a31dd8-13f9-4c8e-9e55-01baa79c3b5e"
+      // ] // <- Update the following list here
+
+      // const top_followers = await this.drizzleProvider.db.select({
+      //   id: UserSchema.id,
+      //   username: UserSchema.username,
+      //   email: UserSchema.email,
+      //   name:UserSchema.name,
+      //   profilePicture: UserSchema.profilePicture,
+      // })
+      //   .from(FriendshipSchema)
+      //   .leftJoin(UserSchema, eq(UserSchema.id, FriendshipSchema.authorUserId))
+      //   .where(inArray(FriendshipSchema.authorUserId, followingList))
 
       return {
         ...data[0],
         followerCount: followerCount[0].count,
         followingCount: followingCount[0].count,
-        top_followers: top_followers,
       }
     } catch (error) {
       Logger.error(error)

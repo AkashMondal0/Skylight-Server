@@ -5,16 +5,17 @@ import { UpdateCommentInput } from './dto/update-comment.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { GraphQLError } from 'graphql';
 import { CommentSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { User } from 'src/types';
-import { CommentResponse } from 'src/types/response.type';
 import { eq } from 'drizzle-orm';
-import { FindCommentInput } from './dto/find-comment.input';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
+import { Author } from 'src/users/entities/author.entity';
+import { Comment } from './entities/comment.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Injectable()
 export class CommentService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
-  async create(loggedUser: User, createCommentInput: CreateCommentInput): Promise<CommentResponse | GraphQLError> {
+  async create(loggedUser: Author, createCommentInput: CreateCommentInput): Promise<Comment | GraphQLError> {
     try {
       const new_comment = await this.drizzleProvider.db.insert(CommentSchema).values({
         postId: createCommentInput.postId,
@@ -39,8 +40,28 @@ export class CommentService {
   }
 
 
-  async findAll(loggedUser: User, findCommentInput: FindCommentInput): Promise<CommentResponse[] | GraphQLError> {
+  async findAll(loggedUser: Author, findCommentInput: GraphQLPageQuery): Promise<Post | GraphQLError> {
     try {
+      const post = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        title: PostSchema.title,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+        },
+      }).from(PostSchema)
+        .where(eq(PostSchema.id, findCommentInput.id))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .limit(1)
+        .groupBy(PostSchema.id,UserSchema.id)
+
       const comments = await this.drizzleProvider.db.select({
         id: CommentSchema.id,
         postId: CommentSchema.postId,
@@ -56,12 +77,12 @@ export class CommentService {
         }
       })
         .from(CommentSchema)
-        .where(eq(CommentSchema.postId, findCommentInput.postId))
+        .where(eq(CommentSchema.postId, findCommentInput.id))
         .leftJoin(UserSchema, eq(CommentSchema.authorId, UserSchema.id))
         .orderBy(desc(CommentSchema.createdAt))
         .limit(10)
         .offset(0)
-      return comments
+      return { ...post[0], comments }
 
     } catch (error) {
       Logger.error(error)
@@ -75,7 +96,7 @@ export class CommentService {
     }
   }
 
-  async update(loggedUser: User, CommentInput: UpdateCommentInput): Promise<{ status: boolean } | GraphQLError> {
+  async update(loggedUser: Author, CommentInput: UpdateCommentInput): Promise<{ status: boolean } | GraphQLError> {
 
     try {
       await this.drizzleProvider.db.update(CommentSchema)
@@ -98,7 +119,7 @@ export class CommentService {
     }
   }
 
-  async remove(loggedUser: User, commentId: string): Promise<{ status: boolean } | GraphQLError> {
+  async remove(loggedUser: Author, commentId: string): Promise<{ status: boolean } | GraphQLError> {
     try {
       await this.drizzleProvider.db.delete(CommentSchema)
         .where(

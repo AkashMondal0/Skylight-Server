@@ -18,7 +18,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: true,
+    origin: ["https://skylight.skysolo.me","https://skylight-test.skysolo.me","http://localhost:3000"],
     credentials: true,
     exposedHeaders: ["set-cookie"]
   });
@@ -38,13 +38,13 @@ async function bootstrap() {
   }
   Logger.log(`Application is running on: ${await app.getUrl()}`)
   setInterval(() => {
-    fetch("https://skylight-nestjs-server.onrender.com/v1")
+    fetch("https://skylight-backend.skysolo.me/v1")
       .then((res) => {
         Logger.log("hit api")
       }).catch((e) => {
         Logger.error("hit api error")
       })
-  }, 1000 * 60 * 5)
+  }, 1000 * 60 * 10)
 }
 
 bootstrap();

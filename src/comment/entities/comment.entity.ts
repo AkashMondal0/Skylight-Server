@@ -1,27 +1,26 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { AuthorData } from 'src/types/response.type';
+import { ObjectType, Field } from '@nestjs/graphql';
 import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Comment {
-  @Field(() => ID)
+  @Field(() => String)
   id: string;
 
   @Field()
   content: string;
 
-  @Field(() => ID)
+  @Field(() => String)
   authorId: string;
 
-  @Field(() => ID)
+  @Field(() => String)
   postId: string;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  createdAt?: Date | null;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date;
+  updatedAt?: Date | null;
 
   @Field(() => Author , { nullable: true })
-  user: AuthorData;
+  user?: Author | null;
 }

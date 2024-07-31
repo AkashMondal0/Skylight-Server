@@ -1,6 +1,6 @@
 import { FastifyRequest } from 'fastify';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Patch, Post, Put, Req, Res, UseGuards, UsePipes, Version } from '@nestjs/common';
-import { ZodValidationPipe } from 'src/validation/Validation';
+import { ZodValidationPipe } from 'src/lib/validation/Validation';
 import { FriendshipService } from './friendship.service';
 
 @Controller({

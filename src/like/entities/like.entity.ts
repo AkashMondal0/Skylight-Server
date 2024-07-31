@@ -1,33 +1,26 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from 'src/types';
-import { Users } from 'src/users/entities/users.entity';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Like {
-  @Field(() => ID)
+  @Field(() => String)
   id: string;
 
-  @Field(() => ID)
+  @Field(() => String)
   authorId: string;
 
-  @Field(() => ID)
+  @Field(() => String)
   postId: string;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date;
+  createdAt?: Date | null;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date;
+  updatedAt?: Date | null;
 
   @Field(() => Boolean, { nullable: true })
-  alreadyLiked: boolean | unknown;
+  alreadyLiked?: boolean | null;
 
-  @Field(() => Users, { nullable: true })
-  user: User[]
-}
-
-@ObjectType()
-export class LikeResponse {
-  @Field(() => Boolean)
-  like: boolean;
+  @Field(() => Author, { nullable: true })
+  user: Author[] | null
 }

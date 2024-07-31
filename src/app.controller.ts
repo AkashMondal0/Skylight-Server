@@ -6,11 +6,14 @@ import configuration from './configs/configuration';
   version: ['1'],
 })
 export class AppController {
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService,
+    // private eventsGateway: EventsGateway
+  ) { }
 
   @Version('1')
   @Get()
   LandingPage(): any {
+    // this.eventsGateway.server.emit("test","this v1 home page")
     return this.appService.render()
   }
 

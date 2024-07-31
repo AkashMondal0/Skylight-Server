@@ -2,8 +2,8 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Users {
-  id: ID!
+type Author {
+  id: String!
   username: String!
   email: String!
   name: String!
@@ -15,6 +15,12 @@ type Users {
   roles: [String!]
   isVerified: Boolean
   isPrivate: Boolean
+  accessToken: String
+  refreshToken: String
+  loggedDevice: String
+  salt: String
+  followed_by: Boolean!
+  following: Boolean
 }
 
 """
@@ -22,20 +28,10 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type Author {
-  id: String!
-  username: String
-  email: String
-  name: String
-  profilePicture: String
-  followed_by: Boolean
+type Friendship {
   following: Boolean
-}
-
-type ProfileFriendship {
+  followed_by: Boolean
   status: String
-  following: Boolean
-  followed_by: Boolean
   isFeedFavorite: Boolean
   isCloseFriends: Boolean
   blocking: Boolean
@@ -51,38 +47,49 @@ type ProfileFriendship {
   incomingRequest: Boolean
 }
 
-type ProfileView {
-  id: ID!
+type Profile {
+  id: String
   username: String
   email: String
   name: String
   profilePicture: String
+  password: String
+  bio: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  roles: [String!]
+  isVerified: Boolean
+  isPrivate: Boolean
+  accessToken: String
+  refreshToken: String
+  loggedDevice: String
+  salt: String
   postCount: Float
   followerCount: Float
   followingCount: Float
-  friendship: ProfileFriendship
+  friendship: Friendship
   top_followers: [Author!]
 }
 
 type Comment {
-  id: ID!
+  id: String!
   content: String!
-  authorId: ID!
-  postId: ID!
+  authorId: String!
+  postId: String!
   createdAt: DateTime
   updatedAt: DateTime
   user: Author
 }
 
 type Post {
-  id: ID!
+  id: String!
   content: String
   title: String
-  fileUrl: [String!]!
+  fileUrl: [String!]
   createdAt: DateTime
   updatedAt: DateTime
-  authorId: ID
-  username: ID
+  authorId: String
+  username: String
   commentCount: Float
   likeCount: Float
   is_Liked: Boolean
@@ -90,51 +97,64 @@ type Post {
   comments: [Comment!]
   likes: [Author!]
   top_Like: [Author!]
+  status: [String!]
 }
 
-type GraphQLOperation {
-  status: Boolean!
-  message: String
+type Like {
+  id: String!
+  authorId: String!
+  postId: String!
+  createdAt: DateTime
+  updatedAt: DateTime
+  alreadyLiked: Boolean
+  user: Author
 }
 
-type LikeResponse {
-  like: Boolean!
+type Message {
+  id: String!
+  conversationId: String!
+  authorId: String
+  content: String!
+  user: Author
+  fileUrl: [String!]
+  deleted: Boolean
+  seenBy: [String!]
+  createdAt: DateTime
+  updatedAt: DateTime
+  members: [String!]
 }
 
-type Friendship {
-  friendShip: Boolean!
+type Conversation {
+  id: String!
+  members: [String!]!
+  authorId: String!
+  messages: [Message!]!
+  user: Author
+  isGroup: Boolean
+  lastMessageContent: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  groupName: String
+  groupImage: String
+  groupDescription: String
 }
 
 type Query {
-  profileView(username: String!): ProfileView!
+  findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
-  findProfilePosts(findPosts: SearchByUsernameInput!): [Post!]!
+  findProfilePosts(findPosts: GraphQLPageQuery!): [Post!]!
   feedTimelineConnection: [Post!]!
   findOnePostWithComment(id: String!): Post!
-  findComments(createCommentInput: FindCommentInput!): [Comment!]!
-  findAllLikes(findAllLikesInput: SearchById!): [Author!]!
-  findAllFollower(viewFollowerInput: SearchByUsernameInput!): [Author!]!
-  findAllFollowing(viewFollowingInput: SearchByUsernameInput!): [Author!]!
+  findAllComments(createCommentInput: GraphQLPageQuery!): Post!
+  findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
+  findAllConversation(GraphQLPageQuery: GraphQLPageQuery!): [Conversation!]!
+  findOneConversation(GraphQLPageQuery: GraphQLPageQuery!): Conversation!
+  findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
+  findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
+  findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
 }
 
-input SearchByUsernameInput {
-  username: String!
-  offset: Float
-  limit: Float
-}
-
-input FindCommentInput {
-  """Example field (placeholder)"""
-  postId: String!
-
-  """Example field (placeholder)"""
-  offset: Float!
-
-  """Example field (placeholder)"""
-  limit: Float!
-}
-
-input SearchById {
+input GraphQLPageQuery {
   id: String!
   offset: Float
   limit: Float
@@ -143,10 +163,12 @@ input SearchById {
 type Mutation {
   createPost(createPostInput: CreatePostInput!): Post!
   createComment(createCommentInput: CreateCommentInput!): Comment!
-  updateComment(updateCommentInput: UpdateCommentInput!): GraphQLOperation!
-  destroyComment(id: String!): GraphQLOperation!
-  createLike(id: String!): LikeResponse!
-  destroyLike(id: String!): LikeResponse!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  destroyComment(id: String!): Comment!
+  createLike(id: String!): Like!
+  destroyLike(id: String!): Like!
+  createConversation(createConversationInput: CreateConversationInput!): Conversation!
+  createMessage(createMessageInput: CreateMessageInput!): Message!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }
@@ -178,6 +200,43 @@ input UpdateCommentInput {
   """Example field (placeholder)"""
   authorId: String
   id: String!
+}
+
+input CreateConversationInput {
+  """Example field (placeholder)"""
+  authorId: String!
+
+  """Example field (placeholder)"""
+  memberIds: [String!]!
+
+  """Example field (placeholder)"""
+  isGroup: Boolean!
+
+  """Example field (placeholder)"""
+  groupName: String
+
+  """Example field (placeholder)"""
+  groupDescription: String
+
+  """Example field (placeholder)"""
+  groupImage: String
+}
+
+input CreateMessageInput {
+  """Example field (placeholder)"""
+  content: String!
+
+  """Example field (placeholder)"""
+  authorId: String!
+
+  """Example field (placeholder)"""
+  conversationId: String!
+
+  """Example field (placeholder)"""
+  fileUrl: [String!]!
+
+  """Example field (placeholder)"""
+  members: [String!]!
 }
 
 input CreateFriendshipInput {

@@ -1,31 +1,38 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Message {
-  @Field(() => ID)
+  @Field(() => String)
   id: string;
+
+  @Field(() => String)
+  conversationId: string;
+
+  @Field(() => String, { nullable: true })
+  authorId: string | null;
 
   @Field()
   content: string;
 
-  @Field(() => [String])
-  fileUrl: string[];
+  @Field(() => Author, { nullable: true })
+  user?: Author | null;
 
-  @Field(() => ID)
-  authorId: string;
+  @Field(() => [String], { nullable: true })
+  fileUrl?: string[] | null;
 
-  @Field()
-  deleted: boolean;
+  @Field(() => Boolean, { nullable: true })
+  deleted?: boolean | null;
 
-  @Field(() => [String])
-  seenBy: string[];
-
-  @Field(() => ID)
-  conversationId: string;
+  @Field(() => [String], { nullable: true })
+  seenBy?: string[] | null;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date | string;
+  createdAt?: Date | null | unknown;
 
   @Field(() => Date, { nullable: true })
-  updatedAt?: Date | string;
+  updatedAt?: Date | null | unknown;
+
+  @Field(() => [String], { nullable: true })
+  members?: string[]
 }
