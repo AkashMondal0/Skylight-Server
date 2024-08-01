@@ -7,6 +7,8 @@ import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle
 import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { Author } from './entities/author.entity';
 import { Profile } from './entities/profile.entity';
+import { UpdateUsersInput } from './dto/update-users.input';
+import { Users } from './entities/users.entity';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +16,7 @@ export class UsersService {
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  async createUser(userCredential: RegisterUserPayload): Promise<Author | null> {
+  async createUser(userCredential: RegisterUserPayload): Promise<Users | null> {
     const hashPassword = await createHash(userCredential.password)
 
     try {
@@ -36,7 +38,7 @@ export class UsersService {
     }
   }
 
-  async findOneUserById(id: string): Promise<Author | null> {
+  async findOneUserById(id: string): Promise<Users | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -64,7 +66,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsername(email: string): Promise<Author | null> {
+  async findOneByUsername(email: string): Promise<Users | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -97,7 +99,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsernameAndEmail(email: string, username: string): Promise<Author | null> {
+  async findOneByUsernameAndEmail(email: string, username: string): Promise<Users | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -128,7 +130,7 @@ export class UsersService {
     }
   }
 
-  async findManyByUsernameAndEmail(keywords: string): Promise<Author[] | []> {
+  async findManyByUsernameAndEmail(keywords: string): Promise<Users[] | []> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -226,6 +228,32 @@ export class UsersService {
         followerCount: followerCount[0].count,
         followingCount: followingCount[0].count,
       }
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
+  async updateProfile(user: Author, updateUsersInput: UpdateUsersInput): Promise<Author | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.update(UserSchema)
+        .set({
+          profilePicture: updateUsersInput.profilePicture,
+          name: updateUsersInput.name,
+          username: updateUsersInput.username,
+          email: updateUsersInput.email
+        })
+        .where(eq(UserSchema.id, user.id))
+        .returning({
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+          username: UserSchema.username,
+          email: UserSchema.email,
+        })
+
+      return data[0] as Author
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Internal Server Error', {

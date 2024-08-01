@@ -5,7 +5,7 @@ import { comparePassword } from './bcrypt/bcrypt.function';
 import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';
-import { Author } from 'src/users/entities/author.entity';
+import { Users } from 'src/users/entities/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +33,7 @@ export class AuthService {
     return user;
   }
 
-  async signIn(response: FastifyReply, email: string, pass: string): Promise<Author | HttpException> {
+  async signIn(response: FastifyReply, email: string, pass: string): Promise<Users | HttpException> {
     const user = await this.usersService.findOneByUsername(email);
 
     if (!user || !user.password) {
@@ -71,7 +71,7 @@ export class AuthService {
     };
   }
 
-  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<Author | HttpException> {
+  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<Users | HttpException> {
 
     const user = await this.usersService.findOneByUsernameAndEmail(body.email, body.username);
 
