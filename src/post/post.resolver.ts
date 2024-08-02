@@ -16,7 +16,6 @@ export class PostResolver {
     private readonly friendshipService: FriendshipService
   ) { }
 
-  @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'findProfilePosts' })
   findProfilePosts(@SessionUserGraphQl() user: Author, @Args("findPosts") findPosts: GraphQLPageQuery) {
     return this.postService.findAllPostsByProfileName(user, findPosts);
@@ -28,7 +27,6 @@ export class PostResolver {
     return this.friendshipService.feedTimelineConnection(user);
   }
 
-  @UseGuards(GqlAuthGuard)
   @Query(() => Post, { name: 'findOnePostWithComment' })
   findOnePostWithComment(@SessionUserGraphQl() user: Author,@Args('id', { type: () => String }) id: string) {
     return this.postService.findOnePostWithComment(user,id);

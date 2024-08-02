@@ -115,7 +115,9 @@ export class AuthService {
   }
 
   async signOut(request: FastifyRequest, response: FastifyReply): Promise<string | HttpException> {
-    response.clearCookie('auth-session-token');
+    for (const [key] of Object.entries(request.cookies)) {
+      response.clearCookie(key)
+    }
     return response.send("Logged Out Successfully")
   }
 }

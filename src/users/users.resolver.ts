@@ -12,7 +12,7 @@ import { UpdateUsersInput } from './dto/update-users.input';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
 
-  @UseGuards(GqlAuthGuard)
+  
   @Query(() => Profile, { name: 'findUserProfile' })
   findUserProfile(@SessionUserGraphQl() user: Author, @Args('username', { type: () => String }) username: string) {
     return this.usersService.findProfile(user, username);

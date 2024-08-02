@@ -161,50 +161,82 @@ export class UsersService {
 
   async findProfile(user: Author, username: string): Promise<Profile | GraphQLError> {
     try {
-      const data = await this.drizzleProvider.db.select({
-        id: UserSchema.id,
-        username: UserSchema.username,
-        email: UserSchema.email,
-        name: UserSchema.name,
-        profilePicture: UserSchema.profilePicture,
-        bio: UserSchema.bio,
-        isVerified: UserSchema.isVerified,
-        isPrivate: UserSchema.isPrivate,
-        friendship: {
-          followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(
-            and(
-              eq(FriendshipSchema.authorUserId, UserSchema.id),
-              eq(FriendshipSchema.followingUserId, user.id)
-            )
-          )),
-          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(
-            and(
-              eq(FriendshipSchema.authorUserId, user.id),
-              eq(FriendshipSchema.followingUserId, UserSchema.id)
-            )
-          ))
-        }
-      }).from(UserSchema)
-        .where(eq(UserSchema.username, username)) // <- Update the condition here
-        .leftJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, UserSchema.id)) // Update the join condition here
-        .limit(1)
-        .groupBy(UserSchema.id)
+      let data: any;
 
-      if (data.length <= 0 || !data[0].id) {
+      if (user) {
+        const _data = await this.drizzleProvider.db.select({
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          name: UserSchema.name,
+          profilePicture: UserSchema.profilePicture,
+          bio: UserSchema.bio,
+          isVerified: UserSchema.isVerified,
+          isPrivate: UserSchema.isPrivate,
+          friendship: {
+            followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(
+              and(
+                eq(FriendshipSchema.authorUserId, UserSchema.id),
+                eq(FriendshipSchema.followingUserId, user.id)
+              )
+            )),
+            following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(
+              and(
+                eq(FriendshipSchema.authorUserId, user.id),
+                eq(FriendshipSchema.followingUserId, UserSchema.id)
+              )
+            ))
+          }
+        }).from(UserSchema)
+          .where(eq(UserSchema.username, username)) // <- Update the condition here
+          .leftJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, UserSchema.id)) // Update the join condition here
+          .limit(1)
+          .groupBy(UserSchema.id)
+
+        data = _data[0]
+      } else {
+        const _data = await this.drizzleProvider.db.select({
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          name: UserSchema.name,
+          profilePicture: UserSchema.profilePicture,
+          bio: UserSchema.bio,
+          isVerified: UserSchema.isVerified,
+          isPrivate: UserSchema.isPrivate,
+        }).from(UserSchema)
+          .where(eq(UserSchema.username, username)) // <- Update the condition here
+          .limit(1)
+          .groupBy(UserSchema.id)
+
+        if (!_data[0].id) {
+          throw new GraphQLError("An error occurred while fetching user profile")
+        }
+
+        data = {
+          ..._data[0],
+          friendship: {
+            followed_by: false,
+            following: false
+          }
+        }
+      }
+
+      if (!data?.id) {
         throw new GraphQLError("An error occurred while fetching user profile")
       }
 
       const followerCount = await this.drizzleProvider.db.select({
         count: count()
-      }).from(FriendshipSchema).where(eq(FriendshipSchema.followingUserId, data[0].id))
+      }).from(FriendshipSchema).where(eq(FriendshipSchema.followingUserId, data.id))
 
       const followingCount = await this.drizzleProvider.db.select({
         count: count()
-      }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data[0].id))
+      }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data.id))
 
       const postCount = await this.drizzleProvider.db.select({
         count: count()
-      }).from(PostSchema).where(eq(PostSchema.authorId, data[0].id))
+      }).from(PostSchema).where(eq(PostSchema.authorId, data.id))
 
       // const followingList = [
       //   "259f9837-1514-4183-9157-bc1f1f504f0e",
@@ -224,7 +256,7 @@ export class UsersService {
       //   .where(inArray(FriendshipSchema.authorUserId, followingList))
 
       return {
-        ...data[0],
+        ...data,
         postCount: postCount[0].count,
         followerCount: followerCount[0].count,
         followingCount: followingCount[0].count,
@@ -285,7 +317,15 @@ export class UsersService {
         return null
       }
 
-      return data[0]
+      const followerCount = await this.drizzleProvider.db.select({
+        count: count()
+      }).from(FriendshipSchema).where(eq(FriendshipSchema.followingUserId, data[0].id))
+
+      const followingCount = await this.drizzleProvider.db.select({
+        count: count()
+      }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data[0].id))
+
+      return {...data[0],followerCount,followingCount}
     } catch (error) {
       return null
     }

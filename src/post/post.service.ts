@@ -23,17 +23,6 @@ export class PostService {
         likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
-        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
-          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
-          eq(LikeSchema.postId, PostSchema.id)
-        ))),
-        user: {
-          id: UserSchema.id,
-          username: UserSchema.username,
-          email: UserSchema.email,
-          profilePicture: UserSchema.profilePicture,
-          name: UserSchema.name,
-        },
       }).from(PostSchema)
         .where(eq(PostSchema.username, findPosts.id))
         .orderBy(desc(PostSchema.createdAt))
@@ -41,10 +30,8 @@ export class PostService {
         .offset(Number(findPosts.offset) ?? 0)
         .leftJoin(LikeSchema, eq(LikeSchema.postId, PostSchema.id))
         .leftJoin(CommentSchema, eq(CommentSchema.postId, PostSchema.id))
-        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
         .groupBy(
           PostSchema.id,
-          UserSchema.id,
           CommentSchema.postId)
 
       return data
@@ -64,24 +51,24 @@ export class PostService {
         commentCount: count(CommentSchema.id),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
-        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
-          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
-          eq(LikeSchema.postId, PostSchema.id)
-        ))),
+        // is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+        //   eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+        //   eq(LikeSchema.postId, PostSchema.id)
+        // ))),
         user: {
           id: UserSchema.id,
           username: UserSchema.username,
           email: UserSchema.email,
           profilePicture: UserSchema.profilePicture,
           name: UserSchema.name,
-          followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
-            eq(FriendshipSchema.followingUserId, loggedUser.id),
-            eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
-          ))),
-          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
-            eq(FriendshipSchema.followingUserId, UserSchema.id), // <- replace with user id
-            eq(FriendshipSchema.authorUserId, loggedUser.id)
-          ))),
+          // followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+          //   eq(FriendshipSchema.followingUserId, loggedUser.id),
+          //   eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
+          // ))),
+          // following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+          //   eq(FriendshipSchema.followingUserId, UserSchema.id), // <- replace with user id
+          //   eq(FriendshipSchema.authorUserId, loggedUser.id)
+          // ))),
         },
       }).from(PostSchema)
         .where(eq(PostSchema.id, id))
