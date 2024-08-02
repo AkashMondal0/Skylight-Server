@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { Body, Controller, Delete, HttpCode, HttpException, HttpStatus, Patch, Post, Put, Req, Res, UseGuards, UsePipes, Version } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Put, Req, Res, UseGuards, UsePipes, Version } from '@nestjs/common';
 import { PostService } from './post.service';
 // import { CreatePostPayload, CreatePostSchema, UpdatePostPayload, UpdatePostSchema } from 'src/lib/validation/ZodSchema';
 // import { ZodValidationPipe } from 'src/lib/validation/Validation';
@@ -11,14 +11,20 @@ import { PostService } from './post.service';
 export class PostController {
     constructor(private readonly postService: PostService) { }
 
-    // @Post('create')
-    // @Version('1')
-    // @HttpCode(HttpStatus.CREATED)
-    // @UsePipes(new ZodValidationPipe(CreatePostSchema))
-    // @UseGuards(MyAuthGuard)
-    // async CreatePost(@Body() body: CreatePostPayload) {
-    //     return this.postService.createPost(body);
-    // }
+    @Get(':id')
+    async findOne(@Param('id') id: string, @Res() res: FastifyReply) {
+
+        try {
+            const Post = await this.postService.findPublicPostData(id);
+            if (!Post) {
+                throw new HttpException('Post Not Found', HttpStatus.NOT_FOUND);
+            }
+            return res.send(Post)
+        } catch (error) {
+            throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
     // @Put()
     // @Version('1')

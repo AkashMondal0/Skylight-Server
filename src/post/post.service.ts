@@ -124,6 +124,40 @@ export class PostService {
     }
   }
 
+  //findPublicPostData
+  async findPublicPostData(id: string): Promise<Post | null> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        likeCount: count(LikeSchema.id),
+        commentCount: count(CommentSchema.id),
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        user: {
+          username: UserSchema.username,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+        },
+      }).from(PostSchema)
+        .where(eq(PostSchema.id, id))
+        .limit(1)
+        .leftJoin(LikeSchema, eq(LikeSchema.postId, PostSchema.id))
+        .leftJoin(CommentSchema, eq(CommentSchema.postId, PostSchema.id))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .groupBy(
+          PostSchema.id,
+          UserSchema.id,
+          CommentSchema.postId)
+
+      return data[0]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError(error)
+    }
+  }
+
   async createPost(loggedUser: Author, body: CreatePostInput): Promise<Post | GraphQLError> {
     try {
       if (loggedUser.id !== body.authorId) {

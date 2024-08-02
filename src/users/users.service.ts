@@ -261,4 +261,32 @@ export class UsersService {
       });
     }
   }
+
+  // for meta data
+  async findUserPublicData(username: string): Promise<Profile | null> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        username: UserSchema.username,
+        name: UserSchema.name,
+        profilePicture: UserSchema.profilePicture,
+        bio: UserSchema.bio,
+        isPrivate: UserSchema.isPrivate,
+        id: UserSchema.id,
+        postCount: count(PostSchema.authorId),
+      }).from(UserSchema)
+        .where(eq(UserSchema.username, username)) // <- Update the condition here
+        .leftJoin(PostSchema, eq(PostSchema.authorId, UserSchema.id))
+        .limit(1)
+        .groupBy(UserSchema.id)
+
+
+      if (data.length <= 0 || !data[0].username) {
+        return null
+      }
+
+      return data[0]
+    } catch (error) {
+      return null
+    }
+  }
 }

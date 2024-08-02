@@ -8,13 +8,13 @@ import { Friendship } from 'src/friendship/entities/friendship.entity';
 export class Profile extends PartialType(Users) {
 
   @Field(() => Number, { nullable: true })
-  postCount: number;
+  postCount?: number;
 
   @Field(() => Number, { nullable: true })
-  followerCount: number;
+  followerCount?: number | unknown;
 
   @Field(() => Number, { nullable: true })
-  followingCount: number;
+  followingCount?: number | unknown;
 
   @Field(() => Friendship, { nullable: true })
   friendship?: Friendship | unknown;

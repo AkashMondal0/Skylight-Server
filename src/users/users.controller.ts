@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, Get, Query, Post, Body, Put, Param, Delete, HttpStatus, Res, Req } from '@nestjs/common';
+import { Controller, Get, Query, Post, Body, Put, Param, Delete, HttpStatus, Res, Req, HttpException } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 
@@ -9,20 +9,21 @@ import { UsersService } from './users.service';
 })
 export class UsersController {
     constructor(private usersService: UsersService) { }
-    // @Post()
-    // create(@Body() createCatDto: CreateCatDto) {
-    //     return 'This action adds a new cat';
-    // }
 
-    // @Get()
-    // findAll(@) {
-    //     return this.usersService.findProfile(username);
-    // }
+    @Get(':user')
+    async findOne(@Param('user') id: string, @Res() res: FastifyReply) {
 
-    // @Get(':id')
-    // findOne(@Param('id') id: string) {
-    //     return this.usersService.findOneUserById(id);
-    // }
+        try {
+            const user = await this.usersService.findUserPublicData(id);
+            if (!user) {
+                throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+            }
+            return res.send(user)
+        } catch (error) {
+            throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
     // @Put(':id')
     // update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
