@@ -170,7 +170,6 @@ export class UsersService {
         bio: UserSchema.bio,
         isVerified: UserSchema.isVerified,
         isPrivate: UserSchema.isPrivate,
-        postCount: count(eq(PostSchema.authorId, UserSchema.id)),
         friendship: {
           followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(
             and(
@@ -184,11 +183,9 @@ export class UsersService {
               eq(FriendshipSchema.followingUserId, UserSchema.id)
             )
           ))
-          // Add more fields here
         }
       }).from(UserSchema)
         .where(eq(UserSchema.username, username)) // <- Update the condition here
-        .leftJoin(PostSchema, eq(PostSchema.id, UserSchema.id)) // Update the join condition here
         .leftJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, UserSchema.id)) // Update the join condition here
         .limit(1)
         .groupBy(UserSchema.id)
@@ -198,13 +195,16 @@ export class UsersService {
       }
 
       const followerCount = await this.drizzleProvider.db.select({
-        count: countDistinct(FriendshipSchema.authorUserId)
+        count: count()
       }).from(FriendshipSchema).where(eq(FriendshipSchema.followingUserId, data[0].id))
 
       const followingCount = await this.drizzleProvider.db.select({
-        count: countDistinct(FriendshipSchema.followingUserId)
+        count: count()
       }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data[0].id))
 
+      const postCount = await this.drizzleProvider.db.select({
+        count: count()
+      }).from(PostSchema).where(eq(PostSchema.authorId, data[0].id))
 
       // const followingList = [
       //   "259f9837-1514-4183-9157-bc1f1f504f0e",
@@ -225,6 +225,7 @@ export class UsersService {
 
       return {
         ...data[0],
+        postCount: postCount[0].count,
         followerCount: followerCount[0].count,
         followingCount: followingCount[0].count,
       }

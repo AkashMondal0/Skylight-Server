@@ -1,7 +1,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { count, eq, desc, exists, and } from "drizzle-orm";
+import { count, eq, desc, exists, and, countDistinct } from "drizzle-orm";
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreatePostInput } from './dto/create-post.input';
@@ -19,8 +19,8 @@ export class PostService {
         id: PostSchema.id,
         content: PostSchema.content,
         fileUrl: PostSchema.fileUrl,
-        likeCount: count(LikeSchema.id),
-        commentCount: count(CommentSchema.id),
+        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
+        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
         is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(

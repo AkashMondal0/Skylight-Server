@@ -1,11 +1,10 @@
 import { ObjectType, Field, PartialType } from '@nestjs/graphql';
 import { Author } from './author.entity';
-import { Users } from './users.entity';
 import { Friendship } from 'src/friendship/entities/friendship.entity';
 
 
 @ObjectType()
-export class Profile extends PartialType(Users) {
+export class Profile extends PartialType(Author) {
 
   @Field(() => Number, { nullable: true })
   postCount?: number;
