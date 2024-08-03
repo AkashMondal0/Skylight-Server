@@ -47,14 +47,14 @@ export class PostService {
         id: PostSchema.id,
         content: PostSchema.content,
         fileUrl: PostSchema.fileUrl,
-        likeCount: count(LikeSchema.id),
-        commentCount: count(CommentSchema.id),
+        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
+        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
-        // is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
-        //   eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
-        //   eq(LikeSchema.postId, PostSchema.id)
-        // ))),
+        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+          eq(LikeSchema.postId, PostSchema.id)
+        ))),
         user: {
           id: UserSchema.id,
           username: UserSchema.username,
