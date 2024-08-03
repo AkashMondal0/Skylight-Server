@@ -8,6 +8,7 @@ import configuration from 'src/configs/configuration';
 export enum Role {
   User = 'user',
   Admin = 'admin',
+  Public = "public"
 }
 @Injectable()
 export class RolesGuard implements CanActivate {

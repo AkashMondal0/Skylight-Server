@@ -7,12 +7,16 @@ import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { Author } from './entities/author.entity';
 import { Users } from './entities/users.entity';
 import { UpdateUsersInput } from './dto/update-users.input';
+import { GqlRolesGuard } from 'src/auth/guard/Gql.roles.guard';
+import { Roles } from 'src/auth/SetMetadata';
+import { Role } from 'src/auth/guard/Roles.guard';
 
 @Resolver(() => Users)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
 
-  
+  @Roles(Role.Public)
+  @UseGuards(GqlRolesGuard)
   @Query(() => Profile, { name: 'findUserProfile' })
   findUserProfile(@SessionUserGraphQl() user: Author, @Args('username', { type: () => String }) username: string) {
     return this.usersService.findProfile(user, username);
