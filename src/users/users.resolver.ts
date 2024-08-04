@@ -9,7 +9,7 @@ import { Users } from './entities/users.entity';
 import { UpdateUsersInput } from './dto/update-users.input';
 import { GqlRolesGuard } from 'src/auth/guard/Gql.roles.guard';
 import { Roles } from 'src/auth/SetMetadata';
-import { Role } from 'src/auth/guard/Roles.guard';
+import { Role } from 'src/lib/types';
 
 @Resolver(() => Users)
 export class UsersResolver {

@@ -4,12 +4,8 @@ import { IS_PUBLIC_KEY, ROLES_KEY } from '../SetMetadata';
 import { JwtService } from '@nestjs/jwt';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import configuration from 'src/configs/configuration';
+import { Role } from 'src/lib/types';
 
-export enum Role {
-  User = 'user',
-  Admin = 'admin',
-  Public = "public"
-}
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private jwtService: JwtService,
