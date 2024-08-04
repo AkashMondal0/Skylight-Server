@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { pgTable, varchar, timestamp, boolean, pgEnum, text, uuid, index } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum('role', ['admin', 'user']);
@@ -132,3 +132,38 @@ export const ConversationSchema = pgTable('conversations', {
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 });
+
+
+export const usersRelations = relations(UserSchema, ({ many }) => ({
+    posts: many(PostSchema),
+}));
+
+export const postsRelations = relations(PostSchema, ({ one, many }) => ({
+    author: one(UserSchema, { fields: [PostSchema.authorId], references: [UserSchema.id] }),
+    comments: many(CommentSchema),
+}));
+
+export const commentsRelations = relations(CommentSchema, ({ one, many }) => ({
+    posts: one(PostSchema, { fields: [CommentSchema.postId], references: [PostSchema.id] }),
+    likes: many(LikeSchema),
+}));
+
+export const likesRelations = relations(LikeSchema, ({ one }) => ({
+    post: one(PostSchema, { fields: [LikeSchema.postId], references: [PostSchema.id] }),
+}));
+
+
+export const followersRelations = relations(FriendshipSchema, ({ one }) => ({
+    follower: one(UserSchema, { fields: [FriendshipSchema.authorUsername], references: [UserSchema.username] }),
+    following: one(UserSchema, { fields: [FriendshipSchema.followingUsername], references: [UserSchema.username] }),
+}));
+
+export const conversationsRelations = relations(ConversationSchema, ({ many, one }) => ({
+    messages: many(MessagesSchema),
+    author: one(UserSchema, { fields: [ConversationSchema.authorId], references: [UserSchema.id] }),
+}));
+
+export const messagesRelations = relations(MessagesSchema, ({ one }) => ({
+    conversation: one(ConversationSchema, { fields: [MessagesSchema.conversationId], references: [ConversationSchema.id] }),
+    author: one(UserSchema, { fields: [MessagesSchema.authorId], references: [UserSchema.id] }),
+}));

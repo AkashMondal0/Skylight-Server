@@ -325,7 +325,11 @@ export class UsersService {
         count: count()
       }).from(FriendshipSchema).where(eq(FriendshipSchema.authorUserId, data[0].id))
 
-      return {...data[0],followerCount,followingCount}
+      return {
+        ...data[0],
+        followerCount: followerCount[0].count,
+        followingCount: followingCount[0].count
+      }
     } catch (error) {
       return null
     }
