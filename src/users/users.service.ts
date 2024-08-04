@@ -49,7 +49,6 @@ export class UsersService {
         password: UserSchema.password,
         bio: UserSchema.bio,
         createdAt: UserSchema.createdAt,
-        accessToken: UserSchema.accessToken,
         roles: UserSchema.roles
       }).from(UserSchema)
         .where(eq(UserSchema.id, id))
@@ -77,7 +76,6 @@ export class UsersService {
         password: UserSchema.password,
         bio: UserSchema.bio,
         createdAt: UserSchema.createdAt,
-        accessToken: UserSchema.accessToken,
         roles: UserSchema.roles
       })
         .from(UserSchema)
@@ -110,7 +108,6 @@ export class UsersService {
         password: UserSchema.password,
         bio: UserSchema.bio,
         createdAt: UserSchema.createdAt,
-        accessToken: UserSchema.accessToken,
         roles: UserSchema.roles
       })
         .from(UserSchema)
