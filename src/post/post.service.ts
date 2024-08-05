@@ -13,7 +13,59 @@ import { Post } from './entities/post.entity';
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
-  async findProfilePosts(loggedUser: Author, findPosts: GraphQLPageQuery): Promise<Post[] | GraphQLError> {
+  async feed(loggedUser: Author): Promise<Post[]> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
+        likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
+        commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
+        is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+          eq(LikeSchema.authorId, loggedUser.id), // <-  logged user id
+          eq(LikeSchema.postId, PostSchema.id)
+        ))),
+        user: {
+          id: UserSchema.id,
+          username: UserSchema.username,
+          email: UserSchema.email,
+          profilePicture: UserSchema.profilePicture,
+          name: UserSchema.name,
+          followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, loggedUser.id),// <-  logged user id
+            eq(FriendshipSchema.authorUserId, UserSchema.id)
+          ))),
+          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, UserSchema.id),
+            eq(FriendshipSchema.authorUserId, loggedUser.id)
+          ))),
+        },
+      })
+        .from(PostSchema)
+        .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .where(eq(FriendshipSchema.followingUserId, PostSchema.authorId))
+        .innerJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, loggedUser.id))
+        .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .limit(12)
+        .offset(0)
+        .orderBy(desc(PostSchema.createdAt))
+        .groupBy(
+          PostSchema.id,
+          UserSchema.id,
+        )
+      return data as Post[]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
+  async findPosts(loggedUser: Author, findPosts: GraphQLPageQuery): Promise<Post[] | GraphQLError> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
@@ -40,7 +92,7 @@ export class PostService {
     }
   }
 
-  async findOnePostWithComment(loggedUser: Author, id: string): Promise<Post | GraphQLError> {
+  async findOnePost(loggedUser: Author, id: string): Promise<Post | GraphQLError> {
     try {
       if (loggedUser) {
         const _data = await this.drizzleProvider.db.select({
@@ -164,6 +216,7 @@ export class PostService {
     }
   }
 
+  // createPost
   async createPost(loggedUser: Author, body: CreatePostInput): Promise<Post | GraphQLError> {
     try {
       if (loggedUser.id !== body.authorId) {

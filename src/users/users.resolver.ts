@@ -15,8 +15,7 @@ import { Role } from 'src/lib/types';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
 
-  @Roles(Role.Public)
-  @UseGuards(GqlRolesGuard)
+  @UseGuards(GqlAuthGuard)
   @Query(() => Profile, { name: 'findUserProfile' })
   findUserProfile(@SessionUserGraphQl() user: Author, @Args('username', { type: () => String }) username: string) {
     return this.usersService.findProfile(user, username);
@@ -25,7 +24,7 @@ export class UsersResolver {
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'findUsersByKeyword' })
   findUsersByKeyword(@SessionUserGraphQl() user: Author, @Args('keyword', { type: () => String }) keyword: string) {
-    return this.usersService.findManyByUsernameAndEmail(keyword);
+    return this.usersService.findUsersByKeyword(keyword);
   }
 
   @UseGuards(GqlAuthGuard)

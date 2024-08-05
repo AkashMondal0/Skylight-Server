@@ -36,14 +36,4 @@ export class ConversationResolver {
   ) {
     return this.conversationService.findOne(user, graphQLPageQuery);
   }
-
-  // @Mutation(() => Conversation)
-  // updateConversation(@Args('updateConversationInput') updateConversationInput: UpdateConversationInput) {
-  //   return this.conversationService.update(updateConversationInput.id, updateConversationInput);
-  // }
-
-  // @Mutation(() => Conversation)
-  // removeConversation(@Args('id', { type: () => Int }) id: number) {
-  //   return this.conversationService.remove(id);
-  // }
 }

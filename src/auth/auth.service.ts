@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { comparePassword } from './bcrypt/bcrypt.function';
@@ -6,17 +6,21 @@ import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';
 import { Users } from 'src/users/entities/users.entity';
+import { UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { eq, or } from 'drizzle-orm';
+import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly drizzleProvider: DrizzleProvider
   ) { }
 
   async validateUser(username: string, pass: string): Promise<any> {
 
-    const user = await this.usersService.findOneByUsername(username);
+    const user = await this.findOneByUsername(username);
 
     if (!user || !user.password) {
       // throw error user not found
@@ -33,8 +37,9 @@ export class AuthService {
     return user;
   }
 
+  // 
   async signIn(response: FastifyReply, email: string, pass: string): Promise<Users | HttpException> {
-    const user = await this.usersService.findOneByUsername(email);
+    const user = await this.findOneByUsername(email);
 
     if (!user || !user.password) {
       // throw error user not found
@@ -73,7 +78,7 @@ export class AuthService {
 
   async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<Users | HttpException> {
 
-    const user = await this.usersService.findOneByUsernameAndEmail(body.email, body.username);
+    const user = await this.findOneByUsernameAndEmail(body.email, body.username);
 
     if (user) {
       // throw error user not found
@@ -120,4 +125,95 @@ export class AuthService {
     }
     return response.send("Logged Out Successfully")
   }
+
+  // 
+  async findOneUserById(id: string): Promise<Users | null> {
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        roles: UserSchema.roles
+      }).from(UserSchema)
+        .where(eq(UserSchema.id, id))
+        .limit(1)
+
+      if (!user[0]) {
+        return null
+      }
+
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      return null
+    }
+  }
+
+  async findOneByUsername(email: string): Promise<Users | null> {
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        roles: UserSchema.roles
+      })
+        .from(UserSchema)
+        .where(
+          or(
+            eq(UserSchema.email, email),
+            eq(UserSchema.username, email)
+          )
+        )
+        .limit(1)
+
+      if (!user[0]) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      return null;
+    }
+  }
+
+  async findOneByUsernameAndEmail(email: string, username: string): Promise<Users | null> {
+    try {
+      const user = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+        profilePicture: UserSchema.profilePicture,
+        password: UserSchema.password,
+        bio: UserSchema.bio,
+        createdAt: UserSchema.createdAt,
+        roles: UserSchema.roles
+      })
+        .from(UserSchema)
+        .where(or(
+          eq(UserSchema.email, email),
+          eq(UserSchema.username, username)
+        ))
+        .limit(1)
+
+      if (!user[0]) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      Logger.error(error)
+      return null;
+    }
+  }
+
 }

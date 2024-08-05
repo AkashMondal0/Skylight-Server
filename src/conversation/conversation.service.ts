@@ -79,7 +79,6 @@ export class ConversationService {
     return data[0]
   }
 
-
   async findAll(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation[] | GraphQLError> {
 
     const data = await this.drizzleProvider.db.select({
@@ -223,13 +222,5 @@ export class ConversationService {
       ...data[0],
       messages
     }
-  }
-
-  update(id: number, updateConversationInput: UpdateConversationInput) {
-    return `This action updates a #${id} conversation`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} conversation`;
   }
 }

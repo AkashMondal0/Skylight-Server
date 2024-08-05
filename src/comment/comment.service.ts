@@ -39,7 +39,6 @@ export class CommentService {
     }
   }
 
-
   async findAll(loggedUser: Author, findCommentInput: GraphQLPageQuery): Promise<Post | GraphQLError> {
     try {
       const post = await this.drizzleProvider.db.select({
@@ -141,5 +140,4 @@ export class CommentService {
       }
     }
   }
-
 }

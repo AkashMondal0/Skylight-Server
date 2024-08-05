@@ -23,19 +23,4 @@ export class MessageResolver {
   findAllMessages(@SessionUserGraphQl() user: Author, @Args('graphQLPageQuery') graphQLPageQuery: GraphQLPageQuery) {
     return this.messageService.findAll(user, graphQLPageQuery);
   }
-
-  // @Query(() => Message, { name: 'message' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.messageService.findOne(id);
-  // }
-
-  // @Mutation(() => Message)
-  // updateMessage(@Args('updateMessageInput') updateMessageInput: UpdateMessageInput) {
-  //   return this.messageService.update(updateMessageInput.id, updateMessageInput);
-  // }
-
-  // @Mutation(() => Message)
-  // removeMessage(@Args('id', { type: () => Int }) id: number) {
-  //   return this.messageService.remove(id);
-  // }
 }
