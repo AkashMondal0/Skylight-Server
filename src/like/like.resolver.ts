@@ -28,14 +28,4 @@ export class LikeResolver {
   findAllLikes(@SessionUserGraphQl() user: Author, @Args('findAllLikesInput') findAllLikesInput: GraphQLPageQuery) {
     return this.likeService.findAll(user, findAllLikesInput);
   }
-
-  // @Query(() => Like, { name: 'like' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.likeService.findOne(id);
-  // }
-
-  // @Mutation(() => Like)
-  // updateLike(@Args('updateLikeInput') updateLikeInput: UpdateLikeInput) {
-  //   return this.likeService.update(updateLikeInput.id, updateLikeInput);
-  // }
 }
