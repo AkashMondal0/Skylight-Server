@@ -22,8 +22,8 @@ export class PostResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Query(() => [Post], { name: 'findPosts' })
-  findPosts(@SessionUserGraphQl() user: Author, @Args("findPosts") findPosts: GraphQLPageQuery) {
+  @Query(() => [Post], { name: 'findAllPosts' })
+  findPosts(@SessionUserGraphQl() user: Author, @Args("findAllPosts") findPosts: GraphQLPageQuery) {
     return this.postService.findPosts(user, findPosts);
   }
 
