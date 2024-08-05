@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, varchar, timestamp, boolean, pgEnum, text, index, integer, uuid } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, boolean, pgEnum, text, index, integer, uuid, uniqueIndex } from "drizzle-orm/pg-core";
 import { generateRandomString } from "src/lib/id-generate";
 export const roleEnum = pgEnum('role', ['admin', 'user']);
 export const friendshipStatusEnum = pgEnum('friendship_status', ['pending', 'accepted', 'rejected', 'blocked', 'deleted']);
@@ -19,9 +19,9 @@ export const UserSchema = pgTable('users', {
     isVerified: boolean('is_verified').notNull().default(false),
     isPrivate: boolean('is_private').notNull().default(false),
 }, (users) => ({
-    emailIdx: index('email_idx').on(users.email),
-    usernameIdx: index('username_idx').on(users.username),
-    emailUsernameIdx: index('email_username_idx').on(users.email, users.username)
+    uniqueIdx: uniqueIndex('unique_idx').on(users.email),
+    usernameIdx: uniqueIndex('username_idx').on(users.username),
+    emailUsernameIdx: uniqueIndex('email_username_idx').on(users.email, users.username)
 }))
 
 export const FriendshipSchema = pgTable('friendships', {
@@ -120,7 +120,10 @@ export const StorySchema = pgTable('stories', {
     viewCount: integer('view_count').notNull().default(0),
     expiresAt: timestamp('expires_at').notNull(),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
-});
+}, (stories) => ({
+    authorIdIdx: index('story_author_id_idx').on(stories.authorId),
+    createdAtIdx: index('story_created_at_idx').on(stories.createdAt)
+}));
 
 export const ReelSchema = pgTable('reels', {
     id: text('id').$defaultFn(() => generateRandomString({ length: 40, type: "lowernumeric" })).primaryKey(),
@@ -132,7 +135,10 @@ export const ReelSchema = pgTable('reels', {
     isPublic: boolean('is_public').notNull().default(true),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
     updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
-});
+}, (reels) => ({
+    authorIdIdx: index('reel_author_id_idx').on(reels.authorId),
+    isPublicIdx: index('reel_is_public_idx').on(reels.isPublic)
+}));
 
 export const commentReplySchema = pgTable('comment_replies', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -158,7 +164,12 @@ export const MessagesSchema = pgTable('messages', {
     conversationId: uuid('conversation_id').notNull().references(() => ConversationSchema.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
-});
+}, (messages) => ({
+    authorIdIdx: index('message_author_id_idx').on(messages.authorId),
+    conversationIdIdx: index('message_conversation_id_idx').on(messages.conversationId),
+    authorConversationIdx: index('message_author_conversation_idx').on(messages.authorId, messages.conversationId)
+}));
+
 
 export const ConversationSchema = pgTable('conversations', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -172,7 +183,11 @@ export const ConversationSchema = pgTable('conversations', {
     lastMessageContent: varchar('last_message_content'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
-});
+}, (conversations) => ({
+    authorIdIdx: index('conversation_author_id_idx').on(conversations.authorId),
+    userIdIdx: index('conversation_user_id_idx').on(conversations.userId),
+    authorUserIdx: index('conversation_author_user_idx').on(conversations.authorId, conversations.userId)
+}));
 
 export const userRelations = relations(UserSchema, ({ many }) => ({
     posts: many(PostSchema),

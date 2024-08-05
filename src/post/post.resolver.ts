@@ -17,9 +17,10 @@ export class PostResolver {
     private readonly friendshipService: FriendshipService
   ) { }
 
+  @UseGuards(GqlRolesGuard)
   @Query(() => [Post], { name: 'findProfilePosts' })
   findProfilePosts(@SessionUserGraphQl() user: Author, @Args("findPosts") findPosts: GraphQLPageQuery) {
-    return this.postService.findAllPostsByProfileName(user, findPosts);
+    return this.postService.findProfilePosts(user, findPosts);
   }
 
   @UseGuards(GqlAuthGuard)
