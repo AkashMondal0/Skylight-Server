@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { count, eq, exists, like, or, and, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { Author } from './entities/author.entity';
 import { Profile } from './entities/profile.entity';
 import { UpdateUsersInput } from './dto/update-users.input';
-import { Users } from './entities/users.entity';
 
 @Injectable()
 export class UsersService {

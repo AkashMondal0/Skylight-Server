@@ -12,7 +12,7 @@ export class Conversation {
   @Field(() => String)
   authorId: string;
 
-  @Field(() => [Message])
+  @Field(() => [Message],{ nullable: true })
   messages?: Message[] | any[]
 
   @Field(() => Author,{ nullable: true })

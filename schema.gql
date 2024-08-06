@@ -113,7 +113,7 @@ type Conversation {
   id: String!
   members: [String!]!
   authorId: String!
-  messages: [Message!]!
+  messages: [Message!]
   user: Author
   isGroup: Boolean
   lastMessageContent: String
@@ -197,7 +197,7 @@ input UpdateCommentInput {
 
 input CreateConversationInput {
   """Example field (placeholder)"""
-  authorId: String!
+  authorId: String
 
   """Example field (placeholder)"""
   memberIds: [String!]!

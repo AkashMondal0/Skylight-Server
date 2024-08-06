@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { comparePassword, createHash } from './bcrypt/bcrypt.function';
+import { comparePassword, createHash } from 'src/lib/bcrypt/bcrypt.function';
 import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';

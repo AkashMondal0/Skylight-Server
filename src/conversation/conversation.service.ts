@@ -17,13 +17,13 @@ export class ConversationService {
 
   async create(user: Author, createConversationInput: CreateConversationInput): Promise<Conversation | GraphQLError> {
 
-    const { authorId, memberIds, isGroup = false, groupDescription = "Group", groupName = "Group", groupImage = "/user.jpg" } = createConversationInput
+    const { memberIds, isGroup = false, groupDescription = "Group", groupName = "Group", groupImage = "/user.jpg" } = createConversationInput
 
     // create group
     if (isGroup && memberIds.length >= 2) {
       const data = await this.drizzleProvider.db.insert(ConversationSchema).values({
-        authorId: authorId ?? user.id,
-        members: memberIds,
+        authorId: user.id,
+        members: [user.id, ...memberIds],
         isGroup,
         groupDescription,
         groupImage,
@@ -49,17 +49,17 @@ export class ConversationService {
       .where(and(arrayContains(ConversationSchema.members, memberIds), eq(ConversationSchema.isGroup, false)))
       .limit(1)
 
-    if (findConversationData.length > 0) {
-      throw new GraphQLError("Conversation already exist")
+    if (findConversationData[0]) {
+      return findConversationData[0] as Conversation
     }
-
     // create private
     const data = await this.drizzleProvider.db.insert(ConversationSchema).values({
-      authorId: authorId ?? user.id,
-      members: memberIds,
-      userId: memberIds.filter((id) => id !== authorId)[0],
+      authorId: user.id,
+      members: [user.id, ...memberIds],
+      userId: memberIds[0],
       isGroup,
-    }).returning()
+    })
+      .returning({ id: ConversationSchema.id })
 
     return data[0] as Conversation
   }
@@ -76,6 +76,7 @@ export class ConversationService {
       groupName: ConversationSchema.groupName,
       updatedAt: ConversationSchema.updatedAt,
       lastMessageContent: ConversationSchema.lastMessageContent,
+      messages: ConversationSchema.messages,
       user: {
         id: UserSchema.id,
         username: UserSchema.username,
@@ -117,6 +118,7 @@ export class ConversationService {
       groupName: ConversationSchema.groupName,
       updatedAt: ConversationSchema.updatedAt,
       lastMessageContent: ConversationSchema.lastMessageContent,
+      messages: ConversationSchema.messages,
       user: {
         id: UserSchema.id,
         username: UserSchema.username,
@@ -126,23 +128,7 @@ export class ConversationService {
       }
     })
       .from(ConversationSchema)
-      .where(
-        or(
-          // if id is dm conversation
-          and(
-            arrayContains(ConversationSchema.members, [
-              user.id,
-              graphQLPageQuery.id
-            ]),
-            eq(ConversationSchema.isGroup, false)
-          ),
-          // if id is group conversation
-          and(
-            eq(ConversationSchema.id, graphQLPageQuery.id),
-            eq(ConversationSchema.isGroup, true),
-          ),
-        )
-      )
+      .where(eq(ConversationSchema.id, graphQLPageQuery.id))
       .leftJoin(UserSchema, eq(UserSchema.id,
         sql`CASE 
           WHEN ${ConversationSchema.userId} = ${user.id} THEN ${ConversationSchema.authorId}
@@ -152,60 +138,10 @@ export class ConversationService {
       ))
       .limit(1)
 
-    if (!data[0]) {
-      const findUser = await this.drizzleProvider.db.select({
-        id: UserSchema.id,
-        username: UserSchema.username,
-        email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-        name: UserSchema.name,
-      })
-        .from(UserSchema)
-        .where(eq(UserSchema.id, graphQLPageQuery.id))
-      if (!findUser[0].id) {
-        throw new GraphQLError("Conversation Not Fount")
+      if (!data[0]) {
+        throw new GraphQLError("Conversation not found")
       }
-      // create private ==> // graphQLPageQuery.id // userId
-      const data = await this.drizzleProvider.db.insert(ConversationSchema).values({
-        authorId: user.id,
-        members: [
-          user.id,
-          findUser[0].id // userId
-        ],
-        userId: findUser[0].id,
-        isGroup: false,
-      }).returning()
 
-      return {
-        ...data[0],
-        user: findUser[0],
-        messages: []
-      }
-    }
-
-    const messages = await this.drizzleProvider.db.select({
-      id: MessagesSchema.id,
-      conversationId: MessagesSchema.conversationId,
-      authorId: MessagesSchema.authorId,
-      content: MessagesSchema.content,
-      fileUrl: MessagesSchema.fileUrl,
-      deleted: MessagesSchema.deleted,
-      seenBy: MessagesSchema.seenBy,
-      createdAt: MessagesSchema.createdAt,
-      updatedAt: MessagesSchema.updatedAt,
-    })
-      .from(MessagesSchema)
-      .where(and(
-        eq(MessagesSchema.conversationId, data[0].id), // <--- id
-        eq(MessagesSchema.deleted, false),
-      ))
-      .orderBy(asc(MessagesSchema.createdAt))
-      .limit(graphQLPageQuery.limit ?? 16)
-      .offset(graphQLPageQuery.offset ?? 0)
-
-    return {
-      ...data[0],
-      messages
-    }
+    return data[0]
   }
 }
