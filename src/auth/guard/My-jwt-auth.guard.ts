@@ -20,7 +20,7 @@ export class MyAuthGuard implements CanActivate {
   private extractTokenFromHeader(request: FastifyRequest): string | undefined {
     // const [type, token] = request.headers.authorization?.split(' ') ?? [];
     // return type === 'Bearer' ? token : undefined;
-    return request.cookies['auth-session-token'];
+    return request.cookies[configuration().COOKIE_NAME];
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

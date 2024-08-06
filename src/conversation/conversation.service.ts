@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateConversationInput } from './dto/create-conversation.input';
-import { UpdateConversationInput } from './dto/update-conversation.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { RedisProvider } from 'src/db/redis/redis.provider';
 import { and, arrayContains, asc, desc, eq, or, sql } from 'drizzle-orm';
@@ -18,14 +17,7 @@ export class ConversationService {
 
   async create(user: Author, createConversationInput: CreateConversationInput): Promise<Conversation | GraphQLError> {
 
-    const {
-      authorId,
-      memberIds,
-      isGroup = false,
-      groupDescription = "Group",
-      groupName = "Group",
-      groupImage = "/user.jpg"
-    } = createConversationInput
+    const { authorId, memberIds, isGroup = false, groupDescription = "Group", groupName = "Group", groupImage = "/user.jpg" } = createConversationInput
 
     // create group
     if (isGroup && memberIds.length >= 2) {
@@ -44,7 +36,7 @@ export class ConversationService {
         })
       }
 
-      return data[0]
+      return data[0] as Conversation
     }
 
     if (memberIds.length < 1) {
@@ -52,16 +44,9 @@ export class ConversationService {
     }
 
     // find private
-    const findConversationData = await this.drizzleProvider.db.select({
-      id: ConversationSchema.id,
-    })
+    const findConversationData = await this.drizzleProvider.db.select({ id: ConversationSchema.id })
       .from(ConversationSchema)
-      .where(
-        and(
-          arrayContains(ConversationSchema.members, memberIds),
-          eq(ConversationSchema.isGroup, false)
-        )
-      )
+      .where(and(arrayContains(ConversationSchema.members, memberIds), eq(ConversationSchema.isGroup, false)))
       .limit(1)
 
     if (findConversationData.length > 0) {
@@ -76,7 +61,7 @@ export class ConversationService {
       isGroup,
     }).returning()
 
-    return data[0]
+    return data[0] as Conversation
   }
 
   async findAll(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation[] | GraphQLError> {

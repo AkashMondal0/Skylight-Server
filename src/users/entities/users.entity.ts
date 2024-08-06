@@ -1,8 +1,6 @@
-import { ObjectType, Field } from '@nestjs/graphql';
-
+import { ObjectType, Field ,PartialType} from '@nestjs/graphql';
 @ObjectType()
 export class Users {
-
   @Field(() => String)
   id: string;
 
@@ -10,47 +8,95 @@ export class Users {
   username: string;
 
   @Field(() => String)
-  email: string;
-
-  @Field(() => String)
   name: string;
 
-  @Field(() => String, { nullable: true })
-  profilePicture?: string | null
+  @Field(() => String)
+  email: string;
 
   @Field(() => String, { nullable: true })
-  password?: string | null;
+  profilePicture?: string;
 
   @Field(() => String, { nullable: true })
-  bio?: string | null;
+  bio?: string;
+
+  @Field(() => [String])
+  website: string[];
+}
+
+@ObjectType()
+export class Account {
+  @Field(() => String)
+  id: string;
+
+  @Field(() => Boolean)
+  isVerified: boolean;
+
+  @Field(() => Boolean)
+  isPrivate: boolean;
+
+  @Field(() => [String])
+  roles: string[];
+
+  @Field(() => String, { nullable: true })
+  location?: string;
+
+  @Field(() => Number, { nullable: true })
+  phone?: number;
+
+  @Field(() => String, { nullable: true })
+  locale?: string;
+
+  @Field(() => Number)
+  timeFormat: number;
+
+  @Field(() => Boolean)
+  locked: boolean;
 
   @Field(() => Date, { nullable: true })
-  createdAt?: Date | null | unknown; 
-
-  @Field(() => Date, { nullable: true })
-  updatedAt?: Date | null | unknown;
+  accessTokenExpires?: Date;
 
   @Field(() => [String], { nullable: true })
-  roles?: string[] | null;
+  accessToken?: string[];
 
-  @Field(() => Boolean, { nullable: true })
-  isVerified?: boolean | null;
+  @Field(() => [String], { nullable: true })
+  refreshToken?: string[];
 
-  @Field(() => Boolean, { nullable: true })
-  isPrivate?: boolean | null;
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
+}
+
+@ObjectType()
+export class UserSettings {
+  @Field(() => String)
+  id: string;
 
   @Field(() => String)
-  accessToken?: string | null;
+  theme: string;
+}
+
+@ObjectType()
+export class UserPassword {
+  @Field(() => String)
+  id: string;
 
   @Field(() => String)
-  refreshToken?: string | unknown;
+  password: string;
 
   @Field(() => String)
-  loggedDevice?: any[] | unknown;
+  hash: string;
+}
 
-  // @Field(() => String)
-  // roles?: Role[] | string[];
+@ObjectType()
+export class Session {
+  @Field(() => String)
+  id: string;
 
   @Field(() => String)
-  salt?: string;
+  sessionToken: string;
+
+  @Field(() => Date)
+  expires: Date;
 }

@@ -66,6 +66,11 @@ type Post {
   content: String
   title: String
   fileUrl: [String!]
+  song: [String!]
+  tags: [String!]!
+  locations: [String!]!
+  country: String
+  city: String
   createdAt: DateTime
   updatedAt: DateTime
   authorId: String

@@ -20,6 +20,21 @@ export class Post {
 
   @Field(() => [String], { nullable: true })
   fileUrl?: string[] | null;
+  // 
+  @Field(() => [String], { nullable: true })
+  song?: string[];
+
+  @Field(() => [String])
+  tags: string[];
+
+  @Field(() => [String])
+  locations: string[];
+
+  @Field(() => String, { nullable: true })
+  country?: string;
+
+  @Field(() => String, { nullable: true })
+  city?: string;
 
   @Field(() => Date, { nullable: true })
   createdAt?: Date | unknown;
@@ -46,10 +61,10 @@ export class Post {
   user?: Author | null | unknown;
 
   @Field(() => [Comment], { nullable: true })
-  comments?: Comment[] | null;
+  comments?: Comment[] | any[];
 
   @Field(() => [Author], { nullable: true })
-  likes?: Author[] | null;
+  likes?: Author[] | any[];
 
   @Field(() => [Author], { nullable: true })
   top_Like?: Author[] | null;

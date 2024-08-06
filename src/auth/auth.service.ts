@@ -1,45 +1,30 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { comparePassword } from './bcrypt/bcrypt.function';
+import { comparePassword, createHash } from './bcrypt/bcrypt.function';
 import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from 'src/configs/configuration';
-import { Users } from 'src/users/entities/users.entity';
-import { UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { AccountSchema, UserPasswordSchema, UserSchema, UserSettingsSchema } from 'src/db/drizzle/drizzle.schema';
 import { eq, or } from 'drizzle-orm';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
+import { Users } from 'src/users/entities/users.entity';
+
+export interface SignUpAndSignInResponse {
+  id: string,
+  username: string,
+  email: string,
+  accessToken: string
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly drizzleProvider: DrizzleProvider
   ) { }
-
-  async validateUser(username: string, pass: string): Promise<any> {
-
-    const user = await this.findOneByUsername(username);
-
-    if (!user || !user.password) {
-      // throw error user not found
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
-    }
-
-    const isPasswordMatching = await comparePassword(pass, user.password);
-
-    if (!isPasswordMatching) {
-      // throw error wrong credentials
-      throw new HttpException('Wrong Credentials', HttpStatus.UNAUTHORIZED);
-    }
-
-    return user;
-  }
-
   // 
-  async signIn(response: FastifyReply, email: string, pass: string): Promise<Users | HttpException> {
-    const user = await this.findOneByUsername(email);
+  async signIn(response: FastifyReply, email: string, pass: string): Promise<SignUpAndSignInResponse | HttpException> {
+    const user = await this.findUserAndPassword(email);
 
     if (!user || !user.password) {
       // throw error user not found
@@ -57,18 +42,17 @@ export class AuthService {
       username: user.username,
       id: user.id,
       email: user.email,
-      name: user.name,
-      profilePicture: user.profilePicture,
-      createdAt: user.createdAt,
-      roles: user.roles,
+      name: user.name
     }, { expiresIn: '1d' })
 
-    response.setCookie('auth-session-token', accessToken, {
+    response.setCookie('sky.inc-token', accessToken, {
       domain: configuration().DOMAIN,
-      path: "/",
-      maxAge: 1000 * 60 * 60 * 24 * 30,
+      path: configuration().COOKIE_PATH,
+      maxAge: configuration().COOKIE_MAX_AGE, // 30 days  
       httpOnly: true,
-      priority: "medium"
+      priority: "medium",
+      sameSite: "lax",
+      secure: true
     })
     return {
       ...user,
@@ -76,47 +60,40 @@ export class AuthService {
     };
   }
 
-  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<Users | HttpException> {
+  async signUp(response: FastifyReply, body: RegisterUserPayload): Promise<SignUpAndSignInResponse | HttpException> {
 
-    const user = await this.findOneByUsernameAndEmail(body.email, body.username);
+    const user = await this.findUserForRegister(body.email, body.username);
 
     if (user) {
       // throw error user not found
       throw new HttpException('User Already Registered', HttpStatus.BAD_REQUEST);
     }
 
-    const newUser = await this.usersService.createUser(body);
-
+    const newUser = await this.createUser(body);
 
     if (!newUser) {
       // throw error user not found
       throw new HttpException('Failed to create user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // await this.redisProvider.redisClient.set(newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24 * 30); // seconds * minutes * hours * days
-
     const accessToken = await this.jwtService.signAsync({
       username: newUser.username,
-      id: newUser.id,
       email: newUser.email,
       name: newUser.name,
-      profilePicture: newUser.profilePicture ?? '',
-      createdAt: newUser.createdAt,
-      roles: newUser.roles,
-    }, { expiresIn: '1d' })
+      id: newUser.id,
+    }, { expiresIn: configuration().JWT_EXPIRATION })
 
-    response.setCookie('auth-session-token', accessToken, {
+    response.setCookie('sky.inc-token', accessToken, {
       domain: configuration().DOMAIN,
-      path: "/",
-      maxAge: 1000 * 60 * 60 * 24 * 30,
+      path: configuration().COOKIE_PATH,
+      maxAge: configuration().COOKIE_MAX_AGE, // 30 days  
       httpOnly: true,
-      priority: "medium"
+      priority: "medium",
+      sameSite: "lax",
+      secure: true
     })
 
-    return {
-      ...newUser,
-      accessToken
-    }
+    return { ...newUser, accessToken: accessToken }
   }
 
   async signOut(request: FastifyRequest, response: FastifyReply): Promise<string | HttpException> {
@@ -126,78 +103,50 @@ export class AuthService {
     return response.send("Logged Out Successfully")
   }
 
-  // 
-  async findOneUserById(id: string): Promise<Users | null> {
+  async findUserAndPassword(email: string): Promise<{
+    id: string,
+    username: string,
+    email: string,
+    name: string,
+    password: string | null,
+    hash: string | null
+  } | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
         username: UserSchema.username,
         name: UserSchema.name,
         email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-        password: UserSchema.password,
-        bio: UserSchema.bio,
-        createdAt: UserSchema.createdAt,
-        roles: UserSchema.roles
-      }).from(UserSchema)
-        .where(eq(UserSchema.id, id))
-        .limit(1)
-
-      if (!user[0]) {
-        return null
-      }
-
-      return user[0];
-    } catch (error) {
-      Logger.error(error)
-      return null
-    }
-  }
-
-  async findOneByUsername(email: string): Promise<Users | null> {
-    try {
-      const user = await this.drizzleProvider.db.select({
-        id: UserSchema.id,
-        username: UserSchema.username,
-        name: UserSchema.name,
-        email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-        password: UserSchema.password,
-        bio: UserSchema.bio,
-        createdAt: UserSchema.createdAt,
-        roles: UserSchema.roles
+        password: UserPasswordSchema.password,
+        hash: UserPasswordSchema.hash,
+        profilePicture: UserSchema.profilePicture
       })
         .from(UserSchema)
-        .where(
-          or(
-            eq(UserSchema.email, email),
-            eq(UserSchema.username, email)
-          )
-        )
+        .leftJoin(UserPasswordSchema, eq(UserSchema.id, UserPasswordSchema.id))
+        .where(or(eq(UserSchema.email, email), eq(UserSchema.username, email)))
         .limit(1)
 
-      if (!user[0]) {
+      if (!user[0] || !user[0].password) {
         return null;
       }
-      return user[0];
+
+      return user[0]
     } catch (error) {
-      Logger.error(error)
+      Logger.error(`findUserAndPassword Error:`, error)
       return null;
     }
   }
 
-  async findOneByUsernameAndEmail(email: string, username: string): Promise<Users | null> {
+  async findUserForRegister(email: string, username: string): Promise<{
+    id: string,
+    username: string,
+    email: string,
+  } | null> {
     try {
       const user = await this.drizzleProvider.db.select({
         id: UserSchema.id,
         username: UserSchema.username,
-        name: UserSchema.name,
         email: UserSchema.email,
-        profilePicture: UserSchema.profilePicture,
-        password: UserSchema.password,
-        bio: UserSchema.bio,
-        createdAt: UserSchema.createdAt,
-        roles: UserSchema.roles
       })
         .from(UserSchema)
         .where(or(
@@ -211,9 +160,49 @@ export class AuthService {
       }
       return user[0];
     } catch (error) {
-      Logger.error(error)
+      Logger.error(`findUser Error:`, error)
       return null;
     }
   }
 
+  async createUser(userCredential: RegisterUserPayload): Promise<Users | null> {
+    const hashPassword = await createHash(userCredential.password)
+
+    try {
+      const newUser = await this.drizzleProvider.db.insert(UserSchema).values({
+        username: userCredential.username,
+        name: userCredential.name,
+        email: userCredential.email,
+      }).returning({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        name: UserSchema.name,
+        email: UserSchema.email,
+      })
+
+      await this.drizzleProvider.db.insert(AccountSchema).values({
+        id: newUser[0].id,
+      }).returning()
+
+      await this.drizzleProvider.db.insert(UserPasswordSchema).values({
+        id: newUser[0].id,
+        password: hashPassword,
+        hash: hashPassword
+      }).returning()
+
+      await this.drizzleProvider.db.insert(UserSettingsSchema).values({
+        id: newUser[0].id,
+      }).returning()
+
+
+      if (!newUser[0].id) {
+        return null;
+      }
+
+      return newUser[0] as Users
+    } catch (error) {
+      Logger.error(`createUser Error:`, error)
+      return null
+    }
+  }
 }

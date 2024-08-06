@@ -13,7 +13,7 @@ export class Conversation {
   authorId: string;
 
   @Field(() => [Message])
-  messages?: Message[]
+  messages?: Message[] | any[]
 
   @Field(() => Author,{ nullable: true })
   user?: Author | null
