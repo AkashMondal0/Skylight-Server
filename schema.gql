@@ -122,10 +122,10 @@ type Conversation {
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
-  findProfilePosts(findPosts: GraphQLPageQuery!): [Post!]!
   feedTimelineConnection: [Post!]!
-  findOnePostWithComment(id: String!): Post!
-  findAllComments(createCommentInput: GraphQLPageQuery!): Post!
+  findAllPosts(findAllPosts: GraphQLPageQuery!): [Post!]!
+  findOnePost(id: String!): Post!
+  findAllComments(createCommentInput: GraphQLPageQuery!): [Comment!]!
   findAllLikes(findAllLikesInput: GraphQLPageQuery!): [Author!]!
   findAllConversation(GraphQLPageQuery: GraphQLPageQuery!): [Conversation!]!
   findOneConversation(GraphQLPageQuery: GraphQLPageQuery!): Conversation!

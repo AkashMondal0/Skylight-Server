@@ -1,7 +1,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { count, eq, desc, exists, and, countDistinct } from "drizzle-orm";
+import { count, eq, desc, exists, and, countDistinct, sql } from "drizzle-orm";
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreatePostInput } from './dto/create-post.input';
@@ -13,46 +13,18 @@ import { Post } from './entities/post.entity';
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
-  async findAllPostsByProfileName(loggedUser: Author, findPosts: GraphQLPageQuery): Promise<Post[] | GraphQLError> {
+  async feed(loggedUser: Author): Promise<Post[]> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
         content: PostSchema.content,
         fileUrl: PostSchema.fileUrl,
-        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
-        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
-      }).from(PostSchema)
-        .where(eq(PostSchema.username, findPosts.id))
-        .orderBy(desc(PostSchema.createdAt))
-        .limit(Number(findPosts.limit) ?? 12)
-        .offset(Number(findPosts.offset) ?? 0)
-        .leftJoin(LikeSchema, eq(LikeSchema.postId, PostSchema.id))
-        .leftJoin(CommentSchema, eq(CommentSchema.postId, PostSchema.id))
-        .groupBy(
-          PostSchema.id,
-          CommentSchema.postId)
-
-      return data
-    } catch (error) {
-      Logger.error(error)
-      throw new GraphQLError(error)
-    }
-  }
-
-  async findOnePostWithComment(loggedUser: Author, id: string): Promise<Post | GraphQLError> {
-    try {
-      const data = await this.drizzleProvider.db.select({
-        id: PostSchema.id,
-        content: PostSchema.content,
-        fileUrl: PostSchema.fileUrl,
-        commentCount: count(eq(CommentSchema.postId, PostSchema.id)),
-        likeCount: countDistinct(eq(LikeSchema.postId, PostSchema.id)),
-        createdAt: PostSchema.createdAt,
-        updatedAt: PostSchema.updatedAt,
+        likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
+        commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
         is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
-          eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+          eq(LikeSchema.authorId, loggedUser.id), // <-  logged user id
           eq(LikeSchema.postId, PostSchema.id)
         ))),
         user: {
@@ -61,50 +33,149 @@ export class PostService {
           email: UserSchema.email,
           profilePicture: UserSchema.profilePicture,
           name: UserSchema.name,
-          // followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
-          //   eq(FriendshipSchema.followingUserId, loggedUser.id),
-          //   eq(FriendshipSchema.authorUserId, UserSchema.id) // <- replace with user id
-          // ))),
-          // following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
-          //   eq(FriendshipSchema.followingUserId, UserSchema.id), // <- replace with user id
-          //   eq(FriendshipSchema.authorUserId, loggedUser.id)
-          // ))),
+          followed_by: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, loggedUser.id),// <-  logged user id
+            eq(FriendshipSchema.authorUserId, UserSchema.id)
+          ))),
+          following: exists(this.drizzleProvider.db.select().from(FriendshipSchema).where(and(
+            eq(FriendshipSchema.followingUserId, UserSchema.id),
+            eq(FriendshipSchema.authorUserId, loggedUser.id)
+          ))),
         },
-      }).from(PostSchema)
-        .where(eq(PostSchema.id, id))
-        .limit(1)
-        .leftJoin(LikeSchema, eq(LikeSchema.postId, PostSchema.id))
-        .leftJoin(CommentSchema, eq(CommentSchema.postId, PostSchema.id))
+      })
+        .from(PostSchema)
+        .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .where(eq(FriendshipSchema.followingUserId, PostSchema.authorId))
+        .innerJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, loggedUser.id))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+        .limit(12)
+        .offset(0)
+        .orderBy(desc(PostSchema.createdAt))
         .groupBy(
           PostSchema.id,
           UserSchema.id,
-          CommentSchema.postId)
+        )
+      return data as Post[]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
 
-      const comments = await this.drizzleProvider.db.select({
-        id: CommentSchema.id,
-        postId: CommentSchema.postId,
-        content: CommentSchema.content,
-        authorId: CommentSchema.authorId,
-        createdAt: CommentSchema.createdAt,
-        user: {
-          id: UserSchema.id,
-          username: UserSchema.username,
-          email: UserSchema.email,
-          profilePicture: UserSchema.profilePicture,
-          name: UserSchema.name,
-        }
+  async findPosts(loggedUser: Author, findPosts: GraphQLPageQuery): Promise<Post[] | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: PostSchema.id,
+        content: PostSchema.content,
+        fileUrl: PostSchema.fileUrl,
+        likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
+        commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
+        createdAt: PostSchema.createdAt,
+        updatedAt: PostSchema.updatedAt,
       })
-        .from(CommentSchema)
-        .where(eq(CommentSchema.postId, id))
-        .leftJoin(UserSchema, eq(CommentSchema.authorId, UserSchema.id))
-        .orderBy(desc(CommentSchema.createdAt))
-        .limit(10)
-        .offset(0)
-      return {
-        ...data[0],
-        comments
+        .from(PostSchema)
+        .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+        .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+        .where(eq(PostSchema.username, findPosts.id))
+        .orderBy(desc(PostSchema.createdAt))
+        .limit(Number(findPosts.limit) ?? 12)
+        .offset(Number(findPosts.offset) ?? 0)
+        .groupBy(PostSchema.id, CommentSchema.postId)
+
+      return data as Post[]
+    } catch (error) {
+      Logger.error(error)
+      throw new GraphQLError(error)
+    }
+  }
+
+  async findOnePost(loggedUser: Author, id: string): Promise<Post | GraphQLError> {
+    try {
+      if (loggedUser) {
+        const _data = await this.drizzleProvider.db.select({
+          id: PostSchema.id,
+          content: PostSchema.content,
+          fileUrl: PostSchema.fileUrl,
+          likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
+          commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
+          createdAt: PostSchema.createdAt,
+          updatedAt: PostSchema.updatedAt,
+          is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
+            eq(LikeSchema.authorId, loggedUser.id), // <- replace with user id
+            eq(LikeSchema.postId, PostSchema.id)
+          ))),
+          user: {
+            id: UserSchema.id,
+            username: UserSchema.username,
+            email: UserSchema.email,
+            profilePicture: UserSchema.profilePicture,
+            name: UserSchema.name,
+          },
+        }).from(PostSchema)
+          .where(eq(PostSchema.id, id))
+          .limit(1)
+          .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+          .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+          .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+          .groupBy(PostSchema.id, UserSchema.id, CommentSchema.postId)
+
+        return {
+          ..._data[0],
+          comments: []
+        } as Post
+      } else {
+        const _data = await this.drizzleProvider.db.select({
+          id: PostSchema.id,
+          content: PostSchema.content,
+          fileUrl: PostSchema.fileUrl,
+          likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
+          commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
+          createdAt: PostSchema.createdAt,
+          updatedAt: PostSchema.updatedAt,
+          user: {
+            id: UserSchema.id,
+            username: UserSchema.username,
+            email: UserSchema.email,
+            profilePicture: UserSchema.profilePicture,
+            name: UserSchema.name,
+          },
+        }).from(PostSchema)
+          .where(eq(PostSchema.id, id))
+          .limit(1)
+          .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
+          .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
+          .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
+          .groupBy(PostSchema.id, UserSchema.id, CommentSchema.postId)
+
+        return {
+          ..._data[0],
+          comments: []
+        } as Post
       }
+
+      // const comments = await this.drizzleProvider.db.select({
+      //   id: CommentSchema.id,
+      //   postId: CommentSchema.postId,
+      //   content: CommentSchema.content,
+      //   authorId: CommentSchema.authorId,
+      //   createdAt: CommentSchema.createdAt,
+      //   user: {
+      //     id: UserSchema.id,
+      //     username: UserSchema.username,
+      //     email: UserSchema.email,
+      //     profilePicture: UserSchema.profilePicture,
+      //     name: UserSchema.name,
+      //   }
+      // })
+      //   .from(CommentSchema)
+      //   .where(eq(CommentSchema.postId, id))
+      //   .leftJoin(UserSchema, eq(CommentSchema.authorId, UserSchema.id))
+      //   .orderBy(desc(CommentSchema.createdAt))
+      //   .limit(10)
+      //   .offset(0)
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError(error)
@@ -145,6 +216,7 @@ export class PostService {
     }
   }
 
+  // createPost
   async createPost(loggedUser: Author, body: CreatePostInput): Promise<Post | GraphQLError> {
     try {
       if (loggedUser.id !== body.authorId) {

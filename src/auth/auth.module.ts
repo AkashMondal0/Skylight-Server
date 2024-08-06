@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { LocalStrategy } from './strategy/local.strategy';
 import configuration from 'src/configs/configuration';
 import { RedisModule } from 'src/db/redis/redis.module';
+import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { RedisModule } from 'src/db/redis/redis.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, DrizzleProvider],
   exports: [AuthService],
 })
 export class AuthModule { }
