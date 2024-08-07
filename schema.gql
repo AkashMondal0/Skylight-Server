@@ -157,6 +157,7 @@ type Mutation {
   destroyLike(id: String!): Like!
   createConversation(createConversationInput: CreateConversationInput!): Conversation!
   createMessage(createMessageInput: CreateMessageInput!): Message!
+  seenMessages(conversationId: String!): Message!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }

@@ -3,13 +3,12 @@ import { CreateMessageInput } from './dto/create-message.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Message } from './entities/message.entity';
 import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { eq, asc, desc, and, sql } from 'drizzle-orm';
+import { eq, asc, desc, and, sql, arrayContains, not } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 interface SeenUserIds {
   conversationId: string
-  userIds: string[]
 }
 @Injectable()
 export class MessageService {
@@ -50,23 +49,23 @@ export class MessageService {
         content: createMessageInput.content,
         conversationId: createMessageInput.conversationId,
         authorId: createMessageInput.authorId,
-        fileUrl: createMessageInput.fileUrl
+        fileUrl: createMessageInput.fileUrl,
+        seenBy: [user.id]
       })
       .returning()
 
     return data[0]
   }
 
-  async seenMessages(user: Author, seenUserIds: SeenUserIds): Promise<boolean> {
-    // set seenBy to user.id all messages in the conversation if already seen by user.id then do nothing
+  async seenMessages(user: Author, conversationId: string): Promise<boolean> {
     await this.drizzleProvider.db.update(MessagesSchema)
-      .set({seenBy: seenUserIds.userIds})
-      .where(
-        sql`conversation_id = ${seenUserIds.conversationId}` &&
-        sql`seen_by @> ${[user.id]}` &&
-        sql`deleted = ${false}` &&
-        sql`author_id != ${user.id}`
-      )
+      .set({
+        seenBy: sql`array_append(${MessagesSchema.seenBy}, ${user.id})`
+      })
+      .where(and(
+        eq(MessagesSchema.conversationId, conversationId),
+        not(arrayContains(MessagesSchema.seenBy, [user.id]))
+      ))
 
     return true
   }

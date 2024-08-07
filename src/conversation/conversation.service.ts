@@ -87,12 +87,10 @@ export class ConversationService {
       // find last message
       lastMessageContent: MessagesSchema.content,
       lastMessageCreatedAt: MessagesSchema.createdAt,
-      totalUnreadMessagesCount: sql`(
-        SELECT COUNT(*)
+      totalUnreadMessagesCount: sql`(SELECT COUNT(*) 
         FROM ${MessagesSchema}
         WHERE ${MessagesSchema.conversationId} = ${ConversationSchema.id}
-        AND NOT ${MessagesSchema.seenBy} @> ARRAY[${user.id}]::varchar[]
-      )`
+        AND NOT ${MessagesSchema.seenBy} @> ARRAY[${user.id}]::text[])`
     })
       .from(ConversationSchema)
       .where(arrayContains(ConversationSchema.members, [user.id]))

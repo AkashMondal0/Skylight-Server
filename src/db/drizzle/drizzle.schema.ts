@@ -247,7 +247,7 @@ export const MessagesSchema = pgTable('messages', {
     fileUrl: varchar('file_url').array(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     deleted: boolean('deleted').default(false),
-    seenBy: varchar('seen_by').array(),
+    seenBy: text('seen_by').array().notNull().default(sql`'{}'::text[]`),
     conversationId: text('conversation_id').notNull().references(() => ConversationSchema.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
