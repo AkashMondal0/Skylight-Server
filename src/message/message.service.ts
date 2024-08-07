@@ -3,10 +3,14 @@ import { CreateMessageInput } from './dto/create-message.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Message } from './entities/message.entity';
 import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc, and, sql } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
+interface SeenUserIds {
+  conversationId: string
+  userIds: string[]
+}
 @Injectable()
 export class MessageService {
   constructor(
@@ -34,8 +38,8 @@ export class MessageService {
       .from(MessagesSchema)
       .where(eq(MessagesSchema.conversationId, graphQLPageQuery.id))
       .leftJoin(UserSchema, eq(MessagesSchema.authorId, UserSchema.id))
-      .orderBy(asc(MessagesSchema.createdAt))
-      .limit(graphQLPageQuery.limit ?? 12)
+      .orderBy(desc(MessagesSchema.createdAt))
+      .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
     return data
   }
@@ -52,4 +56,19 @@ export class MessageService {
 
     return data[0]
   }
+
+  async seenMessages(user: Author, seenUserIds: SeenUserIds): Promise<boolean> {
+    // set seenBy to user.id all messages in the conversation if already seen by user.id then do nothing
+    await this.drizzleProvider.db.update(MessagesSchema)
+      .set({seenBy: seenUserIds.userIds})
+      .where(
+        sql`conversation_id = ${seenUserIds.conversationId}` &&
+        sql`seen_by @> ${[user.id]}` &&
+        sql`deleted = ${false}` &&
+        sql`author_id != ${user.id}`
+      )
+
+    return true
+  }
+
 }

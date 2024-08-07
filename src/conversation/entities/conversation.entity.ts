@@ -23,6 +23,12 @@ export class Conversation {
 
   @Field(() => String, { nullable: true })
   lastMessageContent: string | null;
+  
+  @Field(() => Number, { nullable: true })
+  totalUnreadMessagesCount?: number | null;
+
+  @Field(() => Date, { nullable: true })
+  lastMessageCreatedAt?: Date | null;
 
   @Field(() => Date, { nullable: true })
   createdAt?: Date | null;

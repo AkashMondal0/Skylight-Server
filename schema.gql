@@ -117,6 +117,8 @@ type Conversation {
   user: Author
   isGroup: Boolean
   lastMessageContent: String
+  totalUnreadMessagesCount: Float
+  lastMessageCreatedAt: DateTime
   createdAt: DateTime
   updatedAt: DateTime
   groupName: String
