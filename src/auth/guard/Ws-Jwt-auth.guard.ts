@@ -17,7 +17,7 @@ export class WsJwtGuard implements CanActivate {
 
         // Check if the auth cookie is present and valid
         // This is a simple example, you should replace it with your own logic
-        const token = cookies["auth-session-token"];
+        const token = cookies[configuration().COOKIE_NAME];
 
         if (!token) {
             throw new UnauthorizedException(); 

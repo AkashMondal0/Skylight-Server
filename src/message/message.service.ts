@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMessageInput } from './dto/create-message.input';
-import { UpdateMessageInput } from './dto/update-message.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Message } from './entities/message.entity';
 import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
@@ -35,7 +34,7 @@ export class MessageService {
       .from(MessagesSchema)
       .where(eq(MessagesSchema.conversationId, graphQLPageQuery.id))
       .leftJoin(UserSchema, eq(MessagesSchema.authorId, UserSchema.id))
-      .orderBy(desc(MessagesSchema.createdAt))
+      .orderBy(asc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 12)
       .offset(graphQLPageQuery.offset ?? 0)
     return data

@@ -66,6 +66,11 @@ type Post {
   content: String
   title: String
   fileUrl: [String!]
+  song: [String!]
+  tags: [String!]!
+  locations: [String!]!
+  country: String
+  city: String
   createdAt: DateTime
   updatedAt: DateTime
   authorId: String
@@ -108,7 +113,7 @@ type Conversation {
   id: String!
   members: [String!]!
   authorId: String!
-  messages: [Message!]!
+  messages: [Message!]
   user: Author
   isGroup: Boolean
   lastMessageContent: String
@@ -192,7 +197,7 @@ input UpdateCommentInput {
 
 input CreateConversationInput {
   """Example field (placeholder)"""
-  authorId: String!
+  authorId: String
 
   """Example field (placeholder)"""
   memberIds: [String!]!

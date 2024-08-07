@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { count, eq, exists, like, or, and, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { createHash } from 'src/auth/bcrypt/bcrypt.function';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { FriendshipSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
 import { Author } from './entities/author.entity';
 import { Profile } from './entities/profile.entity';
 import { UpdateUsersInput } from './dto/update-users.input';
-import { Users } from './entities/users.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +13,7 @@ export class UsersService {
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
-  async findUsersByKeyword(keywords: string): Promise<Users[] | []> {
+  async findUsersByKeyword(keywords: string): Promise<Author[] | []> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: UserSchema.id,
@@ -25,7 +22,6 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
-        isPrivate: UserSchema.isPrivate,
       }).from(UserSchema).where(
         or(
           like(UserSchema.username, `%${keywords}%`),
@@ -54,8 +50,6 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
-        isVerified: UserSchema.isVerified,
-        isPrivate: UserSchema.isPrivate,
         postCount: sql`COUNT(DISTINCT ${PostSchema.id}) AS postCount`,
         followerCount: sql<number>`COALESCE((
             SELECT COUNT(${FriendshipSchema.followingUserId})
@@ -138,7 +132,6 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
-        isPrivate: UserSchema.isPrivate,
         id: UserSchema.id,
         postCount: count(PostSchema.authorId),
       }).from(UserSchema)
@@ -166,28 +159,6 @@ export class UsersService {
         followingCount: followingCount[0].count
       }
     } catch (error) {
-      return null
-    }
-  }
-
-  async createUser(userCredential: RegisterUserPayload): Promise<Users | null> {
-    const hashPassword = await createHash(userCredential.password)
-
-    try {
-      const newUser = await this.drizzleProvider.db.insert(UserSchema).values({
-        username: userCredential.username,
-        password: hashPassword,
-        name: userCredential.name,
-        email: userCredential.email,
-      }).returning()
-
-      if (!newUser[0]) {
-        return null;
-      }
-
-      return newUser[0];
-    } catch (error) {
-      Logger.error(error)
       return null
     }
   }

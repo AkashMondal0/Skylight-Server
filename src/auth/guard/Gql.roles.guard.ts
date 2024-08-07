@@ -18,7 +18,7 @@ export class GqlRolesGuard implements CanActivate {
     const ctx = GqlExecutionContext.create(context);
     const request = ctx.getContext().req;
 
-    const token = request.cookies['auth-session-token'];
+    const token = request.cookies[configuration().COOKIE_NAME];
 
     if (token) {
       const payload = await this.jwtService.verifyAsync(token, { secret: configuration().JWT_SECRET });

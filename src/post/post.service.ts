@@ -1,7 +1,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-import { count, eq, desc, exists, and, countDistinct, sql } from "drizzle-orm";
+import { count, eq, desc, exists, and, sql } from "drizzle-orm";
 import { GraphQLError } from 'graphql';
 import { CommentSchema, FriendshipSchema, LikeSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreatePostInput } from './dto/create-post.input';
@@ -21,6 +21,15 @@ export class PostService {
         fileUrl: PostSchema.fileUrl,
         createdAt: PostSchema.createdAt,
         updatedAt: PostSchema.updatedAt,
+        // 
+        song: PostSchema.song,
+        tags: PostSchema.tags,
+        locations: PostSchema.locations,
+        country: PostSchema.country,
+        city: PostSchema.city,
+        likes: PostSchema.likes,
+        comments: PostSchema.comments,
+        // join
         likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
         commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
         is_Liked: exists(this.drizzleProvider.db.select().from(LikeSchema).where(and(
@@ -79,7 +88,7 @@ export class PostService {
         .from(PostSchema)
         .leftJoin(LikeSchema, eq(PostSchema.id, LikeSchema.postId))
         .leftJoin(CommentSchema, eq(PostSchema.id, CommentSchema.postId))
-        .where(eq(PostSchema.username, findPosts.id))
+        .where(eq(PostSchema.authorId, findPosts.id))
         .orderBy(desc(PostSchema.createdAt))
         .limit(Number(findPosts.limit) ?? 12)
         .offset(Number(findPosts.offset) ?? 0)
@@ -99,6 +108,15 @@ export class PostService {
           id: PostSchema.id,
           content: PostSchema.content,
           fileUrl: PostSchema.fileUrl,
+          // 
+          song: PostSchema.song,
+          tags: PostSchema.tags,
+          locations: PostSchema.locations,
+          country: PostSchema.country,
+          city: PostSchema.city,
+          likes: PostSchema.likes,
+          comments: PostSchema.comments,
+          // join
           likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
           commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
           createdAt: PostSchema.createdAt,
@@ -122,15 +140,21 @@ export class PostService {
           .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
           .groupBy(PostSchema.id, UserSchema.id, CommentSchema.postId)
 
-        return {
-          ..._data[0],
-          comments: []
-        } as Post
+        return _data[0] as Post
       } else {
         const _data = await this.drizzleProvider.db.select({
           id: PostSchema.id,
           content: PostSchema.content,
           fileUrl: PostSchema.fileUrl,
+          // 
+          song: PostSchema.song,
+          tags: PostSchema.tags,
+          locations: PostSchema.locations,
+          country: PostSchema.country,
+          city: PostSchema.city,
+          likes: PostSchema.likes,
+          comments: PostSchema.comments,
+          // join
           likeCount: sql`COUNT(DISTINCT ${LikeSchema.id}) AS likeCount`,
           commentCount: sql`COUNT(DISTINCT ${CommentSchema.id}) AS commentCount`,
           createdAt: PostSchema.createdAt,
@@ -150,32 +174,9 @@ export class PostService {
           .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
           .groupBy(PostSchema.id, UserSchema.id, CommentSchema.postId)
 
-        return {
-          ..._data[0],
-          comments: []
-        } as Post
+        return _data[0] as Post
       }
 
-      // const comments = await this.drizzleProvider.db.select({
-      //   id: CommentSchema.id,
-      //   postId: CommentSchema.postId,
-      //   content: CommentSchema.content,
-      //   authorId: CommentSchema.authorId,
-      //   createdAt: CommentSchema.createdAt,
-      //   user: {
-      //     id: UserSchema.id,
-      //     username: UserSchema.username,
-      //     email: UserSchema.email,
-      //     profilePicture: UserSchema.profilePicture,
-      //     name: UserSchema.name,
-      //   }
-      // })
-      //   .from(CommentSchema)
-      //   .where(eq(CommentSchema.postId, id))
-      //   .leftJoin(UserSchema, eq(CommentSchema.authorId, UserSchema.id))
-      //   .orderBy(desc(CommentSchema.createdAt))
-      //   .limit(10)
-      //   .offset(0)
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError(error)
@@ -209,7 +210,7 @@ export class PostService {
           UserSchema.id,
           CommentSchema.postId)
 
-      return data[0]
+      return data[0] as Post
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError(error)
@@ -226,14 +227,16 @@ export class PostService {
         content: body.content ?? "",
         fileUrl: body.fileUrl,
         authorId: loggedUser.id,
-        status: body.status,
-        username: loggedUser.username,
-        title: body.title ?? "",
+        status: body.status
       }).returning()
 
-      return data[0]
+      if (!data[0]) {
+        throw new GraphQLError('Post not created')
+      }
+
+      return data[0] as Post
     } catch (error) {
-      Logger.error(error)
+      Logger.error(`Post not created:`, error)
       throw new GraphQLError(error)
     }
   }

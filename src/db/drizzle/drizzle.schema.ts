@@ -1,35 +1,90 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, varchar, timestamp, boolean, pgEnum, text, index, integer, uuid, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, boolean, pgEnum, text, index, integer, uuid, uniqueIndex, } from "drizzle-orm/pg-core";
 import { generateRandomString } from "src/lib/id-generate";
-export const roleEnum = pgEnum('role', ['admin', 'user']);
+
+// enums
+export const roleEnum = pgEnum('role', ['admin', 'user', 'member']);
 export const friendshipStatusEnum = pgEnum('friendship_status', ['pending', 'accepted', 'rejected', 'blocked', 'deleted']);
 export const postStatusEnum = pgEnum('post_status', ['draft', 'published', 'archived']);
+export const userThemeEnum = pgEnum('user_theme', ['light', 'dark', 'system']);
 
+// user
 export const UserSchema = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
     username: varchar('username').notNull().unique(),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
-    password: varchar('password').notNull(),
     profilePicture: varchar('profile_picture'),
     bio: text('bio'),
-    roles: roleEnum('roles').array().notNull().default(sql`ARRAY['user']::role[]`),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
-    isVerified: boolean('is_verified').notNull().default(false),
-    isPrivate: boolean('is_private').notNull().default(false),
+    website: text('website')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
 }, (users) => ({
     uniqueIdx: uniqueIndex('unique_idx').on(users.email),
     usernameIdx: uniqueIndex('username_idx').on(users.username),
     emailUsernameIdx: uniqueIndex('email_username_idx').on(users.email, users.username)
 }))
 
+export const AccountSchema = pgTable('account', {
+    id: uuid('user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }).primaryKey(),
+    isVerified: boolean('is_verified').notNull().default(false),
+    isPrivate: boolean('is_private').notNull().default(false),
+    roles: roleEnum('roles').array().notNull().default(sql`ARRAY['user']::role[]`),
+    // additional fields
+    location: text('location'),
+    phone: integer('phone'),
+    locale: varchar('locale'),
+    timeFormat: integer('time_format').default(12),
+    // Used to lock the user account
+    locked: boolean('locked').notNull().default(false),
+    accessTokenExpires: timestamp('access_token_expires'),
+    AccessToken: varchar('access_token').array(),
+    RefreshToken: varchar('refresh_token').array(),
+    // Used to verify the user account
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
+}, (users) => ({
+    uniqueIdx: index('user_account_idx').on(users.id),
+}))
+
+export const UserSettingsSchema = pgTable('user_settings', {
+    id: uuid('user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }).primaryKey(),
+    theme: userThemeEnum('theme').notNull().default('system'),
+    // notificationId: varchar('notification_id').notNull(), 
+    // mentions : varchar('mentions').array().notNull().default(sql`'{}'::text[]`),
+    // mutedAccounts: varchar('muted_accounts').array().notNull().default(sql`'{}'::text[]`),
+    // blocked: varchar('blocked').array().notNull().default(sql`'{}'::text[]`),
+    // restricted: varchar('restricted').array().notNull().default(sql`'{}'::text[]`),
+    // close: varchar('close').array().notNull().default(sql`'{}'::text[]`),
+}, (users) => ({
+    uniqueIdx: index('userSetting_idx').on(users.id),
+}))
+
+export const UserPasswordSchema = pgTable('user_password', {
+    id: uuid('user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }).primaryKey(),
+    password: varchar('password').notNull(),
+    hash: varchar('hash').notNull(),
+}, (users) => ({
+    uniqueIdx: index('user_password_idx').on(users.id),
+}))
+
+export const Session = pgTable('session', {
+    id: uuid('user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }).primaryKey(),
+    sessionToken: varchar('session_token').unique(),
+    expires: timestamp('expires').notNull(),
+}, (session) => ({
+    uniqueIdx: index('user_session_idx').on(session.id),
+}))
+
+// friendship
 export const FriendshipSchema = pgTable('friendships', {
-    id: uuid('id').defaultRandom().primaryKey(),
     followingUsername: varchar('following_username').notNull().references(() => UserSchema.username, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    followingUserId: uuid('following_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    followingUserId: uuid('following_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     authorUsername: varchar('author_username').notNull().references(() => UserSchema.username, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    authorUserId: uuid('author_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    authorUserId: uuid('author_user_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    // 
+    id: uuid('id').defaultRandom().primaryKey(),
     status: friendshipStatusEnum('status').notNull().default('pending'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
@@ -58,14 +113,16 @@ export const FriendshipSchema = pgTable('friendships', {
 }))
 
 // post
-
 export const PostSchema = pgTable('posts', {
-    id: text('id').$defaultFn(() => generateRandomString({ length: 40, type: "lowernumeric" })).primaryKey(),
+    id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
     title: varchar('title'),
     content: text('content'),
     fileUrl: varchar('file_url').array(),
-    username: varchar('username').notNull().references(() => UserSchema.username, { onDelete: 'cascade' }),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    status: postStatusEnum('status').notNull().default('draft'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    // additional fields
+    song: varchar('song').array(),
     tags: text('tags')
         .array()
         .notNull()
@@ -74,8 +131,17 @@ export const PostSchema = pgTable('posts', {
         .array()
         .notNull()
         .default(sql`ARRAY[]::text[]`),
-    status: postStatusEnum('status').notNull().default('draft'),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
+    country: varchar('country'),
+    city: varchar('city'),
+    // additional fields
+    likes: text('likes')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
+    comments: text('comments')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 }, (posts) => ({
     authorIdIdx: index('post_author_id_idx').on(posts.authorId),
@@ -83,12 +149,13 @@ export const PostSchema = pgTable('posts', {
     authorStatusIdx: index('post_author_status_idx').on(posts.authorId, posts.status)
 }))
 
-
 export const CommentSchema = pgTable('comments', {
     id: uuid('id').defaultRandom().primaryKey(),
     content: text('content').notNull(),
+    mentionUsername: varchar('mention_username').array().notNull().default(sql`'{}'::text[]`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     postId: text('post_id').notNull().references(() => PostSchema.id, { onDelete: 'cascade' }),
+    tags_username: varchar('tags_username').array().notNull().default(sql`'{}'::text[]`),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 }, (comments) => ({
@@ -96,7 +163,6 @@ export const CommentSchema = pgTable('comments', {
     postIdIdx: index('comment_post_id_idx').on(comments.postId),
     authorPostIdx: index('comment_author_post_idx').on(comments.authorId, comments.postId)
 }))
-
 
 export const LikeSchema = pgTable('likes', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -113,36 +179,57 @@ export const LikeSchema = pgTable('likes', {
 }));
 
 export const StorySchema = pgTable('stories', {
-    id: text('id').$defaultFn(() => generateRandomString({ length: 40, type: "lowernumeric" })).primaryKey(),
+    id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
+    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
     mediaUrl: varchar('media_url'),
-    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    song: varchar('song').array().notNull().default(sql`'{}'::text[]`),
     viewCount: integer('view_count').notNull().default(0),
     expiresAt: timestamp('expires_at').notNull(),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
+    status: postStatusEnum('status').notNull().default('draft'),
+    // additional fields
+    likes: text('likes')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
+    comments: text('comments')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
 }, (stories) => ({
     authorIdIdx: index('story_author_id_idx').on(stories.authorId),
     createdAtIdx: index('story_created_at_idx').on(stories.createdAt)
 }));
 
 export const ReelSchema = pgTable('reels', {
-    id: text('id').$defaultFn(() => generateRandomString({ length: 40, type: "lowernumeric" })).primaryKey(),
+    id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
+    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     caption: text('caption'),
     videoUrl: varchar('video_url').notNull(),
-    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     likeCount: integer('like_count').notNull().default(0),
     commentCount: integer('comment_count').notNull().default(0),
-    isPublic: boolean('is_public').notNull().default(true),
+    status: postStatusEnum('status').notNull().default('draft'),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
     updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+    // additional fields
+    likes: text('likes')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
+    comments: text('comments')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
 }, (reels) => ({
     authorIdIdx: index('reel_author_id_idx').on(reels.authorId),
-    isPublicIdx: index('reel_is_public_idx').on(reels.isPublic)
+    statusIdx: index('reel_is_status_idx').on(reels.status)
 }));
 
 export const commentReplySchema = pgTable('comment_replies', {
     id: uuid('id').defaultRandom().primaryKey(),
     content: text('content').notNull(),
+    mentionUsername: varchar('mention_username').array().notNull().default(sql`'{}'::text[]`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     commentId: uuid('comment_id').notNull().references(() => CommentSchema.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
@@ -161,7 +248,7 @@ export const MessagesSchema = pgTable('messages', {
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     deleted: boolean('deleted').default(false),
     seenBy: varchar('seen_by').array(),
-    conversationId: uuid('conversation_id').notNull().references(() => ConversationSchema.id),
+    conversationId: text('conversation_id').notNull().references(() => ConversationSchema.id),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 }, (messages) => ({
@@ -170,26 +257,34 @@ export const MessagesSchema = pgTable('messages', {
     authorConversationIdx: index('message_author_conversation_idx').on(messages.authorId, messages.conversationId)
 }));
 
-
 export const ConversationSchema = pgTable('conversations', {
-    id: uuid('id').defaultRandom().primaryKey(),
+    id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
     members: uuid('members').array().notNull(),
+    // direct
+    userId: uuid('user_id'),
+    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    // group
     isGroup: boolean('is_group').default(false),
     groupName: varchar('group_name'),
     groupImage: varchar('group_image'),
     groupDescription: varchar('group_description'),
-    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id'),
+    // last message
     lastMessageContent: varchar('last_message_content'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
+    // additional fields
+    messages: text('messages')
+        .array()
+        .notNull()
+        .default(sql`'{}'::text[]`),
 }, (conversations) => ({
     authorIdIdx: index('conversation_author_id_idx').on(conversations.authorId),
     userIdIdx: index('conversation_user_id_idx').on(conversations.userId),
     authorUserIdx: index('conversation_author_user_idx').on(conversations.authorId, conversations.userId)
 }));
 
-export const userRelations = relations(UserSchema, ({ many }) => ({
+// relations
+export const userRelations = relations(UserSchema, ({ many, one }) => ({
     posts: many(PostSchema),
     comments: many(CommentSchema),
     replyComments: many(commentReplySchema),
@@ -198,6 +293,10 @@ export const userRelations = relations(UserSchema, ({ many }) => ({
     friendship: many(FriendshipSchema),
     messages: many(MessagesSchema),
     conversations: many(ConversationSchema),
+    settings: one(UserSettingsSchema),
+    password: one(UserPasswordSchema),
+    account: one(AccountSchema),
+    session: many(Session),
 }));
 
 export const postsRelations = relations(PostSchema, ({ one, many }) => ({
@@ -247,7 +346,6 @@ export const followersRelations = relations(FriendshipSchema, ({ one }) => ({
     follower: one(UserSchema, { fields: [FriendshipSchema.authorUsername], references: [UserSchema.username] }),
     following: one(UserSchema, { fields: [FriendshipSchema.followingUsername], references: [UserSchema.username] }),
 }));
-
 
 export const messagesRelations = relations(MessagesSchema, ({ one }) => ({
     author: one(UserSchema, {

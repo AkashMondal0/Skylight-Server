@@ -13,7 +13,6 @@ export class AppController {
   @Version('1')
   @Get()
   LandingPage(): any {
-    // this.eventsGateway.server.emit("test","this v1 home page")
     return this.appService.render()
   }
 

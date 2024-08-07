@@ -12,8 +12,8 @@ export class Conversation {
   @Field(() => String)
   authorId: string;
 
-  @Field(() => [Message])
-  messages?: Message[]
+  @Field(() => [Message],{ nullable: true })
+  messages?: Message[] | any[]
 
   @Field(() => Author,{ nullable: true })
   user?: Author | null
