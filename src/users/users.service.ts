@@ -86,14 +86,16 @@ export class UsersService {
         .groupBy(UserSchema.id)
 
       if (!data[0]) {
-        throw new GraphQLError("An error occurred while fetching user profile")
+        throw new GraphQLError("An error occurred while fetching user profile",{
+          extensions: { code: 'PAGE_NOT_FOUND' }
+        })
       }
 
       return data[0] as Profile
     } catch (error) {
       Logger.error(error)
       throw new GraphQLError('Internal Server Error', {
-        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+        extensions: { code: 'PAGE_NOT_FOUND' }
       });
     }
   }

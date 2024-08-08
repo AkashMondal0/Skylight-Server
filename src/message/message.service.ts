@@ -3,10 +3,13 @@ import { CreateMessageInput } from './dto/create-message.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Message } from './entities/message.entity';
 import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc, and, sql, arrayContains, not } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
+interface SeenUserIds {
+  conversationId: string
+}
 @Injectable()
 export class MessageService {
   constructor(
@@ -34,10 +37,12 @@ export class MessageService {
       .from(MessagesSchema)
       .where(eq(MessagesSchema.conversationId, graphQLPageQuery.id))
       .leftJoin(UserSchema, eq(MessagesSchema.authorId, UserSchema.id))
-      .orderBy(asc(MessagesSchema.createdAt))
-      .limit(graphQLPageQuery.limit ?? 12)
+      .orderBy(desc(MessagesSchema.createdAt))
+      .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
-    return data
+
+
+    return (await data)?.reverse()
   }
 
   async create(user: Author, createMessageInput: CreateMessageInput): Promise<Message> {
@@ -46,10 +51,25 @@ export class MessageService {
         content: createMessageInput.content,
         conversationId: createMessageInput.conversationId,
         authorId: createMessageInput.authorId,
-        fileUrl: createMessageInput.fileUrl
+        fileUrl: createMessageInput.fileUrl,
+        seenBy: [user.id]
       })
       .returning()
 
     return data[0]
   }
+
+  async seenMessages(user: Author, conversationId: string): Promise<boolean> {
+    await this.drizzleProvider.db.update(MessagesSchema)
+      .set({
+        seenBy: sql`array_append(${MessagesSchema.seenBy}, ${user.id})`
+      })
+      .where(and(
+        eq(MessagesSchema.conversationId, conversationId),
+        not(arrayContains(MessagesSchema.seenBy, [user.id]))
+      ))
+
+    return true
+  }
+
 }

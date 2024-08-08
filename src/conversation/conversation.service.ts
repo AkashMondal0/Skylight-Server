@@ -74,16 +74,23 @@ export class ConversationService {
       groupDescription: ConversationSchema.groupDescription,
       groupImage: ConversationSchema.groupImage,
       groupName: ConversationSchema.groupName,
-      updatedAt: ConversationSchema.updatedAt,
-      lastMessageContent: ConversationSchema.lastMessageContent,
+      updatedAt: ConversationSchema.createdAt,
       messages: ConversationSchema.messages,
+      // find user
       user: {
         id: UserSchema.id,
         username: UserSchema.username,
         email: UserSchema.email,
         profilePicture: UserSchema.profilePicture,
         name: UserSchema.name,
-      }
+      },
+      // find last message
+      lastMessageContent: MessagesSchema.content,
+      lastMessageCreatedAt: MessagesSchema.createdAt,
+      totalUnreadMessagesCount: sql`(SELECT COUNT(*) 
+        FROM ${MessagesSchema}
+        WHERE ${MessagesSchema.conversationId} = ${ConversationSchema.id}
+        AND NOT ${MessagesSchema.seenBy} @> ARRAY[${user.id}]::text[])`
     })
       .from(ConversationSchema)
       .where(arrayContains(ConversationSchema.members, [user.id]))
@@ -94,16 +101,18 @@ export class ConversationService {
           ELSE ${ConversationSchema.userId}
         END`
       ))
-      .orderBy(desc(ConversationSchema.updatedAt))
+      .leftJoin(MessagesSchema, sql`
+        ${MessagesSchema.conversationId} = ${ConversationSchema.id}
+        AND ${MessagesSchema.createdAt} = (
+          SELECT MAX(${MessagesSchema.createdAt})
+          FROM ${MessagesSchema}
+          WHERE ${MessagesSchema.conversationId} = ${ConversationSchema.id}
+        )`)
+      .orderBy(desc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 12)
       .offset(graphQLPageQuery.offset ?? 0);
 
-    return data.map((item) => {
-      return {
-        ...item,
-        messages: []
-      }
-    })
+    return data as Conversation[]
   }
 
   async findOne(user: Author, graphQLPageQuery: GraphQLPageQuery): Promise<Conversation | GraphQLError> {
@@ -138,9 +147,9 @@ export class ConversationService {
       ))
       .limit(1)
 
-      if (!data[0]) {
-        throw new GraphQLError("Conversation not found")
-      }
+    if (!data[0]) {
+      throw new GraphQLError("Conversation not found")
+    }
 
     return data[0]
   }

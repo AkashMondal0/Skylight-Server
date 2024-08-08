@@ -117,6 +117,8 @@ type Conversation {
   user: Author
   isGroup: Boolean
   lastMessageContent: String
+  totalUnreadMessagesCount: Float
+  lastMessageCreatedAt: DateTime
   createdAt: DateTime
   updatedAt: DateTime
   groupName: String
@@ -155,6 +157,7 @@ type Mutation {
   destroyLike(id: String!): Like!
   createConversation(createConversationInput: CreateConversationInput!): Conversation!
   createMessage(createMessageInput: CreateMessageInput!): Message!
+  seenMessages(conversationId: String!): Message!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
 }

@@ -15,7 +15,13 @@ export class MessageResolver {
   @UseGuards(GqlAuthGuard)
   @Mutation(() => Message)
   createMessage(@SessionUserGraphQl() user: Author, @Args('createMessageInput') createMessageInput: CreateMessageInput) {
-    return this.messageService.create(user,createMessageInput);
+    return this.messageService.create(user, createMessageInput);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Message)
+  seenMessages(@SessionUserGraphQl() user: Author, @Args('conversationId', { type: () => String }) conversationId: string) {
+    return this.messageService.seenMessages(user, conversationId);
   }
 
   @UseGuards(GqlAuthGuard)
