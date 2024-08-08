@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, UseGuards } from '@nestjs/common';
 import configuration from 'src/configs/configuration';
 import Redis from 'ioredis';
 import { event_name } from 'src/configs/connection.name';
@@ -11,12 +11,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RedisProvider } from '../db/redis/redis.provider';
-import { Message } from 'src/message/entities/message.entity';
+import { WsJwtGuard } from 'src/auth/guard/Ws-Jwt-auth.guard';
 
 
 @WebSocketGateway({
     cors: {
-        origin: ["https://skylight.skysolo.me","https://skylight-test.skysolo.me","http://localhost:3000"],
+        origin: ["https://skylight.skysolo.me", "https://skylight-test.skysolo.me", "http://localhost:3000"],
         credentials: true,
     },
     transports: ['websocket'],
@@ -54,17 +54,16 @@ export class EventGateway implements OnModuleInit {
             const data = JSON.parse(message)
             switch (channel) {
                 case event_name.conversation.message:
-                    // console.log("client", message)
                     this.server.to(data.members[0]).emit(event_name.conversation.message, data);
                     return
                 case event_name.conversation.seen:
-                    // console.log("seen", message)
+                    this.server.to(data.members[0]).emit(event_name.conversation.seen, data);
                     return
                 case event_name.conversation.typing:
-                    // console.log("typing", message)
                     this.server.to(data.members[0]).emit(event_name.conversation.typing, data);
                     return
                 default:
+                    this.server.emit("test", data);
                     return
             }
         });
@@ -113,7 +112,8 @@ export class EventGateway implements OnModuleInit {
         await this.redisProvider.deleteHashValue("skylight:clients", userId)
     }
 
-    /// user message
+    /// user message seen
+    @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.conversation.message)
     async IncomingClientMessage(
         @MessageBody() data: any,
@@ -121,10 +121,23 @@ export class EventGateway implements OnModuleInit {
     ) {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
-        await this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify({ ...data, members: ids }))
+        this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify({ ...data, members: ids }))
     }
 
+     /// user message
+    @UseGuards(WsJwtGuard)
+     @SubscribeMessage(event_name.conversation.seen)
+     async IncomingClientMessageSeen(
+         @MessageBody() data: any,
+         @ConnectedSocket() client: Socket,
+     ) {
+         const ids = await this.findUserBySocketId(data.members)
+         if (!ids) return
+         this.redisProvider.redisClient.publish(event_name.conversation.seen, JSON.stringify({ ...data, members: ids }))
+     }
+
     /// user typing
+    @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.conversation.typing)
     async IncomingClientTyping(
         @MessageBody() data: any,
@@ -132,7 +145,7 @@ export class EventGateway implements OnModuleInit {
     ) {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
-        await this.redisProvider.redisClient.publish(event_name.conversation.typing, JSON.stringify({ ...data, members: ids }))
+        this.redisProvider.redisClient.publish(event_name.conversation.typing, JSON.stringify({ ...data, members: ids }))
     }
 
     // @UseGuards(WsJwtGuard)
@@ -142,8 +155,7 @@ export class EventGateway implements OnModuleInit {
         @MessageBody() data: any,
         @ConnectedSocket() client: Socket,
     ) {
-        // console.log("socket Test", data)
         this.server.emit('test', "this from server - > test");
-        // await this.redisSubscriber.publish("test", JSON.stringify({ data: data }))
+        this.redisSubscriber.publish("test", JSON.stringify({ data: data }))
     }
 }

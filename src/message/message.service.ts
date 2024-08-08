@@ -40,7 +40,9 @@ export class MessageService {
       .orderBy(desc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
-    return data
+
+
+    return (await data)?.reverse()
   }
 
   async create(user: Author, createMessageInput: CreateMessageInput): Promise<Message> {
