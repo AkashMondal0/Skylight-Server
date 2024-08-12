@@ -18,6 +18,7 @@ import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventsModule } from './event/event.module';
+import { NotificationModule } from './notification/notification.module';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { EventsModule } from './event/event.module';
     ConversationModule,
     MessageModule,
     FriendshipModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -12,11 +12,15 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RedisProvider } from '../db/redis/redis.provider';
 import { WsJwtGuard } from 'src/auth/guard/Ws-Jwt-auth.guard';
+import { PostActionsProps } from 'src/lib/types';
 
 
 @WebSocketGateway({
     cors: {
-        origin: ["https://skylight.skysolo.me", "https://skylight-test.skysolo.me", "http://localhost:3000"],
+        origin: [
+            "https://skylight.skysolo.me",
+            "https://skylight-test.skysolo.me",
+            "http://localhost:3000"],
         credentials: true,
     },
     transports: ['websocket'],
@@ -42,25 +46,35 @@ export class EventGateway implements OnModuleInit {
             event_name.conversation.message,
             event_name.conversation.seen,
             event_name.conversation.typing,
+            event_name.notification.post.like,
+            event_name.notification.post.comment,
+            "test",
             (err, count) => {
                 if (err) {
                     Logger.error('Failed to subscribe', err);
                     return;
                 }
                 Logger.log(`Subscribed to ${count} channel. Listening for updates on the channel.`);
+                return
             });
 
         this.redisSubscriber.on("message", (channel, message) => {
             const data = JSON.parse(message)
             switch (channel) {
                 case event_name.conversation.message:
-                    this.server.to(data.members[0]).emit(event_name.conversation.message, data);
+                    this.server.to(data.members).emit(event_name.conversation.message, data);
                     return
                 case event_name.conversation.seen:
-                    this.server.to(data.members[0]).emit(event_name.conversation.seen, data);
+                    this.server.to(data.members).emit(event_name.conversation.seen, data);
                     return
                 case event_name.conversation.typing:
-                    this.server.to(data.members[0]).emit(event_name.conversation.typing, data);
+                    this.server.to(data.members).emit(event_name.conversation.typing, data);
+                    return
+                case event_name.notification.post.like:
+                    this.server.to(data.members).emit(event_name.notification.post.like, data);
+                    return
+                case event_name.notification.post.comment:
+                    this.server.to(data.members).emit(event_name.notification.post.comment, data);
                     return
                 default:
                     this.server.emit("test", data);
@@ -124,17 +138,17 @@ export class EventGateway implements OnModuleInit {
         this.redisProvider.redisClient.publish(event_name.conversation.message, JSON.stringify({ ...data, members: ids }))
     }
 
-     /// user message
+    /// user message
     @UseGuards(WsJwtGuard)
-     @SubscribeMessage(event_name.conversation.seen)
-     async IncomingClientMessageSeen(
-         @MessageBody() data: any,
-         @ConnectedSocket() client: Socket,
-     ) {
-         const ids = await this.findUserBySocketId(data.members)
-         if (!ids) return
-         this.redisProvider.redisClient.publish(event_name.conversation.seen, JSON.stringify({ ...data, members: ids }))
-     }
+    @SubscribeMessage(event_name.conversation.seen)
+    async IncomingClientMessageSeen(
+        @MessageBody() data: any,
+        @ConnectedSocket() client: Socket,
+    ) {
+        const ids = await this.findUserBySocketId(data.members)
+        if (!ids) return
+        this.redisProvider.redisClient.publish(event_name.conversation.seen, JSON.stringify({ ...data, members: ids }))
+    }
 
     /// user typing
     @UseGuards(WsJwtGuard)
@@ -146,6 +160,28 @@ export class EventGateway implements OnModuleInit {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
         this.redisProvider.redisClient.publish(event_name.conversation.typing, JSON.stringify({ ...data, members: ids }))
+    }
+    // notification
+    // @UseGuards(WsJwtGuard)
+    // @SubscribeMessage(event_name.notification.post.comment)
+    // async IncomingClientCommentNotification(
+    //     @MessageBody() data: PostActionsProps,
+    //     @ConnectedSocket() client: Socket,
+    // ) {
+    //     const ids = await this.findUserBySocketId(data.members)
+    //     if (!ids) return
+    //     this.redisProvider.redisClient.publish(event_name.notification.post.comment, JSON.stringify({ ...data, members: ids }))
+    // }
+
+    @UseGuards(WsJwtGuard)
+    @SubscribeMessage(event_name.notification.post.like)
+    async IncomingClientLikeNotification(
+        @MessageBody() data: PostActionsProps,
+        @ConnectedSocket() client: Socket,
+    ) {
+        const ids = await this.findUserBySocketId([data.post_owner.id])
+        if (!ids) return
+        this.redisProvider.redisClient.publish(event_name.notification.post.like, JSON.stringify({ ...data, members: ids }))
     }
 
     // @UseGuards(WsJwtGuard)
