@@ -138,7 +138,8 @@ type Notification {
   commentId: String
   storyId: String
   reelId: String
-  createdAt: String
+  createdAt: DateTime
+  updatedAt: DateTime
   seen: String
 }
 
@@ -155,7 +156,7 @@ type Query {
   findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
-  findAllNotifications(id: String!): [Notification!]!
+  findAllNotifications: [Notification!]!
 }
 
 input GraphQLPageQuery {

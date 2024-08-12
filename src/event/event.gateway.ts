@@ -12,7 +12,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RedisProvider } from '../db/redis/redis.provider';
 import { WsJwtGuard } from 'src/auth/guard/Ws-Jwt-auth.guard';
-import { PostActionsProps } from 'src/lib/types';
+import { Notification } from 'src/notification/entities/notification.entity';
 
 
 @WebSocketGateway({
@@ -176,10 +176,10 @@ export class EventGateway implements OnModuleInit {
     @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.notification.post.like)
     async IncomingClientLikeNotification(
-        @MessageBody() data: PostActionsProps,
+        @MessageBody() data: Notification,
         @ConnectedSocket() client: Socket,
     ) {
-        const ids = await this.findUserBySocketId([data.post_owner.id])
+        const ids = await this.findUserBySocketId([data.recipientId])
         if (!ids) return
         this.redisProvider.redisClient.publish(event_name.notification.post.like, JSON.stringify({ ...data, members: ids }))
     }

@@ -1,3 +1,4 @@
+import { NotificationType } from "src/notification/entities/notification.entity"
 import { Author } from "src/users/entities/author.entity"
 
 export enum Role {
@@ -8,8 +9,8 @@ export enum Role {
 
 
 export type PostActionsProps = {
-    post_id: string
-    user: Author
-    post_owner: Author
-    action: "create" | "destroy"
+    authorId: string,
+    postId: string,
+    type: NotificationType,
+    recipientId: string,
 }

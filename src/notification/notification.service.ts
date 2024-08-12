@@ -3,8 +3,8 @@ import { CreateNotificationInput } from './dto/create-notification.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Author } from 'src/users/entities/author.entity';
 import { Notification } from './entities/notification.entity';
-import { NotificationSchema } from 'src/db/drizzle/drizzle.schema';
-import { and, eq } from 'drizzle-orm';
+import { NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { and, desc, eq } from 'drizzle-orm';
 
 @Injectable()
 export class NotificationService {
@@ -23,11 +23,40 @@ export class NotificationService {
     return data[0] as Notification;
   }
 
-  async findAll(user: Author): Promise<Notification[]> {
-    const data = await this.drizzleProvider.db.select()
+  async findAll(user: Author): Promise<Notification[] | any[]> {
+    const data = await this.drizzleProvider.db.select({
+      id: NotificationSchema.id,
+      type: NotificationSchema.type,
+      authorId: NotificationSchema.authorId,
+      recipientId: NotificationSchema.recipientId,
+      postId: NotificationSchema.postId,
+      commentId: NotificationSchema.commentId,
+      storyId: NotificationSchema.storyId,
+      reelId: NotificationSchema.reelId,
+      createdAt: NotificationSchema.createdAt,
+      seen: NotificationSchema.authorId,
+      author: {
+        username: UserSchema.username,
+        profilePicture: UserSchema.profilePicture,
+      },
+      post: {
+        id: PostSchema.id,
+        fileUrl: PostSchema.fileUrl,
+      }
+    })
       .from(NotificationSchema)
       .where(eq(NotificationSchema.recipientId, user.id))
-    return data as Notification[]
+      .leftJoin(UserSchema, eq(NotificationSchema.authorId, UserSchema.id))
+      .leftJoin(PostSchema, eq(NotificationSchema.postId, PostSchema.id))
+      .orderBy(desc(NotificationSchema.createdAt))
+      .offset(0)
+      .limit(10)
+
+    if (data.length <= 0 || !data) {
+      return []
+    }
+
+    return data
   }
 
   async remove(user: Author, destroyNotificationInput: CreateNotificationInput): Promise<any> {

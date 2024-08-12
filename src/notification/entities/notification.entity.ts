@@ -49,8 +49,11 @@ export class Notification {
   @Field(() => String, { nullable: true })
   reelId?: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => Date, { nullable: true })
   createdAt: Date;
+
+  @Field(() => Date, { nullable: true })
+  updatedAt: Date;
 
   @Field(() => String, { nullable: true })
   seen: boolean;
