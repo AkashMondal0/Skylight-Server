@@ -3,8 +3,8 @@ import { CreateNotificationInput } from './dto/create-notification.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Author } from 'src/users/entities/author.entity';
 import { Notification } from './entities/notification.entity';
-import { CommentSchema, NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { and, count, desc, eq, sql } from 'drizzle-orm';
+import { CommentSchema, ConversationSchema, MessagesSchema, NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { and, arrayContains, desc, eq, sql } from 'drizzle-orm';
 
 @Injectable()
 export class NotificationService {
@@ -93,7 +93,8 @@ export class NotificationService {
 
   async UnseenNotifications(user: Author): Promise<{
     unreadPostCount: number,
-    unreadCommentCount: number
+    unreadCommentCount: number,
+    unreadChatCount: number
   }> {
     const data = await this.drizzleProvider.db.select({
       unreadPostCount: sql`
@@ -106,13 +107,29 @@ export class NotificationService {
       .leftJoin(NotificationSchema, eq(NotificationSchema.recipientId, UserSchema.id))
       .groupBy(UserSchema.id)
 
+    const UnreadChatCount = await this.drizzleProvider.db.select({
+      totalUnreadCount: sql`(SELECT COUNT(*) 
+      FROM ${MessagesSchema}
+      WHERE ${MessagesSchema.conversationId} = ${ConversationSchema.id}
+      AND NOT ${MessagesSchema.seenBy} @> ARRAY[${user.id}]::text[])`
+    })
+      .from(ConversationSchema)
+      .where(arrayContains(ConversationSchema.members, [user.id]))
+      .leftJoin(MessagesSchema, eq(MessagesSchema.conversationId, ConversationSchema.id))
+      .groupBy(ConversationSchema.id)
+      .limit(30)
+
     if (data.length <= 0) {
       return {
         unreadPostCount: 0,
-        unreadCommentCount: 0
+        unreadCommentCount: 0,
+        unreadChatCount: 0
       }
     }
 
-    return data[0] as any
+    return {
+      ...data[0],
+      unreadChatCount: UnreadChatCount.filter((item) => Number(item.totalUnreadCount) !== 0).length || 0
+    } as any
   }
 }

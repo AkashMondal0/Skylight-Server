@@ -69,4 +69,7 @@ export class UnReadNotification {
 
   @Field(() => Number, { nullable: true })
   unreadPostCount: number;
+
+  @Field(() => Number, { nullable: true })
+  unreadChatCount: number;
 }

@@ -147,6 +147,7 @@ type Notification {
 type UnReadNotification {
   unreadCommentCount: Float
   unreadPostCount: Float
+  unreadChatCount: Float
 }
 
 type Query {
