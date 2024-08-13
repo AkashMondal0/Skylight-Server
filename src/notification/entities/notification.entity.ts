@@ -58,3 +58,11 @@ export class Notification {
   @Field(() => String, { nullable: true })
   seen: boolean;
 }
+@ObjectType()
+export class UnReadNotification {
+  @Field(() => Number, { nullable: true })
+  unreadCommentCount: number;
+
+  @Field(() => Number, { nullable: true })
+  unreadPostCount: number;
+}

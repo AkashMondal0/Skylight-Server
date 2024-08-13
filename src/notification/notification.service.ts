@@ -4,7 +4,7 @@ import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Author } from 'src/users/entities/author.entity';
 import { Notification } from './entities/notification.entity';
 import { NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 @Injectable()
 export class NotificationService {
@@ -24,6 +24,7 @@ export class NotificationService {
   }
 
   async findAll(user: Author): Promise<Notification[] | any[]> {
+    // await this.markAsSeen(user)
     const data = await this.drizzleProvider.db.select({
       id: NotificationSchema.id,
       type: NotificationSchema.type,
@@ -50,7 +51,7 @@ export class NotificationService {
       .leftJoin(PostSchema, eq(NotificationSchema.postId, PostSchema.id))
       .orderBy(desc(NotificationSchema.createdAt))
       .offset(0)
-      .limit(10)
+      .limit(16)
 
     if (data.length <= 0 || !data) {
       return []
@@ -70,5 +71,40 @@ export class NotificationService {
         )
       )
     return true
+  }
+
+  async markAsSeen(user: Author): Promise<boolean> {
+    await this.drizzleProvider.db.update(NotificationSchema)
+      .set({ seen: true })
+      .where(and(
+        eq(NotificationSchema.recipientId, user.id),
+        eq(NotificationSchema.seen, false)
+      ))
+    return true
+  }
+
+  async UnseenNotifications(user: Author): Promise<{
+    unreadPostCount: number,
+    unreadCommentCount: number
+  }> {
+    const data = await this.drizzleProvider.db.select({
+      unreadPostCount: sql`
+      (SELECT COUNT(*) FROM ${NotificationSchema} WHERE ${NotificationSchema.recipientId} = ${user.id} AND ${NotificationSchema.type} = 'like' AND ${NotificationSchema.seen} = false)`,
+      unreadCommentCount: sql`
+      (SELECT COUNT(*) FROM ${NotificationSchema} WHERE ${NotificationSchema.recipientId} = ${user.id} AND ${NotificationSchema.type} = 'comment' AND ${NotificationSchema.seen} = false)`,
+    })
+      .from(UserSchema)
+      .where(eq(UserSchema.id, user.id))
+      .leftJoin(NotificationSchema, eq(NotificationSchema.recipientId, UserSchema.id))
+      .groupBy(UserSchema.id)
+
+    if (data.length <= 0) {
+      return {
+        unreadPostCount: 0,
+        unreadCommentCount: 0
+      }
+    }
+
+    return data[0] as any
   }
 }

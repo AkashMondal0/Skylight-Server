@@ -143,6 +143,11 @@ type Notification {
   seen: String
 }
 
+type UnReadNotification {
+  unreadCommentCount: Float
+  unreadPostCount: Float
+}
+
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
@@ -157,6 +162,7 @@ type Query {
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
   findAllNotifications: [Notification!]!
+  unseenNotifications: UnReadNotification!
 }
 
 input GraphQLPageQuery {
@@ -180,6 +186,7 @@ type Mutation {
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
+  markAsSeenNotification: Boolean!
 }
 
 input UpdateUsersInput {
