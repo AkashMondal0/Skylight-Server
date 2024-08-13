@@ -46,7 +46,7 @@ export class ConversationService {
     // find private
     const findConversationData = await this.drizzleProvider.db.select({ id: ConversationSchema.id })
       .from(ConversationSchema)
-      .where(and(arrayContains(ConversationSchema.members, memberIds), eq(ConversationSchema.isGroup, false)))
+      .where(and(arrayContains(ConversationSchema.members, [user.id, ...memberIds]), eq(ConversationSchema.isGroup, false)))
       .limit(1)
 
     if (findConversationData[0]) {

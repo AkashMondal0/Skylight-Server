@@ -7,7 +7,7 @@ export const roleEnum = pgEnum('role', ['admin', 'user', 'member']);
 export const friendshipStatusEnum = pgEnum('friendship_status', ['pending', 'accepted', 'rejected', 'blocked', 'deleted']);
 export const postStatusEnum = pgEnum('post_status', ['draft', 'published', 'archived']);
 export const userThemeEnum = pgEnum('user_theme', ['light', 'dark', 'system']);
-
+export const notificationTypeEnum = pgEnum('notification_type', ['like', 'comment', 'follow', 'mention', 'reply', 'tag', 'reel', 'story', 'post']);
 // user
 export const UserSchema = pgTable('users', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -283,6 +283,23 @@ export const ConversationSchema = pgTable('conversations', {
     authorUserIdx: index('conversation_author_user_idx').on(conversations.authorId, conversations.userId)
 }));
 
+export const NotificationSchema = pgTable('notifications', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: notificationTypeEnum('type').notNull(),
+    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    recipientId: uuid('recipient_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    postId: text('post_id').references(() => PostSchema.id, { onDelete: 'cascade' }),
+    commentId: uuid('comment_id').references(() => CommentSchema.id, { onDelete: 'cascade' }),
+    storyId: text('story_id').references(() => StorySchema.id, { onDelete: 'cascade' }),
+    reelId: text('reel_id').references(() => ReelSchema.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    seen: boolean('seen').default(false)
+}, (notifications) => ({
+    authorIdIdx: index('notification_author_id_idx').on(notifications.authorId),
+    recipientIdIdx: index('notification_recipient_id_idx').on(notifications.recipientId),
+    authorRecipientIdx: index('notification_author_recipient_idx').on(notifications.authorId, notifications.recipientId)
+}));
+
 // relations
 export const userRelations = relations(UserSchema, ({ many, one }) => ({
     posts: many(PostSchema),
@@ -297,6 +314,7 @@ export const userRelations = relations(UserSchema, ({ many, one }) => ({
     password: one(UserPasswordSchema),
     account: one(AccountSchema),
     session: many(Session),
+    notifications: many(NotificationSchema),
 }));
 
 export const postsRelations = relations(PostSchema, ({ one, many }) => ({

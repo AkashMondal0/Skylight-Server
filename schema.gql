@@ -126,6 +126,30 @@ type Conversation {
   groupDescription: String
 }
 
+type Notification {
+  id: String!
+  type: String!
+  authorId: String!
+  recipientId: String!
+  postId: String
+  author: Author
+  recipient: Author
+  post: Post
+  comment: Comment
+  commentId: String
+  storyId: String
+  reelId: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  seen: String
+}
+
+type UnReadNotification {
+  unreadCommentCount: Float
+  unreadPostCount: Float
+  unreadChatCount: Float
+}
+
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
@@ -139,6 +163,8 @@ type Query {
   findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
+  findAllNotifications: [Notification!]!
+  unseenNotifications: UnReadNotification!
 }
 
 input GraphQLPageQuery {
@@ -160,6 +186,9 @@ type Mutation {
   seenMessages(conversationId: String!): Message!
   createFriendship(createFriendshipInput: CreateFriendshipInput!): Friendship!
   destroyFriendship(destroyFriendship: DestroyFriendship!): Friendship!
+  createNotification(createNotificationInput: CreateNotificationInput!): Notification!
+  destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
+  markAsSeenNotification: Boolean!
 }
 
 input UpdateUsersInput {
@@ -247,4 +276,14 @@ input DestroyFriendship {
   authorUserId: String!
   followingUsername: String!
   followingUserId: String!
+}
+
+input CreateNotificationInput {
+  type: String!
+  authorId: String!
+  recipientId: String!
+  postId: String
+  commentId: String
+  storyId: String
+  reelId: String
 }
