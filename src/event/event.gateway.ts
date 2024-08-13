@@ -46,8 +46,7 @@ export class EventGateway implements OnModuleInit {
             event_name.conversation.message,
             event_name.conversation.seen,
             event_name.conversation.typing,
-            event_name.notification.post.like,
-            event_name.notification.post.comment,
+            event_name.notification.post,
             "test",
             (err, count) => {
                 if (err) {
@@ -70,11 +69,8 @@ export class EventGateway implements OnModuleInit {
                 case event_name.conversation.typing:
                     this.server.to(data.members).emit(event_name.conversation.typing, data);
                     return
-                case event_name.notification.post.like:
-                    this.server.to(data.members).emit(event_name.notification.post.like, data);
-                    return
-                case event_name.notification.post.comment:
-                    this.server.to(data.members).emit(event_name.notification.post.comment, data);
+                case event_name.notification.post:
+                    this.server.to(data.members).emit(event_name.notification.post, data);
                     return
                 default:
                     this.server.emit("test", data);
@@ -130,8 +126,7 @@ export class EventGateway implements OnModuleInit {
     @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.conversation.message)
     async IncomingClientMessage(
-        @MessageBody() data: any,
-        @ConnectedSocket() client: Socket,
+        @MessageBody() data: any
     ) {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
@@ -142,8 +137,7 @@ export class EventGateway implements OnModuleInit {
     @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.conversation.seen)
     async IncomingClientMessageSeen(
-        @MessageBody() data: any,
-        @ConnectedSocket() client: Socket,
+        @MessageBody() data: any
     ) {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
@@ -154,34 +148,22 @@ export class EventGateway implements OnModuleInit {
     @UseGuards(WsJwtGuard)
     @SubscribeMessage(event_name.conversation.typing)
     async IncomingClientTyping(
-        @MessageBody() data: any,
-        @ConnectedSocket() client: Socket,
+        @MessageBody() data: any
     ) {
         const ids = await this.findUserBySocketId(data.members)
         if (!ids) return
         this.redisProvider.redisClient.publish(event_name.conversation.typing, JSON.stringify({ ...data, members: ids }))
     }
     // notification
-    // @UseGuards(WsJwtGuard)
-    // @SubscribeMessage(event_name.notification.post.comment)
-    // async IncomingClientCommentNotification(
-    //     @MessageBody() data: PostActionsProps,
-    //     @ConnectedSocket() client: Socket,
-    // ) {
-    //     const ids = await this.findUserBySocketId(data.members)
-    //     if (!ids) return
-    //     this.redisProvider.redisClient.publish(event_name.notification.post.comment, JSON.stringify({ ...data, members: ids }))
-    // }
 
     @UseGuards(WsJwtGuard)
-    @SubscribeMessage(event_name.notification.post.like)
+    @SubscribeMessage(event_name.notification.post)
     async IncomingClientLikeNotification(
-        @MessageBody() data: Notification,
-        @ConnectedSocket() client: Socket,
+        @MessageBody() data: Notification
     ) {
         const ids = await this.findUserBySocketId([data.recipientId])
         if (!ids) return
-        this.redisProvider.redisClient.publish(event_name.notification.post.like, JSON.stringify({ ...data, members: ids }))
+        this.redisProvider.redisClient.publish(event_name.notification.post, JSON.stringify({ ...data, members: ids }))
     }
 
     // @UseGuards(WsJwtGuard)
@@ -189,7 +171,7 @@ export class EventGateway implements OnModuleInit {
     @SubscribeMessage('test')
     async test(
         @MessageBody() data: any,
-        @ConnectedSocket() client: Socket,
+        @ConnectedSocket() client: Socket
     ) {
         this.server.emit('test', "this from server - > test");
         this.redisSubscriber.publish("test", JSON.stringify({ data: data }))

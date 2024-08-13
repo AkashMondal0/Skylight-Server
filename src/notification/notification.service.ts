@@ -3,7 +3,7 @@ import { CreateNotificationInput } from './dto/create-notification.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Author } from 'src/users/entities/author.entity';
 import { Notification } from './entities/notification.entity';
-import { NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { CommentSchema, NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 @Injectable()
@@ -16,6 +16,9 @@ export class NotificationService {
         authorId: user.id,
         postId: createNotificationInput.postId,
         type: createNotificationInput.type,
+        commentId: createNotificationInput.commentId,
+        storyId: createNotificationInput.storyId,
+        reelId: createNotificationInput.reelId,
         recipientId: createNotificationInput.recipientId,
       })
       .returning()
@@ -43,12 +46,17 @@ export class NotificationService {
       post: {
         id: PostSchema.id,
         fileUrl: PostSchema.fileUrl,
+      },
+      comment: {
+        id: CommentSchema.id,
+        content: CommentSchema.content
       }
     })
       .from(NotificationSchema)
       .where(eq(NotificationSchema.recipientId, user.id))
       .leftJoin(UserSchema, eq(NotificationSchema.authorId, UserSchema.id))
       .leftJoin(PostSchema, eq(NotificationSchema.postId, PostSchema.id))
+      .leftJoin(CommentSchema, eq(NotificationSchema.commentId, CommentSchema.id))
       .orderBy(desc(NotificationSchema.createdAt))
       .offset(0)
       .limit(16)

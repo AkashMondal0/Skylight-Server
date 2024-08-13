@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Comment } from 'src/comment/entities/comment.entity';
 import { Post } from 'src/post/entities/post.entity';
 import { Author } from 'src/users/entities/author.entity';
 
@@ -39,6 +40,9 @@ export class Notification {
 
   @Field(() => Post, { nullable: true })
   post?: Post;
+
+  @Field(() => Comment, { nullable: true })
+  comment?: Comment;
 
   @Field(() => String, { nullable: true })
   commentId?: string;

@@ -135,6 +135,7 @@ type Notification {
   author: Author
   recipient: Author
   post: Post
+  comment: Comment
   commentId: String
   storyId: String
   reelId: String

@@ -6,10 +6,7 @@ export const event_name = {
         listRefetch: "conversation_list_refetch",
     },
     notification: {
-        post: {
-            like:"notification_post_like",
-            comment: "notification_post_comment",
-        },
+        post:"notification_post",
         followRequest: {}
     },
 }
