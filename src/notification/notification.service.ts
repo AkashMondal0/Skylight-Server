@@ -27,7 +27,7 @@ export class NotificationService {
   }
 
   async findAll(user: Author): Promise<Notification[] | any[]> {
-    // await this.markAsSeen(user)
+    await this.markAsSeen(user)
     const data = await this.drizzleProvider.db.select({
       id: NotificationSchema.id,
       type: NotificationSchema.type,
@@ -131,5 +131,25 @@ export class NotificationService {
       ...data[0],
       unreadChatCount: UnreadChatCount.filter((item) => Number(item.totalUnreadCount) !== 0).length || 0
     } as any
+  }
+
+  async UnseenMessageNotifications(user: Author): Promise<Number> {
+    const data = await this.drizzleProvider.db.select({
+      totalUnreadCount: sql`(SELECT COUNT(*) 
+      FROM ${MessagesSchema}
+      WHERE ${MessagesSchema.conversationId} = ${ConversationSchema.id}
+      AND NOT ${MessagesSchema.seenBy} @> ARRAY[${user.id}]::text[])`
+    })
+      .from(ConversationSchema)
+      .where(arrayContains(ConversationSchema.members, [user.id]))
+      .leftJoin(MessagesSchema, eq(MessagesSchema.conversationId, ConversationSchema.id))
+      .groupBy(ConversationSchema.id)
+      .limit(30)
+
+    if (data.length <= 0) {
+      return 0
+    }
+
+    return data.filter((item) => Number(item.totalUnreadCount) !== 0).length || 0
   }
 }

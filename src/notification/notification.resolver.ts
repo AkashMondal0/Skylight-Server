@@ -30,6 +30,12 @@ export class NotificationResolver {
   }
 
   @UseGuards(GqlAuthGuard)
+  @Query(() => Number, { name: 'unseenMessageNotifications' })
+  unseenMessageNotifications(@SessionUserGraphQl() user: Author) {
+    return this.notificationService.UnseenMessageNotifications(user);
+  }
+
+  @UseGuards(GqlAuthGuard)
   @Mutation(() => Notification, { name: 'destroyNotification' })
   removeNotification(@SessionUserGraphQl() user: Author, @Args('destroyNotificationInput') destroyNotificationInput: CreateNotificationInput) {
     return this.notificationService.remove(user, destroyNotificationInput);
