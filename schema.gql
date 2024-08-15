@@ -151,6 +151,7 @@ type UnReadNotification {
 }
 
 type Query {
+  test: String!
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
   feedTimelineConnection: [Post!]!

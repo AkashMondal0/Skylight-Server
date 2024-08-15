@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+          command: ["redis-server", "--save", "60", "1"]
+          volumeMounts:
+            - name: rdata-volume
+              mountPath: /rdata
+            - name: redis-conf-volume
+              mountPath: /usr/local/etc/redis/redis.conf
+          env:
+            - name: REDIS_PASSWORD
+              value: akash1234
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_DATABASES
+              value: "1"
+      volumes:
+        - name: rdata-volume
+          hostPath:
+            path: ./rdata
+        - name: redis-conf-volume
+          hostPath:
+            path: ./docker_datas/redis.conf
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/ubuntu/redisData"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
