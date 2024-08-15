@@ -7,7 +7,7 @@ import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { CreatePostInput } from './dto/create-post.input';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 import { Author } from 'src/users/entities/author.entity';
-import { GqlRolesGuard } from 'src/auth/guard/Gql.roles.guard';
+import { GqlRolesGuard } from 'src/guard/role-based/Gql.roles.guard';
 
 @Resolver(() => Post)
 export class PostResolver {

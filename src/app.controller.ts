@@ -1,7 +1,8 @@
-import { Controller, Get, Req, Res, Version } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards, Version } from '@nestjs/common';
 import { AppService } from './app.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import configuration from './configs/configuration';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 @Controller({
   version: ['1'],
 })
@@ -11,6 +12,8 @@ export class AppController {
   ) { }
 
   @Version('1')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Get()
   LandingPage(): any {
     return this.appService.render()

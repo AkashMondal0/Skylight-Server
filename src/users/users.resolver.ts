@@ -7,13 +7,24 @@ import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { Author } from './entities/author.entity';
 import { Users } from './entities/users.entity';
 import { UpdateUsersInput } from './dto/update-users.input';
-import { GqlRolesGuard } from 'src/auth/guard/Gql.roles.guard';
+import { GqlRolesGuard } from 'src/guard/role-based/Gql.roles.guard';
 import { Roles } from 'src/auth/SetMetadata';
 import { Role } from 'src/lib/types';
+import { Throttle } from '@nestjs/throttler';
+import { GqlThrottlerGuard } from 'src/guard/rate-limiting/GqlThrottler.Guard';
 
 @Resolver(() => Users)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
+
+  // @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle({ default: { limit: 1, ttl: 60000 } })
+  @Query(() => String, { name: 'test' })
+  Test(@SessionUserGraphQl() user: Author) {
+    // console.log(user);
+    return "Test";
+  }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => Profile, { name: 'findUserProfile' })

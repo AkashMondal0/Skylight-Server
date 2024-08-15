@@ -7,18 +7,27 @@ import { AppModule } from './app.module';
 import { Logger, VersioningType } from '@nestjs/common';
 import configuration from './configs/configuration';
 import fastifyCookie from '@fastify/cookie';
+import { RedisIoAdapter } from './db/redis/RedisIoAdapter';
 
 const envs = configuration()
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
+
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: ['1']
   });
 
   app.enableCors({
-    origin: ["https://skylight.skysolo.me", "https://skylight-test.skysolo.me", "http://localhost:3000"],
+    origin: [
+      "https://skylight.skysolo.me",
+      "https://skylight-test.skysolo.me",
+      "http://localhost:3000"
+    ],
     credentials: true,
     exposedHeaders: ["set-cookie"]
   });

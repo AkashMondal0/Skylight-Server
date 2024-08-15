@@ -19,6 +19,7 @@ import { MessageModule } from './message/message.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventsModule } from './event/event.module';
 import { NotificationModule } from './notification/notification.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { NotificationModule } from './notification/notification.module';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
       playground: false,
+      context: (req: any, res: any) => ({ req, res }),
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     ConfigModule.forRoot({
@@ -37,6 +39,7 @@ import { NotificationModule } from './notification/notification.module';
       isGlobal: true,
       envFilePath: ['.env', '.env.development'],
     }),
+    ThrottlerModule.forRoot([{ttl: 60000,limit: 10}]),
     AuthModule,
     UsersModule,
     PostModule,
