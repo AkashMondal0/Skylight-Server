@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateMessageInput } from './dto/create-message.input';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { Message } from './entities/message.entity';
-import { MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { ConversationSchema, MessagesSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { eq, asc, desc, and, sql, arrayContains, not } from 'drizzle-orm';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
@@ -35,12 +35,15 @@ export class MessageService {
       }
     })
       .from(MessagesSchema)
-      .where(eq(MessagesSchema.conversationId, graphQLPageQuery.id))
+      .where(and(
+        eq(MessagesSchema.conversationId, graphQLPageQuery.id),
+        arrayContains(ConversationSchema.members, [user.id])
+      ))
+      .leftJoin(ConversationSchema, eq(MessagesSchema.conversationId, ConversationSchema.id))
       .leftJoin(UserSchema, eq(MessagesSchema.authorId, UserSchema.id))
       .orderBy(desc(MessagesSchema.createdAt))
       .limit(graphQLPageQuery.limit ?? 16)
       .offset(graphQLPageQuery.offset ?? 0)
-
 
     return (await data)?.reverse()
   }

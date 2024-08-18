@@ -137,7 +137,10 @@ export class ConversationService {
       }
     })
       .from(ConversationSchema)
-      .where(eq(ConversationSchema.id, graphQLPageQuery.id))
+      .where(and(
+        eq(ConversationSchema.id, graphQLPageQuery.id),
+        arrayContains(ConversationSchema.members, [user.id])
+      ))
       .leftJoin(UserSchema, eq(UserSchema.id,
         sql`CASE 
           WHEN ${ConversationSchema.userId} = ${user.id} THEN ${ConversationSchema.authorId}
