@@ -10,6 +10,8 @@ type Author {
   profilePicture: String
   followed_by: Boolean
   following: Boolean
+  bio: String
+  website: [String!]
 }
 
 type Friendship {
@@ -39,6 +41,8 @@ type Profile {
   profilePicture: String
   followed_by: Boolean
   following: Boolean
+  bio: String
+  website: [String!]
   postCount: Float
   followerCount: Float
   followingCount: Float
@@ -165,6 +169,7 @@ type Query {
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
   findAllNotifications: [Notification!]!
   unseenNotifications: UnReadNotification!
+  unseenMessageNotifications: Float!
 }
 
 input GraphQLPageQuery {
@@ -196,6 +201,8 @@ input UpdateUsersInput {
   email: String
   name: String
   profilePicture: String
+  bio: String
+  website: String
 }
 
 input CreatePostInput {

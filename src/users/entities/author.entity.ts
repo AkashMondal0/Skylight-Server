@@ -22,4 +22,11 @@ export class Author {
 
   @Field(() => Boolean, { nullable: true })
   following?: boolean | null;
+
+  @Field(() => String, { nullable: true })
+  bio?: string | null
+
+  @Field(() => [String], { nullable: true })
+  website?: string[] | any[]
+  
 }

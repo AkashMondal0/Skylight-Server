@@ -22,6 +22,7 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
+        website: UserSchema.website,
       }).from(UserSchema).where(
         or(
           like(UserSchema.username, `%${keywords}%`),
@@ -50,6 +51,7 @@ export class UsersService {
         name: UserSchema.name,
         profilePicture: UserSchema.profilePicture,
         bio: UserSchema.bio,
+        website: UserSchema.website,
         postCount: sql`COUNT(DISTINCT ${PostSchema.id}) AS postCount`,
         followerCount: sql<number>`COALESCE((
             SELECT COUNT(${FriendshipSchema.followingUserId})
@@ -107,7 +109,9 @@ export class UsersService {
           profilePicture: updateUsersInput.profilePicture,
           name: updateUsersInput.name,
           username: updateUsersInput.username,
-          email: updateUsersInput.email
+          email: updateUsersInput.email,
+          bio: updateUsersInput.bio,
+          website: updateUsersInput.website,
         })
         .where(eq(UserSchema.id, user.id))
         .returning({
@@ -115,6 +119,8 @@ export class UsersService {
           name: UserSchema.name,
           username: UserSchema.username,
           email: UserSchema.email,
+          bio: UserSchema.bio,
+          website: UserSchema.website,
         })
 
       return data[0] as Author

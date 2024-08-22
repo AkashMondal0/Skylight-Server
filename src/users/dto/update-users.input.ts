@@ -13,4 +13,10 @@ export class UpdateUsersInput {
 
   @Field(() => String, { nullable: true })
   profilePicture: string | null
+
+  @Field(() => String, { nullable: true })
+  bio: string | null
+
+  @Field(() => String, { nullable: true })
+  website: string[] | any[]
 }
