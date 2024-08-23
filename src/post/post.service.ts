@@ -13,7 +13,7 @@ import { Post } from './entities/post.entity';
 export class PostService {
   constructor(private readonly drizzleProvider: DrizzleProvider) { }
 
-  async feed(loggedUser: Author): Promise<Post[]> {
+  async feed(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Post[]> {
     try {
       const data = await this.drizzleProvider.db.select({
         id: PostSchema.id,
@@ -58,13 +58,13 @@ export class PostService {
         .where(eq(FriendshipSchema.followingUserId, PostSchema.authorId))
         .innerJoin(FriendshipSchema, eq(FriendshipSchema.authorUserId, loggedUser.id))
         .leftJoin(UserSchema, eq(PostSchema.authorId, UserSchema.id))
-        .limit(12)
-        .offset(0)
         .orderBy(desc(PostSchema.createdAt))
         .groupBy(
           PostSchema.id,
           UserSchema.id,
         )
+        .limit(limitAndOffset.limit ?? 12)
+        .offset(limitAndOffset.offset ?? 0)
       return data as Post[]
     } catch (error) {
       Logger.error(error)

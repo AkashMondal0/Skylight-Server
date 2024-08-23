@@ -3,7 +3,7 @@ import { ObjectType, Field, InputType } from '@nestjs/graphql';
 @InputType()
 export class GraphQLPageQuery {
 
-  @Field(() => String)
+  @Field(() => String,{ nullable: true })
   id: string;
 
   @Field(() => Number, { nullable: true })

@@ -17,8 +17,8 @@ export class PostResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Post], { name: 'feedTimelineConnection' })
-  feedTimelineConnection(@SessionUserGraphQl() user: Author) {
-    return this.postService.feed(user);
+  feedTimelineConnection(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
+    return this.postService.feed(user, limitAndOffset);
   }
 
   @UseGuards(GqlAuthGuard)
