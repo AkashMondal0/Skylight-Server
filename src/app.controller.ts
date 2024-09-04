@@ -26,7 +26,6 @@ export class AppController {
   @Get("cookie-set")
   findAll(@Res({ passthrough: true }) response: FastifyReply) {
     response.setCookie('test', 'test_page', {
-      domain: configuration().DOMAIN,
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
