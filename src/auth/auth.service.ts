@@ -46,7 +46,6 @@ export class AuthService {
     }, { expiresIn: '1d' })
 
     response.setCookie('sky.inc-token', accessToken, {
-      domain: configuration().DOMAIN,
       path: configuration().COOKIE_PATH,
       maxAge: configuration().COOKIE_MAX_AGE, // 30 days  
       httpOnly: true,
@@ -84,7 +83,6 @@ export class AuthService {
     }, { expiresIn: configuration().JWT_EXPIRATION })
 
     response.setCookie('sky.inc-token', accessToken, {
-      domain: configuration().DOMAIN,
       path: configuration().COOKIE_PATH,
       maxAge: configuration().COOKIE_MAX_AGE, // 30 days  
       httpOnly: true,

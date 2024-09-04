@@ -11,9 +11,7 @@ export default () => ({
     JWT_EXPIRATION: process.env.JWT_EXPIRATION ?? "30d", // 30 days
 
     /// Cookie
-    DOMAIN: process.env.DOMAIN ?? ".skysolo.me",
     COOKIE_NAME: process.env.COOKIE_NAME ?? "sky.inc-token",
     COOKIE_PATH: process.env.COOKIE_PATH ?? "/",
-    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN ?? ".skysolo.me",
     COOKIE_MAX_AGE: Number(process.env.COOKIE_EXPIRATION ?? 30) * 24 * 60 * 60 * 1000, // 30 days
 });
