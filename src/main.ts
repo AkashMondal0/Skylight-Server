@@ -18,7 +18,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ["hhttps://sky-light.vercel.app", "https://sky-light-dev.vercel.app", "http://localhost:3000"],
+    origin: ["https://sky-light.vercel.app", "https://sky-light-dev.vercel.app", "http://localhost:3000"],
     credentials: true,
     exposedHeaders: ["set-cookie"]
   });

@@ -6,25 +6,25 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
-    constructor(private jwtService: JwtService,
-        // private reflector: Reflector
-    ) { }
+    constructor(private jwtService: JwtService) { }
     canActivate(
         context: ExecutionContext,
     ): boolean | Promise<boolean> | Observable<boolean> {
         const client = context.switchToWs().getClient();
-        const cookies = cookie.parse(client.handshake.headers.cookie || '');
+        let header = client.handshake.headers;
 
-        // Check if the auth cookie is present and valid
-        // This is a simple example, you should replace it with your own logic
-        const token = cookies[configuration().COOKIE_NAME];
-
-        if (!token) {
-            throw new UnauthorizedException(); 
+        if (!header?.authorization) {
+            const cookies = cookie.parse(header.cookie ?? '');
+            const token = cookies[configuration().COOKIE_NAME];
+            if (!token) {
+                Logger.error('Unauthorized access');
+                throw new UnauthorizedException();
+            }
+            header.authorization = token;
         }
-        const payload = this.jwtService.verify(token, { secret: configuration().JWT_SECRET });
-        client.handshake.headers.user = payload
-        // Logger.warn(payload)
+
+        const payload = this.jwtService.verify(header.authorization, { secret: configuration().JWT_SECRET });
+        client.handshake.headers.user = payload;
 
         return true
     }
