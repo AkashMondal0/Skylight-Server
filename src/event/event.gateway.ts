@@ -20,7 +20,8 @@ import { Notification } from 'src/notification/entities/notification.entity';
         origin: [
             "https://skylight.skysolo.me",
             "https://skylight-test.skysolo.me",
-            "http://localhost:3000"],
+            "http://localhost:3000"
+        ],
         credentials: true,
     },
     transports: ['websocket'],
@@ -171,9 +172,8 @@ export class EventGateway implements OnModuleInit {
     @SubscribeMessage('test')
     async test(
         @MessageBody() data: any,
-        @ConnectedSocket() client: Socket
     ) {
         this.server.emit('test', "this from server - > test");
-        this.redisSubscriber.publish("test", JSON.stringify({ data: data }))
+        this.redisProvider.redisClient.publish("test", JSON.stringify(data))
     }
 }
