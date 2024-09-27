@@ -6,6 +6,7 @@ import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { Author } from 'src/users/entities/author.entity';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 @Resolver(() => Notification)
 export class NotificationResolver {
@@ -19,8 +20,8 @@ export class NotificationResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Notification], { name: 'findAllNotifications' })
-  findAll(@SessionUserGraphQl() user: Author) {
-    return this.notificationService.findAll(user);
+  findAll(@SessionUserGraphQl() user: Author, @Args('findAllNotificationInput') findAllNotificationInput: GraphQLPageQuery) {
+    return this.notificationService.findAll(user, findAllNotificationInput);
   }
 
   @UseGuards(GqlAuthGuard)
@@ -46,5 +47,5 @@ export class NotificationResolver {
   markAsSeenNotification(@SessionUserGraphQl() user: Author) {
     return this.notificationService.markAsSeen(user);
   }
-  
+
 }

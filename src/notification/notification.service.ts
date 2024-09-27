@@ -5,6 +5,7 @@ import { Author } from 'src/users/entities/author.entity';
 import { Notification } from './entities/notification.entity';
 import { CommentSchema, ConversationSchema, MessagesSchema, NotificationSchema, PostSchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { and, arrayContains, desc, eq, sql } from 'drizzle-orm';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 @Injectable()
 export class NotificationService {
@@ -26,7 +27,7 @@ export class NotificationService {
     return data[0] as Notification;
   }
 
-  async findAll(user: Author): Promise<Notification[] | any[]> {
+  async findAll(user: Author, findAllNotificationInput: GraphQLPageQuery): Promise<Notification[] | any[]> {
     await this.markAsSeen(user)
     const data = await this.drizzleProvider.db.select({
       id: NotificationSchema.id,
@@ -58,8 +59,8 @@ export class NotificationService {
       .leftJoin(PostSchema, eq(NotificationSchema.postId, PostSchema.id))
       .leftJoin(CommentSchema, eq(NotificationSchema.commentId, CommentSchema.id))
       .orderBy(desc(NotificationSchema.createdAt))
-      .offset(0)
-      .limit(16)
+      .offset(findAllNotificationInput.offset ?? 0)
+      .limit(findAllNotificationInput.limit ?? 12)
 
     if (data.length <= 0 || !data) {
       return []

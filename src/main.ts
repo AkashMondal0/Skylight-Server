@@ -38,13 +38,13 @@ async function bootstrap() {
   }
   Logger.log(`Application is running on: ${await app.getUrl()}`)
   setInterval(() => {
-    fetch("https://skylight-server.onrender.com/v1")
+    fetch("https://skylight-server-api-development.onrender.com/v1")
       .then((res) => {
         Logger.log("hit api")
       }).catch((e) => {
         Logger.error("hit api error")
       })
-  }, 1000 * 60 * 10)
+  }, 1000 * 60 * 5)
 }
 
 bootstrap();
