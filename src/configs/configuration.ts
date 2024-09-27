@@ -14,4 +14,8 @@ export default () => ({
     COOKIE_NAME: process.env.COOKIE_NAME ?? "sky.inc-token",
     COOKIE_PATH: process.env.COOKIE_PATH ?? "/",
     COOKIE_MAX_AGE: Number(process.env.COOKIE_EXPIRATION ?? 30) * 24 * 60 * 60 * 1000, // 30 days
+
+    // Environment
+    SERVER_SLEEP: process.env.SERVER_SLEEP ?? "false",
+    CORS_ORIGIN: process.env.CORS_ORIGIN ?? "*",
 });
