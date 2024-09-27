@@ -14,11 +14,7 @@ import { Notification } from 'src/notification/entities/notification.entity';
 
 @WebSocketGateway({
     cors: {
-        origin: [
-            "https://skylight.skysolo.me",
-            "https://skylight-test.skysolo.me",
-            "http://localhost:3000"
-        ],
+        origin: ["*","https://sky-light.vercel.app"],
         credentials: true,
     },
     transports: ['websocket'],
