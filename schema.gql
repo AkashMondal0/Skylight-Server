@@ -167,7 +167,7 @@ type Query {
   findAllMessages(graphQLPageQuery: GraphQLPageQuery!): [Message!]!
   findAllFollower(viewFollowerInput: GraphQLPageQuery!): [Author!]!
   findAllFollowing(viewFollowingInput: GraphQLPageQuery!): [Author!]!
-  findAllNotifications: [Notification!]!
+  findAllNotifications(findAllNotificationInput: GraphQLPageQuery!): [Notification!]!
   unseenNotifications: UnReadNotification!
   unseenMessageNotifications: Float!
 }
