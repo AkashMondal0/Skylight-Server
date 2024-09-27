@@ -17,4 +17,5 @@ export default () => ({
 
     // Environment
     SERVER_SLEEP: process.env.SERVER_SLEEP ?? "false",
+    CORS_ORIGIN: process.env.CORS_ORIGIN ?? "*",
 });
