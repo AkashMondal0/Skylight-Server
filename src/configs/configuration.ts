@@ -16,6 +16,5 @@ export default () => ({
     COOKIE_MAX_AGE: Number(process.env.COOKIE_EXPIRATION ?? 30) * 24 * 60 * 60 * 1000, // 30 days
 
     // Environment
-    SERVER_SLEEP: process.env.SERVER_SLEEP ?? "false",
-    CORS_ORIGIN: process.env.CORS_ORIGIN ?? "*",
+    SERVER_SLEEP: process.env.SERVER_SLEEP ?? "false"
 });

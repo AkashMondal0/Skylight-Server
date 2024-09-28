@@ -14,7 +14,7 @@ import { Notification } from 'src/notification/entities/notification.entity';
 
 @WebSocketGateway({
     cors: {
-        origin: ["*","https://sky-light.vercel.app"],
+        origin: ["*"],
         credentials: true,
     },
     transports: ['websocket'],
