@@ -14,7 +14,7 @@ import { Notification } from 'src/notification/entities/notification.entity';
 
 @WebSocketGateway({
     cors: {
-        origin: ["*"],
+        origin: true,
         credentials: true,
     },
     transports: ['websocket'],
