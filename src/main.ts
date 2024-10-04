@@ -18,7 +18,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: [JSON.parse(envs.CORS_ORIGIN) ?? "*"],
+    origin: true,
     credentials: true,
     exposedHeaders: ["set-cookie"]
   });
