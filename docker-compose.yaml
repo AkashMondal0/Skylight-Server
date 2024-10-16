@@ -1,0 +1,9 @@
+version: '1.0'
+services:
+  server:
+    image: akashmondal0/skylight-backend:latest
+    # restart: always
+    ports:
+      - 5000:5000
+    environment:
+      PG_URL: "postgresql://postgres:password@localhost:5432/postgres"
