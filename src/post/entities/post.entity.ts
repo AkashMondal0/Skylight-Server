@@ -2,10 +2,41 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { Author } from 'src/users/entities/author.entity';
 
-enum PostStatus {
+export enum PostStatus {
   Draft = 'draft',
   Published = 'published',
   Archived = 'archived',
+}
+@ObjectType()
+export class AssetUrls {
+  @Field(() => String, { nullable: true })
+  low?: string | null;
+
+  @Field(() => String, { nullable: true })
+  medium?: string | null;
+
+  @Field(() => String, { nullable: true })
+  high?: string | null;
+
+  @Field(() => String, { nullable: true })
+  blur?: string | null;
+
+  @Field(() => String, { nullable: true })
+  thumbnail?: string | null;
+}
+@ObjectType()
+export class Assets {
+  @Field(() => String, { nullable: true })
+  id?: string;
+
+  @Field(() => AssetUrls, { nullable: true })
+  urls?: AssetUrls;
+
+  @Field(() => String, { nullable: true })
+  type?: 'photo' | 'video' | 'audio' | 'text';
+
+  @Field(() => String, { nullable: true })
+  caption?: string;
 }
 @ObjectType()
 export class Post {
@@ -18,23 +49,23 @@ export class Post {
   @Field(() => String, { nullable: true })
   title?: string | null;
 
-  @Field(() => [String], { nullable: true })
-  fileUrl?: string[] | null;
+  @Field(() => [Assets], { nullable: true })
+  fileUrl?: Assets[] | null;
   // 
   @Field(() => [String], { nullable: true })
-  song?: string[];
+  song?: any[];
 
-  @Field(() => [String])
-  tags: string[];
+  @Field(() => [String], { nullable: true })
+  tags: any[];
 
-  @Field(() => [String])
-  locations: string[];
-
-  @Field(() => String, { nullable: true })
-  country?: string;
+  @Field(() => [String], { nullable: true })
+  locations: any[];
 
   @Field(() => String, { nullable: true })
-  city?: string;
+  country?: any;
+
+  @Field(() => String, { nullable: true })
+  city?: any;
 
   @Field(() => Date, { nullable: true })
   createdAt?: Date | unknown;

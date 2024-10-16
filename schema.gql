@@ -65,14 +65,29 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type AssetUrls {
+  low: String
+  medium: String
+  high: String
+  blur: String
+  thumbnail: String
+}
+
+type Assets {
+  id: String
+  urls: AssetUrls
+  type: String
+  caption: String
+}
+
 type Post {
   id: String!
   content: String
   title: String
-  fileUrl: [String!]
+  fileUrl: [Assets!]
   song: [String!]
-  tags: [String!]!
-  locations: [String!]!
+  tags: [String!]
+  locations: [String!]
   country: String
   city: String
   createdAt: DateTime
@@ -207,10 +222,30 @@ input UpdateUsersInput {
 
 input CreatePostInput {
   content: String!
-  fileUrl: [String!]
   authorId: String!
   title: String
   status: String!
+  fileUrl: [_Assets!]
+  song: [String!]
+  tags: [String!]
+  locations: [String!]
+  country: String
+  city: String
+}
+
+input _Assets {
+  id: String
+  urls: _AssetUrls
+  type: String
+  caption: String
+}
+
+input _AssetUrls {
+  low: String
+  medium: String
+  high: String
+  blur: String
+  thumbnail: String
 }
 
 input CreateCommentInput {

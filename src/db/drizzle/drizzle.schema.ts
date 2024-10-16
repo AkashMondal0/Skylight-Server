@@ -1,5 +1,17 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, varchar, timestamp, boolean, pgEnum, text, index, integer, uuid, uniqueIndex, } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    varchar,
+    timestamp,
+    boolean,
+    pgEnum,
+    text,
+    index,
+    integer,
+    uuid,
+    uniqueIndex,
+    jsonb
+} from "drizzle-orm/pg-core";
 import { generateRandomString } from "src/lib/id-generate";
 
 // enums
@@ -115,34 +127,22 @@ export const FriendshipSchema = pgTable('friendships', {
 // post
 export const PostSchema = pgTable('posts', {
     id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
-    title: varchar('title'),
+    title: text('title'),
     content: text('content'),
-    fileUrl: varchar('file_url').array(),
+    fileUrl: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     status: postStatusEnum('status').notNull().default('draft'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
-    // additional fields
-    song: varchar('song').array(),
-    tags: text('tags')
-        .array()
-        .notNull()
-        .default(sql`'{}'::text[]`),
-    locations: text('locations')
-        .array()
-        .notNull()
-        .default(sql`ARRAY[]::text[]`),
-    country: varchar('country'),
-    city: varchar('city'),
-    // additional fields
-    likes: text('likes')
-        .array()
-        .notNull()
-        .default(sql`'{}'::text[]`),
-    comments: text('comments')
-        .array()
-        .notNull()
-        .default(sql`'{}'::text[]`),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
+    // additional fields
+    song: jsonb('song').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    tags: jsonb('tags').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    locations: jsonb('locations').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    country: jsonb('country').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    city: jsonb('city').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    // additional fields
+    likes: text('likes').array().notNull().default(sql`'{}'::text[]`),
+    comments: text('comments').array().notNull().default(sql`'{}'::text[]`),
 }, (posts) => ({
     authorIdIdx: index('post_author_id_idx').on(posts.authorId),
     statusIdx: index('post_status_idx').on(posts.status),
@@ -155,7 +155,7 @@ export const CommentSchema = pgTable('comments', {
     mentionUsername: varchar('mention_username').array().notNull().default(sql`'{}'::text[]`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     postId: text('post_id').notNull().references(() => PostSchema.id, { onDelete: 'cascade' }),
-    tags_username: varchar('tags_username').array().notNull().default(sql`'{}'::text[]`),
+    tags_username: jsonb('tags_username').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 }, (comments) => ({
@@ -182,8 +182,8 @@ export const StorySchema = pgTable('stories', {
     id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
-    mediaUrl: varchar('media_url'),
-    song: varchar('song').array().notNull().default(sql`'{}'::text[]`),
+    fileUrl: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    song: jsonb('song').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     viewCount: integer('view_count').notNull().default(0),
     expiresAt: timestamp('expires_at').notNull(),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
@@ -244,7 +244,7 @@ export const commentReplySchema = pgTable('comment_replies', {
 export const MessagesSchema = pgTable('messages', {
     id: uuid('id').defaultRandom().primaryKey(),
     content: text('content').notNull(),
-    fileUrl: varchar('file_url').array(),
+    fileUrl: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     deleted: boolean('deleted').default(false),
     seenBy: text('seen_by').array().notNull().default(sql`'{}'::text[]`),
