@@ -120,7 +120,7 @@ type Message {
   authorId: String
   content: String!
   user: Author
-  fileUrl: [String!]
+  fileUrl: [Assets!]
   deleted: Boolean
   seenBy: [String!]
   createdAt: DateTime
@@ -225,7 +225,7 @@ input CreatePostInput {
   authorId: String!
   title: String
   status: String!
-  fileUrl: [_Assets!]
+  fileUrl: [InputAssets!]
   song: [String!]
   tags: [String!]
   locations: [String!]
@@ -233,7 +233,7 @@ input CreatePostInput {
   city: String
 }
 
-input _Assets {
+input InputAssets {
   id: String
   urls: _AssetUrls
   type: String
@@ -300,7 +300,7 @@ input CreateMessageInput {
   conversationId: String!
 
   """Example field (placeholder)"""
-  fileUrl: [String!]!
+  fileUrl: [InputAssets!]!
 
   """Example field (placeholder)"""
   members: [String!]!

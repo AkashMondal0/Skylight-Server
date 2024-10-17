@@ -1,4 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
+import { Assets } from 'src/post/entities/post.entity';
 import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
@@ -18,8 +19,8 @@ export class Message {
   @Field(() => Author, { nullable: true })
   user?: Author | null;
 
-  @Field(() => [String], { nullable: true })
-  fileUrl?: string[] | null;
+  @Field(() => [Assets], { nullable: true })
+  fileUrl?: Assets[] | null;
 
   @Field(() => Boolean, { nullable: true })
   deleted?: boolean | null;

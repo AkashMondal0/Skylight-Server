@@ -18,7 +18,7 @@ export class _AssetUrls {
   thumbnail?: string | null;
 }
 @InputType()
-export class _Assets {
+export class InputAssets {
   @Field(() => String, { nullable: true })
   id?: string;
 
@@ -46,8 +46,8 @@ export class CreatePostInput {
   @Field(() => String)
   status: PostStatus;
   //
-  @Field(() => [_Assets], { nullable: true })
-  fileUrl?: _Assets[];
+  @Field(() => [InputAssets], { nullable: true })
+  fileUrl?: InputAssets[];
 
   @Field(() => [String], { nullable: true })
   song?: any[];
