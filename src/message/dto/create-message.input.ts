@@ -1,4 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { InputAssets } from 'src/post/dto/create-post.input';
 
 @InputType()
 export class CreateMessageInput {
@@ -11,8 +12,8 @@ export class CreateMessageInput {
   @Field(() => String, { description: 'Example field (placeholder)' })
   conversationId: string;
 
-  @Field(() => [String], { description: 'Example field (placeholder)' })
-  fileUrl: string[];
+  @Field(() => [InputAssets], { description: 'Example field (placeholder)' })
+  fileUrl: InputAssets[];
 
   @Field(() => [String], { description: 'Example field (placeholder)' })
   members: string[];
