@@ -1,0 +1,28 @@
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { StoryService } from './story.service';
+import { Story } from './entities/story.entity';
+import { UseGuards } from '@nestjs/common';
+import { SessionUserGraphQl } from 'src/decorator/session.decorator';
+import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
+import { CreateStoryInput } from './dto/create-story.input';
+import { Author } from 'src/users/entities/author.entity';
+
+@Resolver(() => Story)
+export class StoryResolver {
+  constructor(
+    private readonly storyService: StoryService
+  ) { }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Story], { name: 'findStory' })
+  findOnePost(@SessionUserGraphQl() user: Author, @Args('id', { type: () => String }) id: string) {
+    return this.storyService.findStory(user, id);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Story, { name: 'createStory' })
+  createPost(@SessionUserGraphQl() user: Author, @Args('createStoryInput') createStoryInput: CreateStoryInput) {
+    return this.storyService.createStory(user, createStoryInput);
+  }
+
+}

@@ -169,6 +169,22 @@ type UnReadNotification {
   unreadChatCount: Float
 }
 
+type Story {
+  id: String!
+  content: String
+  fileUrl: [Assets!]
+  song: [String!]
+  createdAt: String
+  updatedAt: String
+  authorId: String
+  viewCount: Float
+  expiresAt: String
+  user: Author
+  comments: [Comment!]
+  likes: [Author!]
+  status: [String!]
+}
+
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
@@ -185,6 +201,7 @@ type Query {
   findAllNotifications(findAllNotificationInput: GraphQLPageQuery!): [Notification!]!
   unseenNotifications: UnReadNotification!
   unseenMessageNotifications: Float!
+  findStory(id: String!): [Story!]!
 }
 
 input GraphQLPageQuery {
@@ -209,6 +226,7 @@ type Mutation {
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
   markAsSeenNotification: Boolean!
+  createStory(createStoryInput: CreateStoryInput!): Story!
 }
 
 input UpdateUsersInput {
@@ -328,4 +346,12 @@ input CreateNotificationInput {
   commentId: String
   storyId: String
   reelId: String
+}
+
+input CreateStoryInput {
+  content: String
+  authorId: String!
+  status: String
+  fileUrl: [InputAssets!]
+  song: [String!]
 }

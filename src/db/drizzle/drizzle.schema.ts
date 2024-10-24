@@ -185,7 +185,7 @@ export const StorySchema = pgTable('stories', {
     fileUrl: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     song: jsonb('song').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     viewCount: integer('view_count').notNull().default(0),
-    expiresAt: timestamp('expires_at').notNull(),
+    expiresAt: timestamp('expires_at').notNull().default(sql`now()`),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
     status: postStatusEnum('status').notNull().default('draft'),
     // additional fields
