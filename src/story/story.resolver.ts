@@ -6,6 +6,7 @@ import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
 import { CreateStoryInput } from './dto/create-story.input';
 import { Author } from 'src/users/entities/author.entity';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 @Resolver(() => Story)
 export class StoryResolver {
@@ -23,6 +24,12 @@ export class StoryResolver {
   @Mutation(() => Story, { name: 'createStory' })
   createPost(@SessionUserGraphQl() user: Author, @Args('createStoryInput') createStoryInput: CreateStoryInput) {
     return this.storyService.createStory(user, createStoryInput);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Author], { name: 'storyTimelineConnection' })
+  storyTimelineConnection(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
+    return this.storyService.storyTimelineConnection(user, limitAndOffset);
   }
 
 }

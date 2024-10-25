@@ -4,7 +4,7 @@
 
 type Author {
   username: String!
-  email: String!
+  email: String
   id: String
   name: String
   profilePicture: String
@@ -12,6 +12,7 @@ type Author {
   following: Boolean
   bio: String
   website: [String!]
+  lastStatusUpdate: String
 }
 
 type Friendship {
@@ -43,6 +44,7 @@ type Profile {
   following: Boolean
   bio: String
   website: [String!]
+  lastStatusUpdate: String
   postCount: Float
   followerCount: Float
   followingCount: Float
@@ -202,6 +204,7 @@ type Query {
   unseenNotifications: UnReadNotification!
   unseenMessageNotifications: Float!
   findStory(id: String!): [Story!]!
+  storyTimelineConnection(limitAndOffset: GraphQLPageQuery!): [Author!]!
 }
 
 input GraphQLPageQuery {

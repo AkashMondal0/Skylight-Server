@@ -1,13 +1,14 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
-// import { eq, asc } from "drizzle-orm";
 import { GraphQLError } from 'graphql';
-import { StorySchema } from 'src/db/drizzle/drizzle.schema';
+import { FriendshipSchema, StorySchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
 import { CreateStoryInput } from './dto/create-story.input';
 import { Author } from 'src/users/entities/author.entity';
 import { Story } from './entities/story.entity';
 import { RedisProvider } from 'src/db/redis/redis.provider';
+import { and, asc, between, desc, eq, sql } from 'drizzle-orm';
+import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
 @Injectable()
 export class StoryService {
@@ -25,16 +26,13 @@ export class StoryService {
       const data = JSON.parse(findUserExistStories) as Story[]
       return data
     } catch (error) {
-      Logger.error(error)
+      Logger.error("findStory", error)
       throw new GraphQLError(error)
     }
   }
 
   async createStory(loggedUser: Author, body: CreateStoryInput): Promise<Story | GraphQLError> {
     try {
-      if (loggedUser.id !== body.authorId) {
-        throw new GraphQLError('You are not authorized to perform this action')
-      }
       const data = await this.drizzleProvider.db.insert(StorySchema).values({
         content: body.content ?? "",
         fileUrl: body.fileUrl,
@@ -52,11 +50,22 @@ export class StoryService {
         let userExistStories = JSON.parse(findUserExistStories)
         if (Array.isArray(userExistStories)) {
           userExistStories.push(data[0]) // add new story to existing stories
-          this.redisProvider.client.set(`user-stories:${loggedUser.id}`, JSON.stringify(userExistStories), 'EX', 60 * 60 * 24)
+          this.redisProvider.client.set(
+            `user-stories:${loggedUser.id}`,
+            JSON.stringify(userExistStories),
+            'EX', 60 * 60 * 24)
         }
       } else {
-        this.redisProvider.client.set(`user-stories:${loggedUser.id}`, JSON.stringify([data[0]]), 'EX', 60 * 60 * 24)
+        this.redisProvider.client.set(
+          `user-stories:${loggedUser.id}`,
+          JSON.stringify([data[0]]),
+          'EX', 60 * 60 * 24)
+        // user data update last status time
       }
+      this.drizzleProvider.db.update(UserSchema)
+        .set({ lastStatusUpdate: sql`now()` })
+        .where(eq(UserSchema.id, loggedUser.id))
+        .execute()
       return data[0]
     } catch (error) {
       Logger.error(`Post not created:`, error)
@@ -64,23 +73,32 @@ export class StoryService {
     }
   }
 
+  async storyTimelineConnection(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Author[] | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        profilePicture: UserSchema.profilePicture,
+        name: UserSchema.name,
+      })
+        .from(FriendshipSchema)
+        .where(eq(FriendshipSchema.authorUserId, loggedUser.id))
+        .innerJoin(UserSchema, and(
+          eq(FriendshipSchema.followingUserId, UserSchema.id),
+          between(UserSchema.lastStatusUpdate, sql`now() - interval '1 day'`, sql`now()`)
+        ))
+        .groupBy(UserSchema.id)
+        .orderBy(desc(UserSchema.lastStatusUpdate))
+        .limit(Number(limitAndOffset.limit) ?? 12)
+        .offset(Number(limitAndOffset.offset) ?? 0)
+
+      return data as Author[]
+    } catch (error) {
+      Logger.error("storyTimelineConnection", error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
 }
-
-
-// async function findStory(loggedUser: Author, userId: string): Promise<Story[] | GraphQLError> {
-// const data = await this.drizzleProvider.db.select({
-//   id: StorySchema.id,
-//   content: StorySchema.content,
-//   fileUrl: StorySchema.fileUrl,
-//   like: StorySchema.likes,
-//   comment: StorySchema.comments,
-//   createdAt: StorySchema.createdAt,
-//   expiresAt: StorySchema.expiresAt,
-//   authorId: StorySchema.authorId,
-//   viewCount: StorySchema.viewCount,
-//   status: StorySchema.status
-// })
-//   .from(StorySchema)
-//   .where(eq(StorySchema.authorId, userId))
-//   .orderBy(asc(StorySchema.createdAt))
-// }

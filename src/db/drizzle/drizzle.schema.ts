@@ -28,6 +28,7 @@ export const UserSchema = pgTable('users', {
     email: text('email').notNull().unique(),
     profilePicture: varchar('profile_picture'),
     bio: text('bio'),
+    lastStatusUpdate: timestamp('last_status_update'),
     website: text('website')
         .array()
         .notNull()
