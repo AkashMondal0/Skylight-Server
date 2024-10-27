@@ -9,6 +9,7 @@ import { Story } from './entities/story.entity';
 import { RedisProvider } from 'src/db/redis/redis.provider';
 import { and, asc, between, desc, eq, sql } from 'drizzle-orm';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
+const oneDay = 24 * 60 * 60 * 1000
 
 @Injectable()
 export class StoryService {
@@ -24,7 +25,9 @@ export class StoryService {
         return []
       }
       const data = JSON.parse(findUserExistStories) as Story[]
-      return data
+      // filter only 24 hours stories
+      const filteredData = data.filter(story => story.expiresAt ? new Date(story.expiresAt).getTime() > new Date().getTime() : false)
+      return filteredData
     } catch (error) {
       Logger.error("findStory", error)
       throw new GraphQLError(error)
@@ -39,7 +42,7 @@ export class StoryService {
         authorId: loggedUser.id,
         status: body.status ?? "published",
         song: body.song ?? [],
-        expiresAt: new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+        expiresAt: new Date(new Date().getTime() + oneDay)
       }).returning()
 
       if (!data[0]) {
@@ -53,13 +56,13 @@ export class StoryService {
           this.redisProvider.client.set(
             `user-stories:${loggedUser.id}`,
             JSON.stringify(userExistStories),
-            'EX', 60 * 60 * 24)
+            'EX', oneDay)
         }
       } else {
         this.redisProvider.client.set(
           `user-stories:${loggedUser.id}`,
           JSON.stringify([data[0]]),
-          'EX', 60 * 60 * 24)
+          'EX', oneDay)
         // user data update last status time
       }
       this.drizzleProvider.db.update(UserSchema)
