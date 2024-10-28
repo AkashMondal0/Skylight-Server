@@ -4,7 +4,7 @@ import { Story } from './entities/story.entity';
 import { UseGuards } from '@nestjs/common';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
-import { CreateStoryInput } from './dto/create-story.input';
+import { createHighlightInput, CreateStoryInput } from './dto/create-story.input';
 import { Author } from 'src/users/entities/author.entity';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
 
@@ -21,15 +21,27 @@ export class StoryResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => Story, { name: 'createStory' })
-  createPost(@SessionUserGraphQl() user: Author, @Args('createStoryInput') createStoryInput: CreateStoryInput) {
-    return this.storyService.createStory(user, createStoryInput);
+  @Query(() => [Story], { name: 'findAllStory' })
+  findAllPost(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
+    return this.storyService.findAllPost(user, limitAndOffset);
   }
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Author], { name: 'storyTimelineConnection' })
   storyTimelineConnection(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
     return this.storyService.storyTimelineConnection(user, limitAndOffset);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Story, { name: 'createStory' })
+  createStory(@SessionUserGraphQl() user: Author, @Args('createStoryInput') createStoryInput: CreateStoryInput) {
+    return this.storyService.createStory(user, createStoryInput);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => Story, { name: 'createHighlight' })
+  createHighlight(@SessionUserGraphQl() user: Author, @Args('createHighlightInput') createHighlight: createHighlightInput) {
+    return this.storyService.createHighlight(user, createHighlight);
   }
 
 }

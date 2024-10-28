@@ -20,3 +20,19 @@ export class CreateStoryInput {
   @Field(() => [String], { nullable: true })
   song?: any[];
 }
+
+@InputType()
+export class createHighlightInput {
+
+  @Field(() => String)
+  content: string;
+
+  @Field(() => String)
+  authorId: string;
+
+  @Field(() => String, { nullable: true })
+  status: PostStatus;
+
+  @Field(() => [CreateStoryInput], { nullable: true })
+  stories?: CreateStoryInput[];
+}

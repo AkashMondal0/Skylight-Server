@@ -2,10 +2,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { GraphQLError } from 'graphql';
-import { FriendshipSchema, StorySchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
-import { CreateStoryInput } from './dto/create-story.input';
+import { FriendshipSchema, HighlightSchema, StorySchema, UserSchema } from 'src/db/drizzle/drizzle.schema';
+import { createHighlightInput, CreateStoryInput } from './dto/create-story.input';
 import { Author } from 'src/users/entities/author.entity';
-import { Story } from './entities/story.entity';
+import { Story, Highlight } from './entities/story.entity';
 import { RedisProvider } from 'src/db/redis/redis.provider';
 import { and, asc, between, desc, eq, sql } from 'drizzle-orm';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
@@ -98,6 +98,50 @@ export class StoryService {
       return data as Author[]
     } catch (error) {
       Logger.error("storyTimelineConnection", error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
+  async findAllPost(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Story[] | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: StorySchema.id,
+        content: StorySchema.content,
+        fileUrl: StorySchema.fileUrl,
+        song: StorySchema.song,
+        createdAt: StorySchema.createdAt,
+        authorId: StorySchema.authorId,
+        status: StorySchema.status
+      })
+        .from(StorySchema)
+        .where(eq(StorySchema.authorId, loggedUser.id))
+        .orderBy(desc(StorySchema.createdAt))
+        .limit(limitAndOffset.limit ?? 12)
+        .offset(limitAndOffset.offset ?? 0)
+
+      return data
+    } catch (error) {
+      Logger.error("findAllPost", error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
+  async createHighlight(loggedUser: Author, body: createHighlightInput): Promise<Highlight | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.insert(HighlightSchema).values({
+        stories: body.stories,
+        authorId: loggedUser.id,
+        status: body.status ?? "published",
+        content: body.content ?? "",
+      }).returning()
+
+      return data[0]
+    } catch (error) {
+      Logger.error("createHighlight", error)
       throw new GraphQLError('Internal Server Error', {
         extensions: { code: 'INTERNAL_SERVER_ERROR' }
       });

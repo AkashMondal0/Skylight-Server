@@ -203,6 +203,19 @@ export const StorySchema = pgTable('stories', {
     createdAtIdx: index('story_created_at_idx').on(stories.createdAt)
 }));
 
+export const HighlightSchema = pgTable('highlight', {
+    id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
+    authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
+    content: text('content').notNull(),
+    stories: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    createdAt: timestamp('created_at').notNull().default(sql`now()`),
+    updateAt: timestamp('updated_at').notNull().default(sql`now()`),
+    status: postStatusEnum('status').notNull().default('draft'),
+}, (highlight) => ({
+    authorIdIdx: index('highlight_author_id_idx').on(highlight.authorId),
+    createdAtIdx: index('highlight_created_at_idx').on(highlight.createdAt)
+}));
+
 export const ReelSchema = pgTable('reels', {
     id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
@@ -350,6 +363,13 @@ export const commentReplyRelations = relations(commentReplySchema, ({ one }) => 
 export const storyRelations = relations(StorySchema, ({ one }) => ({
     author: one(UserSchema, {
         fields: [StorySchema.authorId],
+        references: [UserSchema.id],
+    }),
+}));
+
+export const highlightRelations = relations(HighlightSchema, ({ one }) => ({
+    author: one(UserSchema, {
+        fields: [HighlightSchema.authorId],
         references: [UserSchema.id],
     }),
 }));

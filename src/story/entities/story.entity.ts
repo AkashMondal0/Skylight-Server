@@ -21,7 +21,7 @@ export class Story {
   createdAt?: Date | unknown;
 
   @Field(() => String, { nullable: true })
-  updatedAt?: Date | unknown ;
+  updatedAt?: Date | unknown;
 
   @Field(() => String, { nullable: true })
   authorId?: string;
@@ -32,15 +32,6 @@ export class Story {
   @Field(() => String, { nullable: true })
   expiresAt?: Date;
 
-  // @Field(() => Number, { nullable: true })
-  // commentCount?: number;
-
-  // @Field(() => Number, { nullable: true })
-  // likeCount?: number;
-
-  // @Field(() => Boolean, { nullable: true })
-  // is_Liked?: boolean | unknown | null;
-
   @Field(() => Author, { nullable: true })
   user?: Author | null | unknown;
 
@@ -50,8 +41,41 @@ export class Story {
   @Field(() => [Author], { nullable: true })
   likes?: Author[] | any[];
 
-  // @Field(() => [Author], { nullable: true })
-  // top_Like?: Author[] | null;
+  @Field(() => [String], { nullable: true })
+  status?: PostStatus | string
+}
+
+@ObjectType()
+export class Highlight {
+  @Field(() => String)
+  id: string;
+
+  @Field(() => String, { nullable: true })
+  content: string | null;
+
+  @Field(() => [Story], { nullable: true })
+  stories?: Story[] | null;
+
+  @Field(() => String, { nullable: true })
+  createdAt?: Date | unknown;
+
+  @Field(() => String, { nullable: true })
+  updatedAt?: Date | unknown;
+
+  @Field(() => String, { nullable: true })
+  authorId?: string;
+
+  @Field(() => Number, { nullable: true })
+  viewCount?: number;
+
+  @Field(() => Author, { nullable: true })
+  user?: Author | null | unknown;
+
+  @Field(() => [Comment], { nullable: true })
+  comments?: Comment[] | any[];
+
+  @Field(() => [Author], { nullable: true })
+  likes?: Author[] | any[];
 
   @Field(() => [String], { nullable: true })
   status?: PostStatus | string

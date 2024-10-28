@@ -204,6 +204,7 @@ type Query {
   unseenNotifications: UnReadNotification!
   unseenMessageNotifications: Float!
   findStory(id: String!): [Story!]!
+  findAllStory(limitAndOffset: GraphQLPageQuery!): [Story!]!
   storyTimelineConnection(limitAndOffset: GraphQLPageQuery!): [Author!]!
 }
 
@@ -230,6 +231,7 @@ type Mutation {
   destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
   markAsSeenNotification: Boolean!
   createStory(createStoryInput: CreateStoryInput!): Story!
+  createHighlight(createHighlightInput: createHighlightInput!): Story!
 }
 
 input UpdateUsersInput {
@@ -357,4 +359,11 @@ input CreateStoryInput {
   status: String
   fileUrl: [InputAssets!]
   song: [String!]
+}
+
+input createHighlightInput {
+  content: String!
+  authorId: String!
+  status: String
+  stories: [CreateStoryInput!]
 }
