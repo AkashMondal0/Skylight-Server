@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { StoryService } from './story.service';
-import { Story } from './entities/story.entity';
+import { Highlight, Story } from './entities/story.entity';
 import { UseGuards } from '@nestjs/common';
 import { SessionUserGraphQl } from 'src/decorator/session.decorator';
 import { GqlAuthGuard } from 'src/auth/guard/Gql-auth.guard';
@@ -24,6 +24,18 @@ export class StoryResolver {
   @Query(() => [Story], { name: 'findAllStory' })
   findAllPost(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
     return this.storyService.findAllPost(user, limitAndOffset);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => [Highlight], { name: 'findAllHighlight' })
+  findAllHighlight(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
+    return this.storyService.findAllHighlight(user, limitAndOffset);
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => Highlight, { name: 'findHighlight' })
+  findHighlight(@SessionUserGraphQl() user: Author, @Args("limitAndOffset") limitAndOffset: GraphQLPageQuery) {
+    return this.storyService.findHighlight(user, limitAndOffset);
   }
 
   @UseGuards(GqlAuthGuard)

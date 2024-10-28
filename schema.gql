@@ -187,6 +187,20 @@ type Story {
   status: [String!]
 }
 
+type Highlight {
+  id: String!
+  content: String
+  stories: [Story!]
+  createdAt: String
+  updatedAt: String
+  authorId: String
+  viewCount: Float
+  user: Author
+  comments: [Comment!]
+  likes: [Author!]
+  status: [String!]
+}
+
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
@@ -205,6 +219,8 @@ type Query {
   unseenMessageNotifications: Float!
   findStory(id: String!): [Story!]!
   findAllStory(limitAndOffset: GraphQLPageQuery!): [Story!]!
+  findAllHighlight(limitAndOffset: GraphQLPageQuery!): [Highlight!]!
+  findHighlight(limitAndOffset: GraphQLPageQuery!): Highlight!
   storyTimelineConnection(limitAndOffset: GraphQLPageQuery!): [Author!]!
 }
 

@@ -207,7 +207,7 @@ export const HighlightSchema = pgTable('highlight', {
     id: text('id').$defaultFn(() => generateRandomString({ length: 10, type: "lowernumeric" })).primaryKey(),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
-    stories: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
+    stories: jsonb('stories').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     createdAt: timestamp('created_at').notNull().default(sql`now()`),
     updateAt: timestamp('updated_at').notNull().default(sql`now()`),
     status: postStatusEnum('status').notNull().default('draft'),

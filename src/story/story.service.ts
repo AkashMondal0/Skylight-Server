@@ -1,4 +1,3 @@
-
 import { Injectable, Logger } from '@nestjs/common';
 import { DrizzleProvider } from 'src/db/drizzle/drizzle.provider';
 import { GraphQLError } from 'graphql';
@@ -148,4 +147,51 @@ export class StoryService {
     }
   }
 
+  async findAllHighlight(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Highlight[] | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: HighlightSchema.id,
+        content: HighlightSchema.content,
+        createdAt: HighlightSchema.createdAt,
+        authorId: HighlightSchema.authorId,
+        status: HighlightSchema.status
+      })
+        .from(HighlightSchema)
+        .where(eq(HighlightSchema.authorId, loggedUser.id))
+        .orderBy(desc(HighlightSchema.createdAt))
+        .limit(limitAndOffset.limit ?? 12)
+        .offset(limitAndOffset.offset ?? 0)
+
+      return data
+    } catch (error) {
+      Logger.error("findAllHighlight", error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
+
+  async findHighlight(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Highlight | GraphQLError> {
+    try {
+      const data = await this.drizzleProvider.db.select({
+        id: HighlightSchema.id,
+        content: HighlightSchema.content,
+        createdAt: HighlightSchema.createdAt,
+        authorId: HighlightSchema.authorId,
+        status: HighlightSchema.status
+      })
+        .from(HighlightSchema)
+        .where(eq(HighlightSchema.authorId, loggedUser.id))
+        .orderBy(desc(HighlightSchema.createdAt))
+        .limit(limitAndOffset.limit ?? 12)
+        .offset(limitAndOffset.offset ?? 0)
+
+      return data[0]
+    } catch (error) {
+      Logger.error("findHighlight", error)
+      throw new GraphQLError('Internal Server Error', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+      });
+    }
+  }
 }
