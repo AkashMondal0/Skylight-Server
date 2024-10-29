@@ -172,7 +172,7 @@ type UnReadNotification {
 }
 
 type Story {
-  id: String!
+  id: String
   content: String
   fileUrl: [Assets!]
   song: [String!]
@@ -190,6 +190,7 @@ type Story {
 type Highlight {
   id: String!
   content: String
+  coverImageIndex: Float
   stories: [Story!]
   createdAt: String
   updatedAt: String
@@ -247,7 +248,7 @@ type Mutation {
   destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
   markAsSeenNotification: Boolean!
   createStory(createStoryInput: CreateStoryInput!): Story!
-  createHighlight(createHighlightInput: createHighlightInput!): Story!
+  createHighlight(createHighlightInput: createHighlightInput!): Highlight!
 }
 
 input UpdateUsersInput {
@@ -260,6 +261,8 @@ input UpdateUsersInput {
 }
 
 input CreatePostInput {
+  id: String
+  createdAt: String
   content: String!
   authorId: String!
   title: String
@@ -375,6 +378,8 @@ input CreateStoryInput {
   status: String
   fileUrl: [InputAssets!]
   song: [String!]
+  createdAt: String
+  id: String
 }
 
 input createHighlightInput {
@@ -382,4 +387,5 @@ input createHighlightInput {
   authorId: String!
   status: String
   stories: [CreateStoryInput!]
+  coverImageIndex: Float
 }

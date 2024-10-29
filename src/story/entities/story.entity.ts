@@ -5,8 +5,8 @@ import { Author } from 'src/users/entities/author.entity';
 
 @ObjectType()
 export class Story {
-  @Field(() => String)
-  id: string;
+  @Field(() => String, { nullable: true })
+  id?: string | null;
 
   @Field(() => String, { nullable: true })
   content: string | null;
@@ -52,6 +52,9 @@ export class Highlight {
 
   @Field(() => String, { nullable: true })
   content: string | null;
+
+  @Field(() => Number, { nullable: true })
+  coverImageIndex?: number | 0;
 
   @Field(() => [Story], { nullable: true })
   stories?: Story[] | null;

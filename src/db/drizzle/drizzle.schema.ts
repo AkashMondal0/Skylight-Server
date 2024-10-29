@@ -186,8 +186,8 @@ export const StorySchema = pgTable('stories', {
     fileUrl: jsonb('file_url').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     song: jsonb('song').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
     viewCount: integer('view_count').notNull().default(0),
-    expiresAt: timestamp('expires_at').notNull().default(sql`now()`),
-    createdAt: timestamp('created_at').notNull().default(sql`now()`),
+    expiresAt: timestamp('expires_at').notNull().defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
     status: postStatusEnum('status').notNull().default('draft'),
     // additional fields
     likes: text('likes')
@@ -208,9 +208,11 @@ export const HighlightSchema = pgTable('highlight', {
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
     stories: jsonb('stories').$type<any[]>().notNull().default(sql`'[]'::jsonb`),
-    createdAt: timestamp('created_at').notNull().default(sql`now()`),
-    updateAt: timestamp('updated_at').notNull().default(sql`now()`),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updateAt: timestamp('updated_at').notNull().defaultNow(),
     status: postStatusEnum('status').notNull().default('draft'),
+    // additional fields
+    coverImageIndex: integer('cover_image_index').notNull().default(0),
 }, (highlight) => ({
     authorIdIdx: index('highlight_author_id_idx').on(highlight.authorId),
     createdAtIdx: index('highlight_created_at_idx').on(highlight.createdAt)
@@ -224,8 +226,8 @@ export const ReelSchema = pgTable('reels', {
     likeCount: integer('like_count').notNull().default(0),
     commentCount: integer('comment_count').notNull().default(0),
     status: postStatusEnum('status').notNull().default('draft'),
-    createdAt: timestamp('created_at').notNull().default(sql`now()`),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
     // additional fields
     likes: text('likes')
         .array()
@@ -246,8 +248,8 @@ export const commentReplySchema = pgTable('comment_replies', {
     mentionUsername: varchar('mention_username').array().notNull().default(sql`'{}'::text[]`),
     authorId: uuid('author_id').notNull().references(() => UserSchema.id, { onDelete: 'cascade' }),
     commentId: uuid('comment_id').notNull().references(() => CommentSchema.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at').notNull().default(sql`now()`),
-    updatedAt: timestamp('updated_at').default(sql`now()`),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 }, (replies) => ({
     authorIdIdx: index('reply_author_id_idx').on(replies.authorId),
     commentIdIdx: index('reply_comment_id_idx').on(replies.commentId),

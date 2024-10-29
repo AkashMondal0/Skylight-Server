@@ -34,6 +34,12 @@ export class InputAssets {
 @InputType()
 export class CreatePostInput {
 
+  @Field(() => String, { nullable: true })
+  id?: string;
+
+  @Field(() => String, { nullable: true })
+  createdAt?: string;
+
   @Field(() => String)
   content: string;
 

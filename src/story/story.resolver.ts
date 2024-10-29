@@ -51,7 +51,7 @@ export class StoryResolver {
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => Story, { name: 'createHighlight' })
+  @Mutation(() => Highlight, { name: 'createHighlight' })
   createHighlight(@SessionUserGraphQl() user: Author, @Args('createHighlightInput') createHighlight: createHighlightInput) {
     return this.storyService.createHighlight(user, createHighlight);
   }

@@ -136,6 +136,7 @@ export class StoryService {
         authorId: loggedUser.id,
         status: body.status ?? "published",
         content: body.content ?? "",
+        coverImageIndex: body.coverImageIndex ?? 0,
       }).returning()
 
       return data[0]
@@ -149,15 +150,16 @@ export class StoryService {
 
   async findAllHighlight(loggedUser: Author, limitAndOffset: GraphQLPageQuery): Promise<Highlight[] | GraphQLError> {
     try {
-      const data = await this.drizzleProvider.db.select({
+      let data = await this.drizzleProvider.db.select({
         id: HighlightSchema.id,
         content: HighlightSchema.content,
         createdAt: HighlightSchema.createdAt,
         authorId: HighlightSchema.authorId,
-        status: HighlightSchema.status
+        status: HighlightSchema.status,
+        stories: HighlightSchema.stories
       })
         .from(HighlightSchema)
-        .where(eq(HighlightSchema.authorId, loggedUser.id))
+        .where(eq(HighlightSchema.authorId, limitAndOffset.id))
         .orderBy(desc(HighlightSchema.createdAt))
         .limit(limitAndOffset.limit ?? 12)
         .offset(limitAndOffset.offset ?? 0)
