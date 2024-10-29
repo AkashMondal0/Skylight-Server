@@ -8,7 +8,6 @@ import { Story, Highlight } from './entities/story.entity';
 import { RedisProvider } from 'src/db/redis/redis.provider';
 import { and, asc, between, desc, eq, sql } from 'drizzle-orm';
 import { GraphQLPageQuery } from 'src/lib/types/graphql.global.entity';
-const oneDay = 24 * 60 * 60 * 1000
 
 @Injectable()
 export class StoryService {
@@ -41,7 +40,7 @@ export class StoryService {
         authorId: loggedUser.id,
         status: body.status ?? "published",
         song: body.song ?? [],
-        expiresAt: new Date(new Date().getTime() + oneDay)
+        expiresAt: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // 24 hours
       }).returning()
 
       if (!data[0]) {
@@ -55,13 +54,13 @@ export class StoryService {
           this.redisProvider.client.set(
             `user-stories:${loggedUser.id}`,
             JSON.stringify(userExistStories),
-            'EX', oneDay)
+            'EX', 24 * 60 * 60) // 24 hours
         }
       } else {
         this.redisProvider.client.set(
           `user-stories:${loggedUser.id}`,
           JSON.stringify([data[0]]),
-          'EX', oneDay)
+          'EX', 24 * 60 * 60) // 24 hours
         // user data update last status time
       }
       this.drizzleProvider.db.update(UserSchema)
@@ -160,7 +159,7 @@ export class StoryService {
       })
         .from(HighlightSchema)
         .where(eq(HighlightSchema.authorId, limitAndOffset.id))
-        .orderBy(desc(HighlightSchema.createdAt))
+        .orderBy(asc(HighlightSchema.createdAt))
         .limit(limitAndOffset.limit ?? 12)
         .offset(limitAndOffset.offset ?? 0)
 
