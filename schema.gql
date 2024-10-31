@@ -4,7 +4,7 @@
 
 type Author {
   username: String!
-  email: String!
+  email: String
   id: String
   name: String
   profilePicture: String
@@ -12,6 +12,7 @@ type Author {
   following: Boolean
   bio: String
   website: [String!]
+  lastStatusUpdate: String
 }
 
 type Friendship {
@@ -43,6 +44,7 @@ type Profile {
   following: Boolean
   bio: String
   website: [String!]
+  lastStatusUpdate: String
   postCount: Float
   followerCount: Float
   followingCount: Float
@@ -169,6 +171,37 @@ type UnReadNotification {
   unreadChatCount: Float
 }
 
+type Story {
+  id: String
+  content: String
+  fileUrl: [Assets!]
+  song: [String!]
+  createdAt: String
+  updatedAt: String
+  authorId: String
+  viewCount: Float
+  expiresAt: String
+  user: Author
+  comments: [Comment!]
+  likes: [Author!]
+  status: [String!]
+}
+
+type Highlight {
+  id: String!
+  content: String
+  coverImageIndex: Float
+  stories: [Story!]
+  createdAt: String
+  updatedAt: String
+  authorId: String
+  viewCount: Float
+  user: Author
+  comments: [Comment!]
+  likes: [Author!]
+  status: [String!]
+}
+
 type Query {
   findUserProfile(username: String!): Profile!
   findUsersByKeyword(keyword: String!): [Author!]!
@@ -185,6 +218,11 @@ type Query {
   findAllNotifications(findAllNotificationInput: GraphQLPageQuery!): [Notification!]!
   unseenNotifications: UnReadNotification!
   unseenMessageNotifications: Float!
+  findStory(id: String!): [Story!]!
+  findAllStory(limitAndOffset: GraphQLPageQuery!): [Story!]!
+  findAllHighlight(limitAndOffset: GraphQLPageQuery!): [Highlight!]!
+  findHighlight(limitAndOffset: GraphQLPageQuery!): Highlight!
+  storyTimelineConnection(limitAndOffset: GraphQLPageQuery!): [Author!]!
 }
 
 input GraphQLPageQuery {
@@ -209,6 +247,8 @@ type Mutation {
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   destroyNotification(destroyNotificationInput: CreateNotificationInput!): Notification!
   markAsSeenNotification: Boolean!
+  createStory(createStoryInput: CreateStoryInput!): Story!
+  createHighlight(createHighlightInput: createHighlightInput!): Highlight!
 }
 
 input UpdateUsersInput {
@@ -221,6 +261,8 @@ input UpdateUsersInput {
 }
 
 input CreatePostInput {
+  id: String
+  createdAt: String
   content: String!
   authorId: String!
   title: String
@@ -328,4 +370,22 @@ input CreateNotificationInput {
   commentId: String
   storyId: String
   reelId: String
+}
+
+input CreateStoryInput {
+  content: String
+  authorId: String!
+  status: String
+  fileUrl: [InputAssets!]
+  song: [String!]
+  createdAt: String
+  id: String
+}
+
+input createHighlightInput {
+  content: String!
+  authorId: String!
+  status: String
+  stories: [CreateStoryInput!]
+  coverImageIndex: Float
 }
